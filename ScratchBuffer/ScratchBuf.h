@@ -3,13 +3,6 @@
 
 #include "String.h"
 
-#define INLINE static inline
-#if defined(__GNUC__) || defined(__clang__)
-    #define MAYBE_UNUSED __attribute__((unused))
-#else
-    #define UNUSED
-#endif
-
 ErrorCode ScratchInit(size_t capacity);
 void      ScratchDtor();
 void      ScratchClean();
@@ -21,7 +14,7 @@ ResultString ScratchGetString();
 
 ErrorCode ScratchAppendStr(Str slice);
 
-INLINE MAYBE_UNUSED ErrorCode ScratchAppendChar(char c)
+INLINE ErrorCode ScratchAppendChar(char c)
 {
     char chstr[] = { c, '\0'};
     Str chslice = StrCtor(chstr);
@@ -29,12 +22,12 @@ INLINE MAYBE_UNUSED ErrorCode ScratchAppendChar(char c)
     return ScratchAppendStr(chslice);
 }
 
-INLINE MAYBE_UNUSED ErrorCode ScratchAppendString(const String string)
+INLINE ErrorCode ScratchAppendString(const String string)
 {
     return ScratchAppendStr(StrCtorFromString(string));
 }
 
-INLINE MAYBE_UNUSED ErrorCode ScratchAppend(const char* string)
+INLINE ErrorCode ScratchAppend(const char* string)
 {
     return ScratchAppendStr(StrCtor(string));
 }

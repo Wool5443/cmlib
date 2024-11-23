@@ -7,13 +7,7 @@
 #include <assert.h>
 
 #include "Error.h"
-
-#define INLINE static inline
-#if defined(__GNUC__) || defined(__clang__)
-    #define MAYBE_UNUSED __attribute__((unused))
-#else
-    #define UNUSED
-#endif
+#include "../common.h"
 
 typedef struct
 {
@@ -31,7 +25,7 @@ typedef struct
 DECLARE_RESULT(String);
 DECLARE_RESULT(Str);
 
-INLINE MAYBE_UNUSED Str StrCtorSize(const char* string, size_t size)
+INLINE Str StrCtorSize(const char* string, size_t size)
 {
     if (!string) return (Str){};
     if (size == 0) return (Str){};
@@ -43,12 +37,12 @@ INLINE MAYBE_UNUSED Str StrCtorSize(const char* string, size_t size)
     };
 }
 
-INLINE MAYBE_UNUSED Str StrCtor(const char* string)
+INLINE Str StrCtor(const char* string)
 {
     return StrCtorSize(string, strlen(string));
 }
 
-INLINE MAYBE_UNUSED Str StrCtorFromString(const String string)
+INLINE Str StrCtorFromString(const String string)
 {
     return (Str)
     {
@@ -57,7 +51,7 @@ INLINE MAYBE_UNUSED Str StrCtorFromString(const String string)
     };
 }
 
-INLINE MAYBE_UNUSED ResultString StringCtorCapacity(size_t capacity)
+INLINE ResultString StringCtorCapacity(size_t capacity)
 {
     ERROR_CHECKING();
 
@@ -83,7 +77,7 @@ INLINE MAYBE_UNUSED ResultString StringCtorCapacity(size_t capacity)
     };
 }
 
-INLINE MAYBE_UNUSED ResultString StringCtorFromStr(Str string)
+INLINE ResultString StringCtorFromStr(Str string)
 {
     ERROR_CHECKING();
 
@@ -102,19 +96,19 @@ INLINE MAYBE_UNUSED ResultString StringCtorFromStr(Str string)
     return stringRes;
 }
 
-INLINE MAYBE_UNUSED ResultString StringCtor(const char* string)
+INLINE ResultString StringCtor(const char* string)
 {
     return StringCtorFromStr(StrCtor(string));
 }
 
-INLINE MAYBE_UNUSED void StringDtor(String* string)
+INLINE void StringDtor(String* string)
 {
     if (!string) return;
 
     free(string->data);
 }
 
-INLINE MAYBE_UNUSED ResultString StringCopy(const String string)
+INLINE ResultString StringCopy(const String string)
 {
     ERROR_CHECKING();
 
@@ -126,7 +120,7 @@ INLINE MAYBE_UNUSED ResultString StringCopy(const String string)
     return stringRes;
 }
 
-INLINE MAYBE_UNUSED ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
+INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
 {
     ERROR_CHECKING();
 
@@ -155,7 +149,7 @@ INLINE MAYBE_UNUSED ErrorCode StringRealloc(String this[static 1], size_t newCap
     return err;
 }
 
-INLINE MAYBE_UNUSED ErrorCode StringAppendStr(String this[static 1], Str string)
+INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 {
     ERROR_CHECKING();
 
@@ -179,24 +173,24 @@ INLINE MAYBE_UNUSED ErrorCode StringAppendStr(String this[static 1], Str string)
     return err;
 }
 
-INLINE MAYBE_UNUSED ErrorCode StringAppend(String this[static 1], const char* string)
+INLINE ErrorCode StringAppend(String this[static 1], const char* string)
 {
     if (!string) return EVERYTHING_FINE;
     return StringAppendStr(this, StrCtor(string));
 }
 
-INLINE MAYBE_UNUSED ErrorCode StringAppendString(String this[static 1], const String string)
+INLINE ErrorCode StringAppendString(String this[static 1], const String string)
 {
     return StringAppendStr(this, StrCtorFromString(string));
 }
 
-INLINE MAYBE_UNUSED ErrorCode StringAppendChar(String this[static 1], char ch)
+INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
 {
     char chstr[] = { ch, '\0'};
     return StringAppendStr(this, (Str){ chstr, 1 });
 }
 
-INLINE MAYBE_UNUSED ResultStr StringSlice(const String this[static 1], size_t startIdx, size_t endIdx)
+INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_t endIdx)
 {
     ERROR_CHECKING();
 
