@@ -1,7 +1,8 @@
-set(SOURCES
-    "ScratchBuf.c")
+set(LIB_NAME "cmlibScratchBuffer")
 
-add_library(ScratchBuf ${SOURCES})
+set(SOURCES "ScratchBuf.c")
 
-target_include_directories(ScratchBuf PUBLIC ../Error ../String)
-target_link_libraries(ScratchBuf Error String)
+add_library(${LIB_NAME}  ${SOURCES})
+
+target_include_directories(${LIB_NAME} INTERFACE .)
+target_link_libraries(${LIB_NAME} PUBLIC cmlibString)

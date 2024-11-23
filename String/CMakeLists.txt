@@ -1,7 +1,8 @@
-set(SOURCES
-    "String.c")
+set(LIB_NAME "cmlibString")
 
-add_library(String ${SOURCES})
+set(SOURCES "String.c")
 
-target_include_directories(String PUBLIC ../Error)
-target_link_libraries(String Error)
+add_library(${LIB_NAME} ${SOURCES})
+
+target_include_directories(${LIB_NAME} INTERFACE .)
+target_link_libraries(${LIB_NAME} PUBLIC cmlibError)

@@ -1,7 +1,6 @@
-set(SOURCES
-    "Vector.c")
+set(LIB_NAME "cmlibVector")
 
-add_library(Vector ${SOURCES})
+add_library(${LIB_NAME} INTERFACE ${SOURCES})
 
-target_include_directories(Vector PUBLIC ../Error)
-target_link_libraries(Vector Error)
+target_include_directories(${LIB_NAME} INTERFACE .)
+target_link_libraries(${LIB_NAME} INTERFACE cmlibError)

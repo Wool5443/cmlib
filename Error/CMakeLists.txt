@@ -1,4 +1,7 @@
-set(SOURCES
-    "Error.c")
+set(LIB_NAME "cmlibError")
 
-add_library(Error ${SOURCES})
+set(SOURCES "Error.c")
+
+add_library(${LIB_NAME} ${SOURCES})
+
+target_include_directories(${LIB_NAME} INTERFACE .)
