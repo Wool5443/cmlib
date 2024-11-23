@@ -1,12 +1,12 @@
 #include "ScratchBuf.h"
-#include <math.h>
 
 #define CHECK_SCRATCH_STATE()                                       \
 do                                                                  \
 {                                                                   \
     if (!scratchString.data)                                        \
     {                                                               \
-        LOG("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");       \
+        ErrorCode err = ERROR_UNINITIALIZED;                        \
+        LOG_ERROR("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n"); \
         abort();                                                    \
     }                                                               \
 } while (0)
@@ -21,7 +21,7 @@ ErrorCode ScratchInit(size_t capacity)
 
     ResultString strRes = StringCtorCapacity(capacity);
 
-    err = strRes.error;
+    err = strRes.errorCode;
     RETURN_ERROR_IF();
 
     scratchString = strRes.value;

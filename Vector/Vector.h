@@ -1,13 +1,10 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
-#include "../Error/Error.h"
-#include "../common.h"
+#include "../Logger/Logger.h" // IWYU pragma: keep
 
 #define DEFAULT_CAPACITY 8
 
@@ -31,7 +28,7 @@ INLINE void* VecCtor(size_t elemSize, size_t capacity)
     if (!header)
     {
         err = ERROR_NO_MEMORY;
-        LOG_IF_ERROR();
+        LOG_ERROR_IF();
         return NULL;
     }
 
@@ -64,7 +61,6 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
         return vec;
 
     size_t newCap = header->capacity * 3 / 2;
-    LOG("newCap = %zu\n", newCap);
 
     void* newVec = VecCtor(elemSize, newCap);
     if (!newVec) return vec;
