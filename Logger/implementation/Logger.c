@@ -12,6 +12,8 @@ void LoggerInit(const char path[static 1])
     if (!file)
         fprintf(stderr, "Logger could not initialize\n%s was a bad file",
                 path);
+
+    LoggerInitFile(file);
 }
 
 void LoggerInitFile(FILE file[static 1])
@@ -25,7 +27,7 @@ void LoggerInitFile(FILE file[static 1])
 
 void LoggerInitConsole()
 {
-    LOGGER_.file = stderr;
+    LoggerInitFile(stderr);
 }
 
 void LoggerFinish()

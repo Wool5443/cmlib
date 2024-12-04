@@ -79,9 +79,9 @@ do                                                                              
 {                                                                               \
     void* temp = VecRealloc((vec), sizeof(*vec));                               \
     if (!temp) break;                                                           \
-    vec = temp;                                                                 \
+    (vec) = temp;                                                               \
     VHeader_* header = GET_HEADER(vec);                                         \
-    vec[header->size++] = value;                                                \
+    (vec)[header->size++] = value;                                              \
 } while (0)
 
 #define VecExpand(vec, newCapacity)                                             \
@@ -90,10 +90,10 @@ do                                                                              
     void* temp = VecCtor(sizeof(*(vec)), newCapacity);                          \
     if (!temp) break;                                                           \
     size_t vecSize = VecSize(vec);                                              \
-    if (vec)                                                                    \
+    if ((vec) && vecSize)                                                       \
         memcpy(temp, vec, sizeof(*(vec)) * vecSize);                            \
     VecDtor(vec);                                                               \
-    vec = temp;                                                                 \
+    (vec) = temp;                                                               \
 } while (0)
 
 INLINE void VecPop(void* vec)
