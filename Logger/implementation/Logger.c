@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <unistd.h>
 
 #include "LoggerStruct.h"
 
@@ -30,6 +31,8 @@ void LoggerInitConsole()
 void LoggerFinish()
 {
     if (!LOGGER_.file) return;
+
+    if (isatty(fileno(LOGGER_.file))) return;
 
     fclose(LOGGER_.file);
 }
