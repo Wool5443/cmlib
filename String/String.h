@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../Logger/Logger.h" // IWYU pragma: keep
+#include "Logger.h"
 
 typedef struct
 {
@@ -61,7 +61,8 @@ INLINE ResultString StringCtorCapacity(size_t capacity)
     if (!data)
     {
         err = ERROR_NO_MEMORY;
-        RETURN(ResultStringCtor((String){}, err));
+        LogError();
+        ResultStringCtor((String){}, err);
     }
 
     return ResultStringCtor(
@@ -77,15 +78,13 @@ INLINE ResultString StringCtorCapacity(size_t capacity)
 
 INLINE ResultString StringCtorFromStr(Str string)
 {
-    ERROR_CHECKING();
-
     if (!string.data) return (ResultString){};
     if (string.size == 0) return (ResultString){};
 
     ResultString stringRes = StringCtorCapacity(string.size);
 
-    if ((err = stringRes.errorCode))
-        RETURN(stringRes);
+    if (stringRes.errorCode)
+        return stringRes;
 
     memcpy(stringRes.value.data, string.data, string.size);
 
@@ -108,13 +107,9 @@ INLINE void StringDtor(String* string)
 
 INLINE ResultString StringCopy(const String string)
 {
-    ERROR_CHECKING();
-
     ResultString stringRes = StringCtorFromStr(StrCtorFromString(string));
 
-    err = stringRes.errorCode;
-
-    RETURN(stringRes);
+    return stringRes;
 }
 
 INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
@@ -133,7 +128,8 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
     if (!newData)
     {
         err = ERROR_NO_MEMORY;
-        RETURN_ERROR_IF();
+        LogError();
+        return err;
     }
 
     *this = (String)
@@ -159,8 +155,8 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 
     if (newSize > this->capacity)
     {
-        err = StringRealloc(this, this->capacity * 3 / 2);
-        RETURN_ERROR_IF();
+        if ((err = StringRealloc(this, this->capacity * 3 / 2)))
+            return err;
     }
 
     memcpy(this->data + this->size, string.data, string.size);
@@ -197,7 +193,8 @@ INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_
         || endIdx < startIdx)
     {
         err = ERROR_BAD_ARGS;
-        RETURN(ResultStrCtor((Str){}, err));
+        LogError();
+        return ResultStrCtor((Str){}, err);
     }
 
     return ResultStrCtor(

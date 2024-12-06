@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "LoggerStruct.h"
+#include "../Logger.h"
 
 Logger LOGGER_ = {};
 

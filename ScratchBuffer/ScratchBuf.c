@@ -6,7 +6,7 @@ do                                                                  \
     if (!scratchString.data)                                        \
     {                                                               \
         ErrorCode err = ERROR_UNINITIALIZED;                        \
-        LOG_ERROR("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n"); \
+        LogError("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");  \
         abort();                                                    \
     }                                                               \
 } while (0)
@@ -22,7 +22,11 @@ ErrorCode ScratchInit(size_t capacity)
     ResultString strRes = StringCtorCapacity(capacity);
 
     err = strRes.errorCode;
-    RETURN_ERROR_IF();
+    if (err)
+    {
+        LogError();
+        return err;
+    }
 
     scratchString = strRes.value;
 
@@ -87,5 +91,5 @@ ErrorCode ScratchAppendStr(Str string)
 
     err = StringAppendStr(&scratchString, string);
 
-    RETURN(err);
+    return err;
 }

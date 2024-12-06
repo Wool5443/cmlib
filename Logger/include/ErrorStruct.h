@@ -2,20 +2,42 @@
 #define CMLIB_ERROR_STRUCT_H
 
 #include <assert.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <time.h>
 
-#include "Types.h"
 #include "../../common.h"
+
+typedef enum
+{
+
+#define DEF_ERROR(code) \
+code,
+
+#include "ErrorGen.h"
+
+#undef DEF_ERROR
+
+} ErrorCode;
+
+typedef struct
+{
+    ErrorCode   code;
+    const char* file;
+    size_t      line;
+    const char* function;
+    time_t      time;
+} Error;
+
 
 INLINE Error ErrorCtor(ErrorCode errorCode,
                        const char* fileName,
                        size_t lineNumber,
                        const char* functionName)
 {
-    time_t t = time(NULL);
-
     return (Error)
     {
-        .time = t,
+        .time = time(NULL),
         .code = errorCode,
         .file = fileName,
         .line = lineNumber,

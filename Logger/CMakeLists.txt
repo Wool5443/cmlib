@@ -1,6 +1,6 @@
 set(LIB_NAME "cmlibLogger")
 
-set(SOURCES "implementation/Logger.c")
+set(SOURCES "src/Logger.c")
 
 add_library(${LIB_NAME} ${SOURCES})
 

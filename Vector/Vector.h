@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../Logger/Logger.h" // IWYU pragma: keep
+#include "Logger.h"
 
 #define DEFAULT_CAPACITY 8
 
@@ -28,7 +28,7 @@ INLINE void* VecCtor(size_t elemSize, size_t capacity)
     if (!header)
     {
         err = ERROR_NO_MEMORY;
-        LOG_ERROR_IF();
+        LogError();
         return NULL;
     }
 
