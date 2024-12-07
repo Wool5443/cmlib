@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "../../common.h"
+#include "../common.h"
 
 typedef enum
 {
@@ -14,7 +14,7 @@ typedef enum
 #define DEF_ERROR(code) \
 code,
 
-#include "ErrorGen.h"
+#include "include/ErrorGen.h"
 
 #undef DEF_ERROR
 
@@ -28,7 +28,6 @@ typedef struct
     const char* function;
     time_t      time;
 } Error;
-
 
 INLINE Error ErrorCtor(ErrorCode errorCode,
                        const char* fileName,
@@ -53,7 +52,7 @@ INLINE const char* GetErrorName(ErrorCode errorCode)
 #define DEF_ERROR(code) \
 case code: return #code;
 
-#include "ErrorGen.h"
+#include "include/ErrorGen.h"
 
 #undef DEF_ERROR
 

@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "include/ConsoleColor.h"
-#include "include/ErrorStruct.h"
+#include "Error.h"
 
 typedef enum
 {

@@ -3,8 +3,10 @@
 
 #if defined(__GNUC__) || defined(__clang__)
     #define INLINE static inline __attribute__((unused))
+    #define UNUSED [[maybe_unused]]
 #else
     #define INLINE static inline
+    #define UNUSED
 #endif
 
 #define FIRST(x, ...) x
