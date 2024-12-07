@@ -12,7 +12,6 @@ typedef struct
 {
     size_t capacity;
     size_t size;
-    char   data[];
 } VHeader_;
 
 #define GET_HEADER(ptr) (&((VHeader_*)(ptr))[-1])
