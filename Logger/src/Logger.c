@@ -38,8 +38,3 @@ void LoggerFinish()
 
     fclose(LOGGER_.file);
 }
-
-Logger* GetLogger()
-{
-    return &LOGGER_;
-}

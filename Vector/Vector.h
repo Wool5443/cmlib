@@ -75,26 +75,34 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
 }
 
 #define VecAdd(vec, value)                                                      \
-do                                                                              \
-{                                                                               \
+({                                                                              \
+    ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
     void* temp = VecRealloc((vec), sizeof(*vec));                               \
-    if (!temp) break;                                                           \
-    (vec) = temp;                                                               \
-    VHeader_* header = GET_HEADER(vec);                                         \
-    (vec)[header->size++] = value;                                              \
-} while (0)
+    if (temp)                                                                   \
+    {                                                                           \
+        vecAddError_ = EVERYTHING_FINE;                                         \
+        (vec) = temp;                                                           \
+        VHeader_* header = GET_HEADER(vec);                                     \
+        (vec)[header->size++] = value;                                          \
+    }                                                                           \
+    vecAddError_;                                                               \
+})
 
 #define VecExpand(vec, newCapacity)                                             \
-do                                                                              \
-{                                                                               \
+({                                                                              \
+    ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
     void* temp = VecCtor(sizeof(*(vec)), newCapacity);                          \
-    if (!temp) break;                                                           \
-    size_t vecSize = VecSize(vec);                                              \
-    if ((vec) && vecSize)                                                       \
-        memcpy(temp, vec, sizeof(*(vec)) * vecSize);                            \
-    VecDtor(vec);                                                               \
-    (vec) = temp;                                                               \
-} while (0)
+    if (temp)                                                                   \
+    {                                                                           \
+        vecExpandError_ = EVERYTHING_FINE;                                      \
+        size_t vecSize = VecSize(vec);                                          \
+        if ((vec) && vecSize)                                                   \
+            memcpy(temp, vec, sizeof(*(vec)) * vecSize);                        \
+        VecDtor(vec);                                                           \
+        (vec) = temp;                                                           \
+    }                                                                           \
+    vecExpandError_;                                                            \
+})
 
 INLINE void VecPop(void* vec)
 {

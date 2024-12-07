@@ -19,6 +19,8 @@ typedef struct
     FILE* file;
 } Logger;
 
+extern Logger LOGGER_;
+
 void LoggerInit(const char path[static 1]);
 
 void LoggerInitFile(FILE file[static 1]);
@@ -27,7 +29,10 @@ void LoggerInitConsole();
 
 void LoggerFinish();
 
-Logger* GetLogger();
+INLINE Logger* GetLogger()
+{
+    return &LOGGER_;
+}
 
 INLINE const char* GetTypeString(LogType type)
 {
