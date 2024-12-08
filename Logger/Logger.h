@@ -101,7 +101,7 @@ EXPAND_BUT_FIRST(__VA_ARGS__))
 #define LogError(...) LOG_(LOG_TYPE_ERROR, CREATE_ERROR(err) __VA_OPT__(,) __VA_ARGS__)
 
 #define DECLARE_RESULT(Type)                                            \
-typedef struct                                                          \
+typedef struct Result ## Type                                           \
 {                                                                       \
     Type value;                                                         \
     ErrorCode errorCode;                                                \

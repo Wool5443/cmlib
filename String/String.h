@@ -10,22 +10,42 @@
 
 #include "Logger.h"
 
-typedef struct
+/**
+ * @struct String
+ *
+ * @brief A heap-allocated string
+ */
+typedef struct String
 {
-    char*  data;
-    size_t size;
-    size_t capacity;
+    char*  data; ///< data
+    size_t size; ///< size
+    size_t capacity; ///< capacity
 } String;
 
-typedef struct
+/**
+ * @struct Str
+ *
+ * @brief A view on a string
+ */
+typedef struct Str
 {
-    const char* data;
-    size_t size;
+    const char* data; ///< data
+    size_t size; ///< size
 } Str;
 
 DECLARE_RESULT(String);
 DECLARE_RESULT(Str);
 
+/**
+ * @brief Str constructor knowing string size
+ *
+ * @param [in] string
+ * @param [in] size
+ *
+ * @return Str
+ *
+ * @see Str
+ */
 INLINE Str StrCtorSize(const char* string, size_t size)
 {
     if (!string) return (Str){};
@@ -38,11 +58,29 @@ INLINE Str StrCtorSize(const char* string, size_t size)
     };
 }
 
+/**
+ * @brief Str constructor
+ *
+ * @param [in] string
+ *
+ * @return Str
+ *
+ * @see Str
+ */
 INLINE Str StrCtor(const char* string)
 {
     return StrCtorSize(string, strlen(string));
 }
 
+/**
+ * @brief Str constructor from String
+ *
+ * @param [in] string
+ *
+ * @return Str
+ *
+ * @see Str
+ */
 INLINE Str StrCtorFromString(const String string)
 {
     return (Str)
@@ -52,6 +90,16 @@ INLINE Str StrCtorFromString(const String string)
     };
 }
 
+/**
+ * @brief String constructor with sufficient capacity
+ *
+ * @param [in] capacity
+ *
+ * @return ResultString
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ResultString StringCtorCapacity(size_t capacity)
 {
     ERROR_CHECKING();
@@ -78,6 +126,16 @@ INLINE ResultString StringCtorCapacity(size_t capacity)
     );
 }
 
+/**
+ * @brief String constructor from Str
+ *
+ * @param [in] string
+ *
+ * @return ResultString
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ResultString StringCtorFromStr(Str string)
 {
     if (!string.data) return (ResultString){};
@@ -95,18 +153,49 @@ INLINE ResultString StringCtorFromStr(Str string)
     return stringRes;
 }
 
+/**
+ * @brief String constructor from c-style string
+ *
+ * @param [in] string
+ *
+ * @return ResultString
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ResultString StringCtor(const char* string)
 {
     return StringCtorFromStr(StrCtor(string));
 }
 
+/**
+ * @brief String destructor
+ *
+ * Safe to call twice or on a NULL
+ *
+ * @param [in, out] string
+ *
+ * @see String
+ */
 INLINE void StringDtor(String* string)
 {
     if (!string) return;
 
     free(string->data);
+
+    string->data = NULL;
 }
 
+/**
+ * @brief Copies a string
+ *
+ * @param [in] string
+ *
+ * @return ResultString
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ResultString StringCopy(const String string)
 {
     ResultString stringRes = StringCtorFromStr(StrCtorFromString(string));
@@ -114,6 +203,20 @@ INLINE ResultString StringCopy(const String string)
     return stringRes;
 }
 
+
+/**
+ * @brief Reallocs a String to new capacity
+ *
+ * Unsafe to realloc NULL
+ *
+ * @param [in, out] this
+ * @param [in] newCapacity
+ *
+ * @return ErrorCode
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
 {
     ERROR_CHECKING();
@@ -144,6 +247,20 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
     return err;
 }
 
+/**
+ * @brief Appends a Str string to this
+ *
+ * Unsafe to append to NULL
+ *
+ * @param [in, out] this
+ * @param [in] string
+ *
+ * @return ErrorCode
+ *
+ * @see String
+ * @see Str
+ * @see ErrorCode
+ */
 INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 {
     ERROR_CHECKING();
@@ -168,23 +285,80 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
     return err;
 }
 
+/**
+ * @brief Appends a c-style string string to this
+ *
+ * Unsafe to append to NULL
+ *
+ * @param [in, out] this
+ * @param [in] string
+ *
+ * @return ErrorCode
+ *
+ * @see String
+ * @see Str
+ * @see ErrorCode
+ */
 INLINE ErrorCode StringAppend(String this[static 1], const char* string)
 {
     if (!string) return EVERYTHING_FINE;
     return StringAppendStr(this, StrCtor(string));
 }
 
+/**
+ * @brief Appends a String string to this
+ *
+ * Unsafe to append to NULL
+ *
+ * @param [in, out] this
+ * @param [in] string
+ *
+ * @return ErrorCode
+ *
+ * @see String
+ * @see Str
+ * @see ErrorCode
+ */
 INLINE ErrorCode StringAppendString(String this[static 1], const String string)
 {
     return StringAppendStr(this, StrCtorFromString(string));
 }
 
+/**
+ * @brief Appends a char to this
+ *
+ * Unsafe to append to NULL
+ *
+ * @param [in, out] this
+ * @param [in] string
+ *
+ * @return ErrorCode
+ *
+ * @see String
+ * @see Str
+ * @see ErrorCode
+ */
 INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
 {
     char chstr[] = { ch, '\0'};
     return StringAppendStr(this, (Str){ chstr, 1 });
 }
 
+/**
+ * @brief Slices a String
+ *
+ * Unsafe to append to NULL
+ *
+ * @param [in] this
+ * @param [in] startIdx
+ * @param [in] endIdx
+ *
+ * @return ResultStr
+ *
+ * @see String
+ * @see Str
+ * @see ErrorCode
+ */
 INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_t endIdx)
 {
     ERROR_CHECKING();
@@ -205,6 +379,16 @@ INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_
     );
 }
 
+/**
+ * @brief Reads file's contents to a String
+ *
+ * @param [in] path
+ *
+ * @return ResultString
+ *
+ * @see String
+ * @see ErrorCode
+ */
 INLINE ResultString StringReadFile(const char path[static 1])
 {
     ERROR_CHECKING();
