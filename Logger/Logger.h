@@ -71,7 +71,7 @@ INLINE void Log(LogType type, Error error, const char* format, ...)
 
     SetConsoleColor(logFile, GetTypeColor(type));
 
-    fprintf(logFile, "[%s]", GetTypeString(type));
+    fprintf(logFile, "[%s] ", GetTypeString(type));
 
     ErrorPrint(error, logFile);
 

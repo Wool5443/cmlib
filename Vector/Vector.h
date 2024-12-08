@@ -49,6 +49,14 @@ INLINE size_t VecSize(void* vec)
     return header->size;
 }
 
+INLINE size_t VecCapacity(void* vec)
+{
+    if (!vec) return 0;
+
+    VHeader_* header = GET_HEADER(vec);
+    return header->capacity;
+}
+
 INLINE void* VecRealloc(void* vec, size_t elemSize)
 {
     if (!vec)
@@ -87,6 +95,17 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     vecAddError_;                                                               \
 })
 
+#define VecPop(vec)                                                             \
+({                                                                              \
+    __typeof__(*vec) ret = {};                                                  \
+    if (vec)                                                                    \
+    {                                                                           \
+        VHeader_* header = GET_HEADER(vec);                                     \
+        ret = (vec)[--header->size];                                            \
+    }                                                                           \
+    ret;                                                                        \
+})
+
 #define VecExpand(vec, newCapacity)                                             \
 ({                                                                              \
     ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
@@ -102,13 +121,5 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     }                                                                           \
     vecExpandError_;                                                            \
 })
-
-INLINE void VecPop(void* vec)
-{
-    if (!vec) return;
-
-    VHeader_* header = GET_HEADER(vec);
-    header->size--;
-}
 
 #endif

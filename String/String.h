@@ -1,10 +1,12 @@
 #ifndef STRING_H_
 #define STRING_H_
 
-#include <stddef.h>
-#include <string.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #include "Logger.h"
 
@@ -198,9 +200,70 @@ INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_
     }
 
     return ResultStrCtor(
-        (Str){ .data = this->data +startIdx, .size = endIdx - startIdx },
+        (Str){ .data = this->data + startIdx, .size = endIdx - startIdx },
         err
     );
+}
+
+INLINE ResultString StringReadFile(const char path[static 1])
+{
+    ERROR_CHECKING();
+
+    assert(path);
+
+    FILE* file = NULL;
+    String string = {};
+
+    file = fopen(path, "r");
+
+    if (!file)
+    {
+        int ern = errno;
+        err = ERROR_LINUX;
+        LogError("Failed to open file %s: %s", path, strerror(ern));
+        ERROR_LEAVE();
+    }
+
+    struct stat st = {};
+    if (fstat(fileno(file), &st) == -1)
+    {
+        int ern = errno;
+        err = ERROR_LINUX;
+        LogError("fstat error: %s", strerror(ern));
+        ERROR_LEAVE();
+    }
+
+    size_t fileSize = st.st_size;
+
+    ResultString stringRes = StringCtorCapacity(fileSize + 1);
+    if ((err = stringRes.errorCode))
+    {
+        ERROR_LEAVE();
+    }
+
+    string = stringRes.value;
+
+    if (fread(string.data, 1, fileSize, file) != fileSize)
+    {
+        int ern = errno;
+        err = ERROR_LINUX;
+        LogError("Failed to read file: %s", strerror(ern));
+        ERROR_LEAVE();
+    }
+
+    string.size = fileSize;
+
+    return (ResultString)
+    {
+        string,
+        EVERYTHING_FINE,
+    };
+
+ERROR_CASE
+    if (file) fclose(file);
+    StringDtor(&string);
+
+    return (ResultString){ {}, err };
 }
 
 #endif // STRING_H_
