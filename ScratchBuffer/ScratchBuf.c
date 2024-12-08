@@ -11,7 +11,12 @@ do                                                                  \
     }                                                               \
 } while (0)
 
-static String scratchString;
+static String scratchString = {};
+
+String* GetScratchBuffer_UNSAFE_()
+{
+    return &scratchString;
+}
 
 ErrorCode ScratchInit(size_t capacity)
 {
@@ -56,7 +61,7 @@ Str ScratchGetStr()
     return StrCtorFromString(scratchString);
 }
 
-ResultString ScratchGetString()
+ResultString ScratchCopyString()
 {
     return StringCopy(scratchString);
 }
@@ -85,11 +90,5 @@ ErrorCode ScratchAppendStr(Str string)
 {
     CHECK_SCRATCH_STATE();
 
-    ERROR_CHECKING();
-
-    if (!string.data) return err;
-
-    err = StringAppendStr(&scratchString, string);
-
-    return err;
+    return StringAppendStr(&scratchString, string);
 }
