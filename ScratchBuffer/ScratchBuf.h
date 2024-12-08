@@ -1,5 +1,5 @@
-#ifndef SCRATCH_BUF_H
-#define SCRATCH_BUF_H
+#ifndef CMLIB_SCRATCH_BUF_H_
+#define CMLIB_SCRATCH_BUF_H_
 
 #include "String.h"
 
@@ -113,4 +113,4 @@ ErrorCode ScratchAppendString(const String string);
  */
 ErrorCode ScratchAppendChar(char c);
 
-#endif
+#endif // CMLIB_SCRATCH_BUF_H_

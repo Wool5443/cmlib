@@ -1,5 +1,5 @@
-#ifndef VECTOR_H_
-#define VECTOR_H_
+#ifndef CMLIB_VECTOR_H_
+#define CMLIB_VECTOR_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -200,4 +200,4 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     vecExpandError_;                                                            \
 })
 
-#endif
+#endif // CMLIB_VECTOR_H_
