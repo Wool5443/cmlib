@@ -1,5 +1,5 @@
-#ifndef CMLIB_LOGGER_CONSOLE_COLOR_H
-#define CMLIB_LOGGER_CONSOLE_COLOR_H
+#ifndef CMLIB_LOGGER_CONSOLE_COLOR_H_
+#define CMLIB_LOGGER_CONSOLE_COLOR_H_
 
 #include <assert.h>
 #include <stdio.h>
@@ -35,4 +35,4 @@ INLINE void SetConsoleColor(FILE* file, ConsoleColor color)
         fprintf(file, "\033[0;%dm", (int)color);
 }
 
-#endif // CMLIB_LOGGER_CONSOLE_COLOR_H
+#endif // CMLIB_LOGGER_CONSOLE_COLOR_H_

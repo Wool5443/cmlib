@@ -1,5 +1,5 @@
-#ifndef CMLIB_ERROR_STRUCT_H
-#define CMLIB_ERROR_STRUCT_H
+#ifndef CMLIB_ERROR_H_
+#define CMLIB_ERROR_H_
 
 #include <assert.h>
 #include <stddef.h>
@@ -82,4 +82,4 @@ INLINE void ErrorPrint(Error error, FILE* file)
            );
 }
 
-#endif // CMLIB_ERROR_STRUCT_H
+#endif // CMLIB_ERROR_H_

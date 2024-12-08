@@ -1,5 +1,5 @@
-#ifndef STRING_H_
-#define STRING_H_
+#ifndef CMLIB_STRING_H_
+#define CMLIB_STRING_H_
 
 #include <assert.h>
 #include <stddef.h>
@@ -449,4 +449,4 @@ ERROR_CASE
     return (ResultString){ {}, err };
 }
 
-#endif // STRING_H_
+#endif // CMLIB_STRING_H_

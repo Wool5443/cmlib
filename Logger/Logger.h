@@ -1,5 +1,5 @@
-#ifndef CMLIB_LOGGER_STRUCT_H
-#define CMLIB_LOGGER_STRUCT_H
+#ifndef CMLIB_LOGGER_H_
+#define CMLIB_LOGGER_H_
 
 #include <errno.h>
 #include <stdio.h>
@@ -155,4 +155,4 @@ do                                                                      \
     ERROR_LEAVE();                                                      \
 } while (0)
 
-#endif // CMLIB_LOGGER_STRUCT_H
+#endif // CMLIB_LOGGER_H_
