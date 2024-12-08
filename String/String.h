@@ -228,7 +228,7 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
 
     if (this->capacity >= newCapacity) return EVERYTHING_FINE;
 
-    newData = realloc(this->data, newCapacity);
+    newData = realloc(this->data, newCapacity + 1);
 
     if (!newData)
     {
