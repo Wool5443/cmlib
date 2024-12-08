@@ -2,13 +2,14 @@
 #define STRING_H_
 
 #include <assert.h>
-#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 
 #include "Logger.h"
+
+static const double STRING_GROW_RATE = 3.0 / 2.0;
 
 /**
  * @struct String
@@ -110,17 +111,16 @@ INLINE ResultString StringCtorCapacity(size_t capacity)
 
     if (!data)
     {
-        err = ERROR_NO_MEMORY;
-        LogError();
-        ResultStringCtor((String){}, err);
+        HANDLE_LINUX_ERROR("Failed to create string with capacity %zu: %s");
     }
 
+ERROR_CASE
     return ResultStringCtor(
         (String)
         {
             .data = data,
             .size = 0,
-            .capacity = capacity,
+            .capacity = data ? capacity : 0,
         },
         err
     );
@@ -180,9 +180,7 @@ INLINE ResultString StringCtor(const char* string)
 INLINE void StringDtor(String* string)
 {
     if (!string) return;
-
     free(string->data);
-
     string->data = NULL;
 }
 
@@ -198,9 +196,7 @@ INLINE void StringDtor(String* string)
  */
 INLINE ResultString StringCopy(const String string)
 {
-    ResultString stringRes = StringCtorFromStr(StrCtorFromString(string));
-
-    return stringRes;
+    return StringCtorFromStr(StrCtorFromString(string));
 }
 
 
@@ -232,9 +228,7 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
 
     if (!newData)
     {
-        err = ERROR_NO_MEMORY;
-        LogError();
-        return err;
+        HANDLE_LINUX_ERROR("Failed to realloc string: %s");
     }
 
     *this = (String)
@@ -244,6 +238,7 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
         .capacity = newCapacity
     };
 
+ERROR_CASE
     return err;
 }
 
@@ -274,7 +269,7 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 
     if (newSize > this->capacity)
     {
-        if ((err = StringRealloc(this, this->capacity * 3 / 2)))
+        if ((err = StringRealloc(this, this->capacity * STRING_GROW_RATE)))
             return err;
     }
 
@@ -282,7 +277,7 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 
     this->size = newSize;
 
-    return err;
+    return EVERYTHING_FINE;
 }
 
 /**
@@ -340,8 +335,18 @@ INLINE ErrorCode StringAppendString(String this[static 1], const String string)
  */
 INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
 {
-    char chstr[] = { ch, '\0'};
-    return StringAppendStr(this, (Str){ chstr, 1 });
+    ERROR_CHECKING();
+
+    if (this->size == this->capacity)
+    {
+        if ((err = StringRealloc(this, this->capacity * STRING_GROW_RATE)))
+        {
+            return err;
+        }
+    }
+    this->data[this->size++] = ch;
+
+    return EVERYTHING_FINE;
 }
 
 /**
@@ -369,7 +374,9 @@ INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_
         || endIdx < startIdx)
     {
         err = ERROR_BAD_ARGS;
-        LogError();
+        LogError("Failed to create slice:\n"
+                 "startIdx: %zu, endIdx: %zu",
+                 startIdx, endIdx);
         return ResultStrCtor((Str){}, err);
     }
 
@@ -402,19 +409,13 @@ INLINE ResultString StringReadFile(const char path[static 1])
 
     if (!file)
     {
-        int ern = errno;
-        err = ERROR_LINUX;
-        LogError("Failed to open file %s: %s", path, strerror(ern));
-        ERROR_LEAVE();
+        HANDLE_LINUX_ERROR("Failed to open file %s: %s", path);
     }
 
     struct stat st = {};
     if (fstat(fileno(file), &st) == -1)
     {
-        int ern = errno;
-        err = ERROR_LINUX;
-        LogError("fstat error: %s", strerror(ern));
-        ERROR_LEAVE();
+        HANDLE_LINUX_ERROR("fstat error: %s");
     }
 
     size_t fileSize = st.st_size;
@@ -429,11 +430,9 @@ INLINE ResultString StringReadFile(const char path[static 1])
 
     if (fread(string.data, 1, fileSize, file) != fileSize)
     {
-        int ern = errno;
-        err = ERROR_LINUX;
-        LogError("Failed to read file: %s", strerror(ern));
-        ERROR_LEAVE();
+        HANDLE_LINUX_ERROR("Failed to read file: %s");
     }
+    fclose(file);
 
     string.size = fileSize;
 
