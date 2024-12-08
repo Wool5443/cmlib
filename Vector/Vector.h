@@ -8,14 +8,30 @@
 
 #define DEFAULT_CAPACITY 8
 
-typedef struct
+/**
+ * @struct VHeader_
+ *
+ * @brief A header for working with vectors
+ */
+typedef struct VHeader_
 {
-    size_t capacity;
-    size_t size;
+    size_t size; ///<vector size
+    size_t capacity; ///< vector capacity
 } VHeader_;
 
-#define GET_HEADER(ptr) (&((VHeader_*)(ptr))[-1])
+/**
+ * @brief Get pointer to vectors header
+ */
+#define GET_HEADER(vec) (&((VHeader_*)(vec))[-1])
 
+/**
+ * @brief Creates a Vector
+ *
+ * @param [in] elemSize
+ * @param [in] capacity
+ *
+ * @return void* vector
+ */
 INLINE void* VecCtor(size_t elemSize, size_t capacity)
 {
     ERROR_CHECKING();
@@ -36,11 +52,23 @@ INLINE void* VecCtor(size_t elemSize, size_t capacity)
     return &header[1];
 }
 
+/**
+ * @brief Destroys a vector
+ *
+ * @param [in] vec
+ */
 INLINE void VecDtor(void* vec)
 {
     if (vec) free(GET_HEADER(vec));
 }
 
+/**
+ * @brief Get vector size
+ *
+ * @param [in] vec
+ *
+ * @return size_t size
+ */
 INLINE size_t VecSize(void* vec)
 {
     if (!vec) return 0;
@@ -49,6 +77,13 @@ INLINE size_t VecSize(void* vec)
     return header->size;
 }
 
+/**
+ * @brief Get vector capacity
+ *
+ * @param [in] vec
+ *
+ * @return size_t size
+ */
 INLINE size_t VecCapacity(void* vec)
 {
     if (!vec) return 0;
@@ -57,6 +92,16 @@ INLINE size_t VecCapacity(void* vec)
     return header->capacity;
 }
 
+/**
+ * @brief Reallocate a vector if it is full
+ *
+ * Safe to realloc NULL
+ *
+ * @param [in] vec
+ * @param [in] elemSize
+ *
+ * @return void* newVec if reallocated, otherwise vec
+ */
 INLINE void* VecRealloc(void* vec, size_t elemSize)
 {
     if (!vec)
@@ -81,6 +126,18 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     return newVec;
 }
 
+/**
+ * @brief Add value at the end of vec
+ *
+ * Safe to VecAdd(NULL, ...)
+ *
+ * @param [out] vec
+ * @param [in] value
+ *
+ * @return ErrorCode
+ *
+ * @see ErrorCode
+ */
 #define VecAdd(vec, value)                                                      \
 ({                                                                              \
     ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
@@ -95,6 +152,16 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     vecAddError_;                                                               \
 })
 
+/**
+ * @brief Pop a value from the end of the vec
+ *
+ * Safe to VecPop(NULL, ...).
+ * If empty return (typeof(*vec)){}
+ *
+ * @param [in] vec
+ *
+ * @return value
+ */
 #define VecPop(vec)                                                             \
 ({                                                                              \
     __typeof__(*vec) ret = {};                                                  \
@@ -106,6 +173,17 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
     ret;                                                                        \
 })
 
+/**
+ * @brief Expand vector capacity
+ *
+ * Safe to VecExpand(NULL, ...).
+ *
+ * @param [out] vec
+ *
+ * @return ErrorCode
+ *
+ * @see ErrorCode
+ */
 #define VecExpand(vec, newCapacity)                                             \
 ({                                                                              \
     ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
