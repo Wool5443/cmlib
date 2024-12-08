@@ -66,6 +66,17 @@ ResultString ScratchCopyString()
     return StringCopy(scratchString);
 }
 
+void ScratchPop(size_t count)
+{
+    CHECK_SCRATCH_STATE();
+
+    if (count > scratchString.size) return;
+
+    scratchString.size -= count;
+
+    memset(scratchString.data + scratchString.size - count, '\0', count);
+}
+
 void ScratchClean()
 {
     CHECK_SCRATCH_STATE();
@@ -75,15 +86,10 @@ void ScratchClean()
     scratchString.size = 0;
 }
 
-void ScratchPop(size_t count)
+ErrorCode ScratchAppend(const char* string)
 {
     CHECK_SCRATCH_STATE();
-
-    if (count > scratchString.size) return;
-
-    scratchString.size -= count;
-
-    memset(scratchString.data + scratchString.size - 1, '\0', count);
+    return StringAppend(&scratchString, string);
 }
 
 ErrorCode ScratchAppendStr(Str string)
@@ -91,4 +97,16 @@ ErrorCode ScratchAppendStr(Str string)
     CHECK_SCRATCH_STATE();
 
     return StringAppendStr(&scratchString, string);
+}
+
+ErrorCode ScratchAppendString(const String string)
+{
+    CHECK_SCRATCH_STATE();
+    return StringAppendString(&scratchString, string);
+}
+
+ErrorCode ScratchAppendChar(char c)
+{
+    CHECK_SCRATCH_STATE();
+    return StringAppendChar(&scratchString, c);
 }

@@ -22,11 +22,6 @@ ErrorCode ScratchInit(size_t capacity);
 void ScratchDtor();
 
 /**
- * @brief Cleans the buffer
- */
-void ScratchClean();
-
-/**
  * @brief Get ScratchBuffer size
  *
  * @return size
@@ -60,6 +55,29 @@ Str ScratchGetStr();
 ResultString ScratchCopyString();
 
 /**
+ * @brief Sets count characters to '\0' from ScratchBuffer
+ *
+ * @param [in] count
+ */
+void ScratchPop(size_t count);
+
+/**
+ * @brief Cleans the buffer
+ */
+void ScratchClean();
+
+/**
+ * @brief Append c-style string to ScratchBuffer
+ *
+ * @param [in] c-style string
+ *
+ * @return ErrorCode
+ *
+ * @see ErrorCode
+ */
+ErrorCode ScratchAppend(const char* string);
+
+/**
  * @brief Append Str to ScratchBuffer
  *
  * @param [in] slice
@@ -72,24 +90,6 @@ ResultString ScratchCopyString();
 ErrorCode ScratchAppendStr(Str string);
 
 /**
- * @brief Append char to ScratchBuffer
- *
- * @param [in] char c
- *
- * @return ErrorCode
- *
- * @see Str
- * @see ErrorCode
- */
-INLINE ErrorCode ScratchAppendChar(char c)
-{
-    char chstr[] = { c, '\0'};
-    Str chslice = StrCtor(chstr);
-
-    return ScratchAppendStr(chslice);
-}
-
-/**
  * @brief Append String to ScratchBuffer
  *
  * @param [in] string
@@ -99,30 +99,18 @@ INLINE ErrorCode ScratchAppendChar(char c)
  * @see String
  * @see ErrorCode
  */
-INLINE ErrorCode ScratchAppendString(const String string)
-{
-    return ScratchAppendStr(StrCtorFromString(string));
-}
+ErrorCode ScratchAppendString(const String string);
 
 /**
- * @brief Append c-style string to ScratchBuffer
+ * @brief Append char to ScratchBuffer
  *
- * @param [in] c-style string
+ * @param [in] char c
  *
  * @return ErrorCode
  *
+ * @see Str
  * @see ErrorCode
  */
-INLINE ErrorCode ScratchAppend(const char* string)
-{
-    return ScratchAppendStr(StrCtor(string));
-}
-
-/**
- * @brief Sets count characters to '\0' from ScratchBuffer
- *
- * @param [in] count
- */
-void ScratchPop(size_t count);
+ErrorCode ScratchAppendChar(char c);
 
 #endif
