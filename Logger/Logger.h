@@ -88,29 +88,17 @@ INLINE void Log(LogType type, Error error, const char* format, ...)
     SetConsoleColor(logFile, CONSOLE_COLOR_WHITE);
 }
 
-#define LogInfo(...)                                                    \
+#define LOG_(type, error, ...)                                          \
 Log(                                                                    \
-LOG_TYPE_INFO,                                                          \
-CREATE_ERROR(EVERYTHING_FINE),                                          \
+type,                                                                   \
+error,                                                                  \
 SWITCH_EMPTY(NULL, FIRST(__VA_ARGS__), __VA_ARGS__)                     \
 VA_OPT_BUT_FIRST(__VA_ARGS__)                                           \
 EXPAND_BUT_FIRST(__VA_ARGS__))
 
-#define LogDebug(...)                                                   \
-Log(                                                                    \
-LOG_TYPE_DEBUG,                                                         \
-CREATE_ERROR(EVERYTHING_FINE),                                          \
-SWITCH_EMPTY(NULL, FIRST(__VA_ARGS__), __VA_ARGS__)                     \
-VA_OPT_BUT_FIRST(__VA_ARGS__)                                           \
-EXPAND_BUT_FIRST(__VA_ARGS__))
-
-#define LogError(...)                                                   \
-Log(                                                                    \
-LOG_TYPE_ERROR,                                                         \
-CREATE_ERROR(err),                                                      \
-SWITCH_EMPTY(NULL, FIRST(__VA_ARGS__), __VA_ARGS__)                     \
-VA_OPT_BUT_FIRST(__VA_ARGS__)                                           \
-EXPAND_BUT_FIRST(__VA_ARGS__))
+#define LogInfo(...) LOG_(LOG_TYPE_INFO, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
+#define LogDebug(...) LOG_(LOG_TYPE_DEBUG, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
+#define LogError(...) LOG_(LOG_TYPE_ERROR, CREATE_ERROR(err) __VA_OPT__(,) __VA_ARGS__)
 
 #define DECLARE_RESULT(Type)                                            \
 typedef struct                                                          \
@@ -131,9 +119,9 @@ INLINE Result ## Type Result ## Type ## Ctor                            \
     ErrorCode err = EVERYTHING_FINE
 #endif
 
-#define ERROR_CASE _ERROR_CASE_:;
+#define ERROR_CASE ERROR_CASE_:;
 
-#define ERROR_LEAVE() goto _ERROR_CASE_
+#define ERROR_LEAVE() goto ERROR_CASE_
 
 #define GET_FILE_NAME() __FILE__
 #define GET_LINE()      __LINE__
@@ -147,14 +135,23 @@ INLINE Result ## Type Result ## Type ## Ctor                            \
 #define CREATE_ERROR(errorCode) \
 ErrorCtor(errorCode, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
 
-#define CHECK_ERROR(expr)                           \
-do                                                  \
-{                                                   \
-    if ((err = (expr)))                             \
-    {                                               \
-        LogError();                                 \
-        ERROR_LEAVE();                              \
-    }                                               \
+#define CHECK_ERROR(expr, ...)                                          \
+do                                                                      \
+{                                                                       \
+    if ((err = (expr)))                                                 \
+    {                                                                   \
+        LogError(__VA_ARGS__);                                          \
+        ERROR_LEAVE();                                                  \
+    }                                                                   \
+} while (0)
+
+#define HANDLE_LINUX_ERROR(...)                                         \
+do                                                                      \
+{                                                                       \
+    int ern = errno;                                                    \
+    err = ERROR_LINUX;                                                  \
+    LogError(__VA_ARGS__, strerror(ern));                               \
+    ERROR_LEAVE();                                                      \
 } while (0)
 
 #endif // CMLIB_LOGGER_STRUCT_H
