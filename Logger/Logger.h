@@ -1,6 +1,7 @@
 #ifndef CMLIB_LOGGER_STRUCT_H
 #define CMLIB_LOGGER_STRUCT_H
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdarg.h>
 
