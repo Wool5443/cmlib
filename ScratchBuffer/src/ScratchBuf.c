@@ -77,13 +77,11 @@ void ScratchPop(size_t count)
     memset(scratchString.data + scratchString.size - count, '\0', count);
 }
 
-void ScratchClean()
+void ScratchClear()
 {
     CHECK_SCRATCH_STATE();
 
-    memset(scratchString.data, '\0', scratchString.capacity);
-
-    scratchString.size = 0;
+    StringClear(&scratchString);
 }
 
 ErrorCode ScratchAppend(const char* string)

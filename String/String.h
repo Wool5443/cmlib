@@ -242,6 +242,12 @@ ERROR_CASE
     return err;
 }
 
+INLINE void StringClear(String string[static 1])
+{
+    if (string->data) string->data[0] = '\0';
+    string->size = 0;
+}
+
 /**
  * @brief Appends a Str string to this
  *
@@ -276,6 +282,7 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
     memcpy(this->data + this->size, string.data, string.size);
 
     this->size = newSize;
+    this->data[newSize] = '\0';
 
     return EVERYTHING_FINE;
 }
@@ -345,6 +352,7 @@ INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
         }
     }
     this->data[this->size++] = ch;
+    this->data[this->size] = '\0';
 
     return EVERYTHING_FINE;
 }

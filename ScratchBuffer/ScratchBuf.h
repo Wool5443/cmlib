@@ -64,7 +64,7 @@ void ScratchPop(size_t count);
 /**
  * @brief Cleans the buffer
  */
-void ScratchClean();
+void ScratchClear();
 
 /**
  * @brief Append c-style string to ScratchBuffer
