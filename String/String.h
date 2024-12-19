@@ -111,7 +111,7 @@ INLINE ResultString StringCtorCapacity(size_t capacity)
 
     if (!data)
     {
-        HANDLE_LINUX_ERROR("Failed to create string with capacity %zu: %s");
+        HANDLE_ERRNO_ERROR("Failed to create string with capacity %zu: %s");
     }
 
 ERROR_CASE
@@ -228,7 +228,7 @@ INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
 
     if (!newData)
     {
-        HANDLE_LINUX_ERROR("Failed to realloc string: %s");
+        HANDLE_ERRNO_ERROR("Failed to realloc string: %s");
     }
 
     *this = (String)
@@ -275,7 +275,7 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
 
     if (newSize > this->capacity)
     {
-        if ((err = StringRealloc(this, this->capacity * STRING_GROW_RATE)))
+        if ((err = StringRealloc(this, newSize)))
             return err;
     }
 
@@ -417,13 +417,13 @@ INLINE ResultString StringReadFile(const char path[static 1])
 
     if (!file)
     {
-        HANDLE_LINUX_ERROR("Failed to open file %s: %s", path);
+        HANDLE_ERRNO_ERROR("Failed to open file %s: %s", path);
     }
 
     struct stat st = {};
     if (fstat(fileno(file), &st) == -1)
     {
-        HANDLE_LINUX_ERROR("fstat error: %s");
+        HANDLE_ERRNO_ERROR("fstat error: %s");
     }
 
     size_t fileSize = st.st_size;
@@ -438,7 +438,7 @@ INLINE ResultString StringReadFile(const char path[static 1])
 
     if (fread(string.data, 1, fileSize, file) != fileSize)
     {
-        HANDLE_LINUX_ERROR("Failed to read file: %s");
+        HANDLE_ERRNO_ERROR("Failed to read file: %s");
     }
     fclose(file);
 
