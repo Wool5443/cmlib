@@ -146,7 +146,7 @@ do                                                                      \
     }                                                                   \
 } while (0)
 
-#define HANDLE_LINUX_ERROR(...)                                         \
+#define HANDLE_ERRNO_ERROR(...)                                         \
 do                                                                      \
 {                                                                       \
     int ern = errno;                                                    \
