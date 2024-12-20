@@ -128,12 +128,8 @@ INLINE Result ## Type Result ## Type ## Ctor                            \
     return (Result ## Type){ .value = value, .errorCode = errorCode };  \
 }
 
-#if defined(__GNUC__) || defined(__clang__)
 #define ERROR_CHECKING()                                                \
-    ErrorCode err __attribute__((unused)) = EVERYTHING_FINE
-#else
-    ErrorCode err = EVERYTHING_FINE
-#endif
+    UNUSED ErrorCode err = EVERYTHING_FINE
 
 #define ERROR_CASE ERROR_CASE_:;
 
@@ -164,7 +160,7 @@ do                                                                      \
 #define HANDLE_ERRNO_ERROR(error, ...)                                  \
 do                                                                      \
 {                                                                       \
-    int ern = errno;                                                    \
+    UNUSED int ern = errno;                                             \
     err = error;                                                        \
     LogError(__VA_ARGS__, strerror(ern));                               \
     ERROR_LEAVE();                                                      \

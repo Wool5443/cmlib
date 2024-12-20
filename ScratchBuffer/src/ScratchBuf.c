@@ -5,7 +5,7 @@ do                                                                  \
 {                                                                   \
     if (!scratchString.data)                                        \
     {                                                               \
-        ErrorCode err = ERROR_UNINITIALIZED;                        \
+        UNUSED ErrorCode err = ERROR_UNINITIALIZED;                 \
         LogError("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");  \
         abort();                                                    \
     }                                                               \
