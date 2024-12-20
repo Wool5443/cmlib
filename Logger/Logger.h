@@ -1,12 +1,12 @@
 #ifndef CMLIB_LOGGER_H_
 #define CMLIB_LOGGER_H_
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <errno.h> // IWYU pragma: keep
+#include <stdio.h> // IWYU pragma: keep
+#include <stdarg.h> // IWYU pragma: keep
 
-#include "include/ConsoleColor.h"
-#include "Error.h"
+#include "include/ConsoleColor.h" // IWYU pragma: keep
+#include "Error.h" // IWYU pragma: keep
 
 typedef enum
 {
@@ -20,9 +20,11 @@ typedef struct
     FILE* file;
 } Logger;
 
+#ifndef DISABLE_LOGGING
+
 extern Logger LOGGER_;
 
-void LoggerInit(const char path[static 1]);
+void LoggerInitPath(const char path[static 1]);
 
 void LoggerInitFile(FILE file[static 1]);
 
@@ -35,7 +37,7 @@ INLINE Logger* GetLogger()
     return &LOGGER_;
 }
 
-INLINE const char* GetTypeString(LogType type)
+INLINE const char* getTypeString_(LogType type)
 {
     switch (type)
     {
@@ -50,7 +52,7 @@ INLINE const char* GetTypeString(LogType type)
     }
 }
 
-INLINE ConsoleColor GetTypeColor(LogType type)
+INLINE ConsoleColor getTypeColor_(LogType type)
 {
     switch (type)
     {
@@ -65,14 +67,14 @@ INLINE ConsoleColor GetTypeColor(LogType type)
     }
 }
 
-INLINE void Log(LogType type, Error error, const char* format, ...)
+INLINE void log_(LogType type, Error error, const char* format, ...)
 {
     FILE* logFile = GetLogger()->file;
     if (!logFile) return;
 
-    SetConsoleColor(logFile, GetTypeColor(type));
+    SetConsoleColor(logFile, getTypeColor_(type));
 
-    fprintf(logFile, "[%s] ", GetTypeString(type));
+    fprintf(logFile, "[%s] ", getTypeString_(type));
 
     ErrorPrint(error, logFile);
 
@@ -90,7 +92,7 @@ INLINE void Log(LogType type, Error error, const char* format, ...)
 }
 
 #define LOG_(type, error, ...)                                          \
-Log(                                                                    \
+log_(                                                                   \
 type,                                                                   \
 error,                                                                  \
 SWITCH_EMPTY(NULL, FIRST(__VA_ARGS__), __VA_ARGS__)                     \
@@ -100,6 +102,19 @@ EXPAND_BUT_FIRST(__VA_ARGS__))
 #define LogInfo(...) LOG_(LOG_TYPE_INFO, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
 #define LogDebug(...) LOG_(LOG_TYPE_DEBUG, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
 #define LogError(...) LOG_(LOG_TYPE_ERROR, CREATE_ERROR(err) __VA_OPT__(,) __VA_ARGS__)
+
+#else
+
+#define LoggerInitPath(...)
+#define LoggerInitFile(...)
+#define LoggerInitConsole(...)
+#define LoggerFinish(...)
+
+#define LogInfo(...)
+#define LogDebug(...)
+#define LogError(...)
+
+#endif // #ifndef DISABLE_LOGGING
 
 #define DECLARE_RESULT(Type)                                            \
 typedef struct Result ## Type                                           \
@@ -146,11 +161,11 @@ do                                                                      \
     }                                                                   \
 } while (0)
 
-#define HANDLE_ERRNO_ERROR(...)                                         \
+#define HANDLE_ERRNO_ERROR(error, ...)                                  \
 do                                                                      \
 {                                                                       \
     int ern = errno;                                                    \
-    err = ERROR_LINUX;                                                  \
+    err = error;                                                        \
     LogError(__VA_ARGS__, strerror(ern));                               \
     ERROR_LEAVE();                                                      \
 } while (0)

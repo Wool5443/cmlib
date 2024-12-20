@@ -32,7 +32,7 @@ typedef struct VHeader_
  *
  * @return void* vector
  */
-INLINE void* VecCtor(size_t elemSize, size_t capacity)
+INLINE void* vecCtor_(size_t elemSize, size_t capacity)
 {
     ERROR_CHECKING();
     assert(elemSize);
@@ -42,14 +42,15 @@ INLINE void* VecCtor(size_t elemSize, size_t capacity)
     VHeader_* header = calloc(capacity * elemSize + sizeof(VHeader_), 1);
     if (!header)
     {
-        err = ERROR_NO_MEMORY;
-        LogError();
-        return NULL;
+        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
     }
 
     header->capacity = capacity;
 
     return &header[1];
+
+ ERROR_CASE
+    return NULL;
 }
 
 /**
@@ -100,12 +101,12 @@ INLINE size_t VecCapacity(void* vec)
  * @param [in] vec
  * @param [in] elemSize
  *
- * @return void* newVec if reallocated, otherwise vec
+ * @return void* vec or NULL on error
  */
-INLINE void* VecRealloc(void* vec, size_t elemSize)
+INLINE void* vecRealloc_(void* vec, size_t elemSize)
 {
     if (!vec)
-        return VecCtor(elemSize, DEFAULT_CAPACITY);
+        return vecCtor_(elemSize, DEFAULT_CAPACITY);
 
     VHeader_* header = GET_HEADER(vec);
 
@@ -114,8 +115,8 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
 
     size_t newCap = header->capacity * 3 / 2;
 
-    void* newVec = VecCtor(elemSize, newCap);
-    if (!newVec) return vec;
+    void* newVec = vecCtor_(elemSize, newCap);
+    if (!newVec) return NULL;
 
     memcpy(newVec, vec, elemSize * header->size);
 
@@ -141,7 +142,7 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
 #define VecAdd(vec, value)                                                      \
 ({                                                                              \
     ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
-    void* temp = VecRealloc((vec), sizeof(*vec));                               \
+    void* temp = vecRealloc_((vec), sizeof(*vec));                               \
     if (temp)                                                                   \
     {                                                                           \
         vecAddError_ = EVERYTHING_FINE;                                         \
@@ -187,7 +188,7 @@ INLINE void* VecRealloc(void* vec, size_t elemSize)
 #define VecExpand(vec, newCapacity)                                             \
 ({                                                                              \
     ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
-    void* temp = VecCtor(sizeof(*(vec)), newCapacity);                          \
+    void* temp = vecCtor_(sizeof(*(vec)), newCapacity);                          \
     if (temp)                                                                   \
     {                                                                           \
         vecExpandError_ = EVERYTHING_FINE;                                      \

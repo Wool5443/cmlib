@@ -3,7 +3,7 @@
 
 #include "String.h"
 
-String* GetScratchBuffer_UNSAFE_();
+String* getScratchBuffer_UNSAFE_();
 
 /**
  * @brief Initialize a ScatchBuffer with capacity
