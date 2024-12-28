@@ -28,7 +28,6 @@ INLINE ResultString RealPath(const char* path)
 
     if ((st.st_mode & S_IFMT) == S_IFDIR)
     {
-        printf("BEBRA\n");
         goodPath[size++] = '/';
     }
 
