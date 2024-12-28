@@ -2,10 +2,10 @@
 #define CMLIB_COMMON_H
 
 #if defined(__GNUC__) || defined(__clang__)
-    #define INLINE static __attribute__((unused))
+    #define INLINE inline __attribute__((unused))
     #define UNUSED [[maybe_unused]]
 #else
-    #define INLINE static inline
+    #define INLINE inline
     #define UNUSED
 #endif
 

@@ -9,8 +9,6 @@
 
 #include "Logger.h"
 
-static const double STRING_GROW_RATE = 3.0 / 2.0;
-
 /**
  * @struct String
  *
@@ -213,7 +211,7 @@ INLINE ResultString StringCopy(const String string)
  * @see String
  * @see ErrorCode
  */
-INLINE ErrorCode StringRealloc(String this[static 1], size_t newCapacity)
+INLINE ErrorCode StringRealloc(String* this, size_t newCapacity)
 {
     ERROR_CHECKING();
 
@@ -242,7 +240,7 @@ ERROR_CASE
     return err;
 }
 
-INLINE void StringClear(String string[static 1])
+INLINE void StringClear(String* string)
 {
     if (string->data) string->data[0] = '\0';
     string->size = 0;
@@ -262,7 +260,7 @@ INLINE void StringClear(String string[static 1])
  * @see Str
  * @see ErrorCode
  */
-INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
+INLINE ErrorCode StringAppendStr(String* this, Str string)
 {
     ERROR_CHECKING();
 
@@ -301,7 +299,7 @@ INLINE ErrorCode StringAppendStr(String this[static 1], Str string)
  * @see Str
  * @see ErrorCode
  */
-INLINE ErrorCode StringAppend(String this[static 1], const char* string)
+INLINE ErrorCode StringAppend(String* this, const char* string)
 {
     if (!string) return EVERYTHING_FINE;
     return StringAppendStr(this, StrCtor(string));
@@ -321,7 +319,7 @@ INLINE ErrorCode StringAppend(String this[static 1], const char* string)
  * @see Str
  * @see ErrorCode
  */
-INLINE ErrorCode StringAppendString(String this[static 1], const String string)
+INLINE ErrorCode StringAppendString(String* this, const String string)
 {
     return StringAppendStr(this, StrCtorFromString(string));
 }
@@ -340,9 +338,11 @@ INLINE ErrorCode StringAppendString(String this[static 1], const String string)
  * @see Str
  * @see ErrorCode
  */
-INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
+INLINE ErrorCode StringAppendChar(String* this, char ch)
 {
     ERROR_CHECKING();
+
+    static const double STRING_GROW_RATE = 3.0 / 2.0;
 
     if (this->size == this->capacity)
     {
@@ -372,7 +372,7 @@ INLINE ErrorCode StringAppendChar(String this[static 1], char ch)
  * @see Str
  * @see ErrorCode
  */
-INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_t endIdx)
+INLINE ResultStr StringSlice(const String* this, size_t startIdx, size_t endIdx)
 {
     ERROR_CHECKING();
 
@@ -404,7 +404,7 @@ INLINE ResultStr StringSlice(const String this[static 1], size_t startIdx, size_
  * @see String
  * @see ErrorCode
  */
-INLINE ResultString StringReadFile(const char path[static 1])
+INLINE ResultString StringReadFile(const char* path)
 {
     ERROR_CHECKING();
 

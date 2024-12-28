@@ -24,9 +24,9 @@ typedef struct
 
 extern Logger LOGGER_;
 
-void LoggerInitPath(const char path[static 1]);
+void LoggerInitPath(const char* path);
 
-void LoggerInitFile(FILE file[static 1]);
+void LoggerInitFile(FILE* file);
 
 void LoggerInitConsole();
 

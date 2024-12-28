@@ -16,7 +16,7 @@
 
 Logger LOGGER_ = {};
 
-void LoggerInitFile(FILE file[static 1])
+void LoggerInitFile(FILE* file)
 {
     assert(file);
 
@@ -25,7 +25,7 @@ void LoggerInitFile(FILE file[static 1])
     LOGGER_.file = file;
 }
 
-void LoggerInitPath(const char path[static 1])
+void LoggerInitPath(const char* path)
 {
     FILE* file = fopen(path, "w");
 
