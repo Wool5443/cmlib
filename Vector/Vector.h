@@ -108,21 +108,21 @@ INLINE void* vecRealloc_(void* vec, size_t elemSize)
     if (!vec)
         return vecCtor_(elemSize, DEFAULT_CAPACITY);
 
-    VHeader_* header = GET_HEADER(vec);
+    VHeader_ header = *GET_HEADER(vec);
 
-    if (header->size < header->capacity)
+    if (header.size < header.capacity)
         return vec;
 
-    size_t newCap = header->capacity * 3 / 2;
+    size_t newCap = header.capacity * 2;
 
     void* newVec = vecCtor_(elemSize, newCap);
     if (!newVec) return NULL;
 
-    memcpy(newVec, vec, elemSize * header->size);
+    memcpy(newVec, vec, elemSize * header.size);
 
     VHeader_* newHeader = GET_HEADER(newVec);
-    *newHeader = *header;
-    free(header);
+    *newHeader = (VHeader_){ header.size, newCap };
+    free(GET_HEADER(vec));
 
     return newVec;
 }

@@ -355,11 +355,9 @@ INLINE ErrorCode StringAppendChar(String* this, char ch)
 {
     ERROR_CHECKING();
 
-    static const double STRING_GROW_RATE = 3.0 / 2.0;
-
     if (this->size == this->capacity)
     {
-        if ((err = StringRealloc(this, this->capacity * STRING_GROW_RATE)))
+        if ((err = StringRealloc(this, this->capacity * 2)))
         {
             return err;
         }
