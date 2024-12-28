@@ -9,6 +9,8 @@
     #define UNUSED
 #endif
 
+#define ARRAY_SIZE(array) sizeof(array) / sizeof(*(array))
+
 #define FIRST(x, ...) x
 #define SECOND(_, x, ...) x
 #define HAS_COMMA(...) SECOND(__VA_OPT__(,) 0, 1)
