@@ -89,6 +89,19 @@ INLINE Str StrCtorFromString(const String string)
     };
 }
 
+INLINE void StrPrint(const Str string, FILE* out)
+{
+    if (!string.data)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < string.size; i++)
+    {
+        putc(string.data[i], out);
+    }
+}
+
 /**
  * @brief String constructor with sufficient capacity
  *
