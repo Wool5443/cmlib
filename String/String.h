@@ -8,6 +8,10 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 
+#if __STDC_VERSION__ < 202311L
+    #include <stdbool.h>
+#endif
+
 #include "Logger.h"
 
 #define CMLIB_EMPTY_STRING ((String){})
@@ -506,11 +510,11 @@ INLINE ResultString StringVPrintf(const char* format, va_list args)
         }
         else if (written <= capacity)
         {
-            string.size = written - 1;
+            string.size = written;
             break;
         }
 
-        capacity = written;
+        capacity = written + 1;
         CHECK_ERROR(StringRealloc(&string, capacity));
     }
 
@@ -520,6 +524,14 @@ ERROR_CASE
     StringDtor(&string);
 
     return ResultStringCtor(CMLIB_EMPTY_STRING, err);
+}
+
+INLINE ResultString StringPrintf(const char* format, ...)
+{
+    va_list args = {};
+    va_start(args, format);
+
+    return StringVPrintf(format, args);
 }
 
 #endif // CMLIB_STRING_H_
