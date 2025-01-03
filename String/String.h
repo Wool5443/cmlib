@@ -5,9 +5,12 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 
 #include "Logger.h"
+
+#define CMLIB_EMPTY_STRING ((String){})
 
 /**
  * @struct String
@@ -18,7 +21,7 @@ typedef struct String
 {
     char*  data; ///< data
     size_t size; ///< size
-    size_t capacity; ///< capacity
+    size_t capacity; ///< capacity number of symbols it can store not including 0. So real capacity is capacity + 1
 } String;
 
 /**
@@ -188,11 +191,11 @@ INLINE ResultString StringCtor(const char* string)
  *
  * @see String
  */
-INLINE void StringDtor(String* string)
+INLINE void StringDtor(String* this)
 {
-    if (!string) return;
-    free(string->data);
-    string->data = NULL;
+    if (!this) return;
+    free(this->data);
+    this->data = NULL;
 }
 
 /**
@@ -253,10 +256,10 @@ ERROR_CASE
     return err;
 }
 
-INLINE void StringClear(String* string)
+INLINE void StringClear(String* this)
 {
-    if (string->data) string->data[0] = '\0';
-    string->size = 0;
+    if (this->data) this->data[0] = '\0';
+    this->size = 0;
 }
 
 /**
@@ -466,6 +469,57 @@ ERROR_CASE
     StringDtor(&string);
 
     return (ResultString){ {}, err };
+}
+
+INLINE ResultString StringVPrintf(const char* format, va_list args)
+{
+    ERROR_CHECKING();
+
+    assert(format);
+
+    String string = {};
+
+    size_t formatLength = strlen(format);
+
+    if (formatLength == 0)
+    {
+        return ResultStringCtor(CMLIB_EMPTY_STRING, EVERYTHING_FINE);
+    }
+
+    size_t capacity = formatLength * 2;
+
+    ResultString stringRes = StringCtorCapacity(capacity);
+    CHECK_ERROR(stringRes.errorCode);
+    string = stringRes.value;
+
+    // Try until it fits
+    while (true)
+    {
+        va_list cpargs = {};
+        va_copy(cpargs, args);
+
+        size_t written = vsnprintf(string.data, capacity, format, cpargs);
+
+        if (written < 0)
+        {
+            HANDLE_ERRNO_ERROR(ERROR_STD, "Error vsnprintf: %s");
+        }
+        else if (written <= capacity)
+        {
+            string.size = written - 1;
+            break;
+        }
+
+        capacity = written;
+        CHECK_ERROR(StringRealloc(&string, capacity));
+    }
+
+    return ResultStringCtor(string, EVERYTHING_FINE);
+
+ERROR_CASE
+    StringDtor(&string);
+
+    return ResultStringCtor(CMLIB_EMPTY_STRING, err);
 }
 
 #endif // CMLIB_STRING_H_
