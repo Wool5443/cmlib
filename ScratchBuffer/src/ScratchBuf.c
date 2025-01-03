@@ -1,4 +1,5 @@
 #include "ScratchBuf.h"
+#include "Logger.h"
 
 #define CHECK_SCRATCH_STATE()                                       \
 do                                                                  \
@@ -82,6 +83,56 @@ void ScratchClear()
     CHECK_SCRATCH_STATE();
 
     StringClear(&scratchString);
+}
+
+ErrorCode ScratchVPrintf(const char* format, va_list args)
+{
+    CHECK_SCRATCH_STATE();
+
+    ERROR_CHECKING();
+
+    if (!format)
+    {
+        return ERROR_NULLPTR;
+    }
+
+    char* buffer = scratchString.data + scratchString.size;
+    size_t leftCapacity = scratchString.capacity - scratchString.size;
+
+    while (true)
+    {
+        va_list cpyargs = {};
+        va_copy(cpyargs, args);
+
+        size_t written = vsnprintf(buffer, leftCapacity, format, cpyargs);
+
+        if (written < 0)
+        {
+            HANDLE_ERRNO_ERROR(ERROR_STD,
+                               "Error vsnrprintf(%p, %zu, %s, ...): %s",
+                               buffer, leftCapacity, format);
+        }
+        else if (written <= leftCapacity)
+        {
+            scratchString.size += written;
+            return EVERYTHING_FINE;
+        }
+
+        CHECK_ERROR(StringRealloc(&scratchString, scratchString.capacity + written));
+    }
+
+    return EVERYTHING_FINE;
+
+ERROR_CASE
+    return err;
+}
+
+ErrorCode ScratchPrintf(const char* format, ...)
+{
+    va_list args = {};
+    va_start(args, format);
+
+    return ScratchVPrintf(format, args);
 }
 
 ErrorCode ScratchAppend(const char* string)

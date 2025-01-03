@@ -66,6 +66,30 @@ void ScratchPop(size_t count);
  */
 void ScratchClear();
 
+
+/**
+ * @brief Printf in Scratch buffer
+ *
+ * @param [in] format
+ *
+ * @return ErrorCode
+ *
+ * @see ErrorCode
+ */
+ErrorCode ScratchPrintf(const char* format, ...);
+
+/**
+ * @brief Printf in Scratch buffer
+ *
+ * @param [in] format
+ * @param [in] args
+ *
+ * @return ErrorCode
+ *
+ * @see ErrorCode
+ */
+ErrorCode ScratchVPrintf(const char* format, va_list args);
+
 /**
  * @brief Append c-style string to ScratchBuffer
  *

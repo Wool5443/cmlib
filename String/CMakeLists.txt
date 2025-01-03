@@ -1,6 +1,10 @@
 set(LIB_NAME "cmlibString")
 
-add_library(${LIB_NAME} INTERFACE)
+set(SOURCES
+    "src/String.c"
+)
 
-target_include_directories(${LIB_NAME} INTERFACE .)
-target_link_libraries(${LIB_NAME} INTERFACE cmlibLogger)
+add_library(${LIB_NAME} STATIC ${SOURCES})
+
+target_include_directories(${LIB_NAME} PUBLIC .)
+target_link_libraries(${LIB_NAME} PUBLIC cmlibLogger)
