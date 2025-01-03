@@ -1,4 +1,4 @@
-set(LIB_NAME "cmlibIOUtils")
+set(LIB_NAME "cmlibIO")
 
 add_library(${LIB_NAME} INTERFACE ${SOURCES})
 
