@@ -39,8 +39,8 @@ typedef struct Str
     size_t size; ///< size
 } Str;
 
-DECLARE_RESULT(String);
-DECLARE_RESULT(Str);
+DECLARE_RESULT_HEADER(String);
+DECLARE_RESULT_HEADER(Str);
 
 /**
  * @brief Str constructor knowing string size

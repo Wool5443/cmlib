@@ -116,7 +116,7 @@ EXPAND_BUT_FIRST(__VA_ARGS__))
 
 #endif // #ifndef DISABLE_LOGGING
 
-#define DECLARE_RESULT(Type)                                            \
+#define DECLARE_RESULT_HEADER(Type)                                     \
 typedef struct Result ## Type                                           \
 {                                                                       \
     Type value;                                                         \
@@ -127,6 +127,10 @@ INLINE Result ## Type Result ## Type ## Ctor                            \
 {                                                                       \
     return (Result ## Type){ .value = value, .errorCode = errorCode };  \
 }
+
+#define DECLARE_RESULT_SOURCE(Type)                                     \
+Result ## Type Result ## Type ## Ctor(Type value, ErrorCode errorCode);
+
 
 #define ERROR_CHECKING()                                                \
     UNUSED ErrorCode err = EVERYTHING_FINE

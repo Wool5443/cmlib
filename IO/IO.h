@@ -37,7 +37,7 @@ ERROR_CASE
     return ResultStringCtor((String){}, err);
 }
 
-Str GetFileNameStr(const Str path)
+INLINE Str GetFileNameStr(const Str path)
 {
     if (!path.data)
     {
@@ -62,12 +62,12 @@ Str GetFileNameStr(const Str path)
     };
 }
 
-Str GetFileName(const char* path)
+INLINE Str GetFileName(const char* path)
 {
     return GetFileNameStr(StrCtor(path));
 }
 
-Str GetFolderStr(const Str path)
+INLINE Str GetFolderStr(const Str path)
 {
     if (!path.data)
     {
@@ -83,7 +83,7 @@ Str GetFolderStr(const Str path)
     };
 }
 
-Str GetFolder(const char* path)
+INLINE Str GetFolder(const char* path)
 {
     return GetFolderStr(StrCtor(path));
 }

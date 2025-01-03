@@ -1,6 +1,10 @@
 set(LIB_NAME "cmlibIO")
 
-add_library(${LIB_NAME} INTERFACE ${SOURCES})
+set(SOURCES
+    "src/IO.c"
+)
 
-target_include_directories(${LIB_NAME} INTERFACE  .)
-target_link_libraries(${LIB_NAME} INTERFACE cmlibString cmlibLogger)
+add_library(${LIB_NAME} STATIC ${SOURCES})
+
+target_include_directories(${LIB_NAME} PUBLIC  .)
+target_link_libraries(${LIB_NAME} PUBLIC cmlibString)

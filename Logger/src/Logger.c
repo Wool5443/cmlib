@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "../Logger.h" // IWYU pragma: keep
+#include "Logger.h"
 
 #undef LoggerInitPath
 #undef LoggerInitFile
@@ -49,3 +49,8 @@ void LoggerFinish()
 
     fclose(LOGGER_.file);
 }
+
+Logger* GetLogger();
+const char* getTypeString_(LogType type);
+ConsoleColor getTypeColor_(LogType type);
+void log_(LogType type, Error error, const char* format, ...);
