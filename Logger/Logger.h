@@ -1,12 +1,12 @@
 #ifndef CMLIB_LOGGER_H_
 #define CMLIB_LOGGER_H_
 
-#include <errno.h> // IWYU pragma: keep
-#include <stdio.h> // IWYU pragma: keep
-#include <stdarg.h> // IWYU pragma: keep
+#include <errno.h> // IWYU pragma: export
+#include <stdio.h> // IWYU pragma: export
+#include <stdarg.h> // IWYU pragma: export
 
-#include "include/ConsoleColor.h" // IWYU pragma: keep
-#include "Error.h" // IWYU pragma: keep
+#include "include/ConsoleColor.h" // IWYU pragma: export
+#include "Error.h" // IWYU pragma: export
 
 typedef enum
 {
