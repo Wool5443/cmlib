@@ -1,7 +1,7 @@
 #ifndef CMLIB_RESULT_H_
 #define CMLIB_RESULT_H_
 
-#include "Error.h"
+#include "Error.h" // IWYU pragma: export
 
 #define DECLARE_RESULT_HEADER(Type)                                     \
 typedef struct Result ## Type                                           \

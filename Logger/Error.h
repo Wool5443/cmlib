@@ -82,4 +82,32 @@ INLINE void ErrorPrint(Error error, FILE* file)
            );
 }
 
+#define ERROR_CHECKING()                                                \
+    UNUSED ErrorCode err = EVERYTHING_FINE
+
+#define ERROR_CASE ERROR_CASE_:;
+
+#define ERROR_LEAVE() goto ERROR_CASE_
+
+#define GET_FILE_NAME() __FILE__
+#define GET_LINE()      __LINE__
+
+#if defined(__GNUC__) || defined(__clang__)
+    #define GET_FUNCTION()  __PRETTY_FUNCTION__
+#else
+    #define GET_FUNCTION()  __func__
+#endif
+
+#define CREATE_ERROR(errorCode) \
+ErrorCtor(errorCode, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
+
+#define CHECK_ERROR(expr, ...)                                          \
+do                                                                      \
+{                                                                       \
+    if ((err = (expr)))                                                 \
+    {                                                                   \
+        ERROR_LEAVE();                                                  \
+    }                                                                   \
+} while (0)
+
 #endif // CMLIB_ERROR_H_

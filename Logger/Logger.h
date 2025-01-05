@@ -117,26 +117,7 @@ EXPAND_BUT_FIRST(__VA_ARGS__))
 
 #endif // #ifndef DISABLE_LOGGING
 
-#define ERROR_CHECKING()                                                \
-    UNUSED ErrorCode err = EVERYTHING_FINE
-
-#define ERROR_CASE ERROR_CASE_:;
-
-#define ERROR_LEAVE() goto ERROR_CASE_
-
-#define GET_FILE_NAME() __FILE__
-#define GET_LINE()      __LINE__
-
-#if defined(__GNUC__) || defined(__clang__)
-    #define GET_FUNCTION()  __PRETTY_FUNCTION__
-#else
-    #define GET_FUNCTION()  __func__
-#endif
-
-#define CREATE_ERROR(errorCode) \
-ErrorCtor(errorCode, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
-
-#define CHECK_ERROR(expr, ...)                                          \
+#define CHECK_ERROR_LOG(expr, ...)                                      \
 do                                                                      \
 {                                                                       \
     if ((err = (expr)))                                                 \
