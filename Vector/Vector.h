@@ -94,37 +94,16 @@ INLINE size_t VecCapacity(void* vec)
 }
 
 /**
- * @brief Reallocate a vector if it is full
- *
- * Safe to realloc NULL
+ * @brief Clears the vector
  *
  * @param [in] vec
- * @param [in] elemSize
- *
- * @return void* vec or NULL on error
  */
-INLINE void* vecRealloc_(void* vec, size_t elemSize)
+INLINE void VecClear(void* vec)
 {
-    if (!vec)
-        return vecCtor_(elemSize, DEFAULT_CAPACITY);
+    if (!vec) return;
 
-    VHeader_ header = *GET_HEADER(vec);
-
-    if (header.size < header.capacity)
-        return vec;
-
-    size_t newCap = header.capacity * 2;
-
-    void* newVec = vecCtor_(elemSize, newCap);
-    if (!newVec) return NULL;
-
-    memcpy(newVec, vec, elemSize * header.size);
-
-    VHeader_* newHeader = GET_HEADER(newVec);
-    *newHeader = (VHeader_){ header.size, newCap };
-    free(GET_HEADER(vec));
-
-    return newVec;
+    VHeader_* header = GET_HEADER(vec);
+    header->size = 0;
 }
 
 /**
@@ -200,5 +179,39 @@ INLINE void* vecRealloc_(void* vec, size_t elemSize)
     }                                                                           \
     vecExpandError_;                                                            \
 })
+
+/**
+ * @brief Reallocate a vector if it is full
+ *
+ * Safe to realloc NULL
+ *
+ * @param [in] vec
+ * @param [in] elemSize
+ *
+ * @return void* vec or NULL on error
+ */
+INLINE void* vecRealloc_(void* vec, size_t elemSize)
+{
+    if (!vec)
+        return vecCtor_(elemSize, DEFAULT_CAPACITY);
+
+    VHeader_ header = *GET_HEADER(vec);
+
+    if (header.size < header.capacity)
+        return vec;
+
+    size_t newCap = header.capacity * 2;
+
+    void* newVec = vecCtor_(elemSize, newCap);
+    if (!newVec) return NULL;
+
+    memcpy(newVec, vec, elemSize * header.size);
+
+    VHeader_* newHeader = GET_HEADER(newVec);
+    *newHeader = (VHeader_){ header.size, newCap };
+    free(GET_HEADER(vec));
+
+    return newVec;
+}
 
 #endif // CMLIB_VECTOR_H_
