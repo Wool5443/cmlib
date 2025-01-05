@@ -7,6 +7,7 @@
 
 #include "include/ConsoleColor.h" // IWYU pragma: export
 #include "Error.h" // IWYU pragma: export
+#include "Result.h" // IWYU pragma: export
 
 typedef enum
 {
@@ -115,22 +116,6 @@ EXPAND_BUT_FIRST(__VA_ARGS__))
 #define LogError(...)
 
 #endif // #ifndef DISABLE_LOGGING
-
-#define DECLARE_RESULT_HEADER(Type)                                     \
-typedef struct Result ## Type                                           \
-{                                                                       \
-    Type value;                                                         \
-    ErrorCode errorCode;                                                \
-} Result ## Type;                                                       \
-INLINE Result ## Type Result ## Type ## Ctor                            \
-(Type value, ErrorCode errorCode)                                       \
-{                                                                       \
-    return (Result ## Type){ .value = value, .errorCode = errorCode };  \
-}
-
-#define DECLARE_RESULT_SOURCE(Type)                                     \
-Result ## Type Result ## Type ## Ctor(Type value, ErrorCode errorCode);
-
 
 #define ERROR_CHECKING()                                                \
     UNUSED ErrorCode err = EVERYTHING_FINE
