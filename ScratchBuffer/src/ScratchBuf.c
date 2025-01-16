@@ -104,7 +104,7 @@ ErrorCode ScratchVPrintf(const char* format, va_list args)
         va_list cpyargs = {};
         va_copy(cpyargs, args);
 
-        size_t written = vsnprintf(buffer, leftCapacity, format, cpyargs);
+        int written = vsnprintf(buffer, leftCapacity, format, cpyargs);
 
         if (written < 0)
         {
@@ -112,7 +112,7 @@ ErrorCode ScratchVPrintf(const char* format, va_list args)
                                "Error vsnrprintf(%p, %zu, %s, ...): %s",
                                buffer, leftCapacity, format);
         }
-        else if (written <= leftCapacity)
+        else if (written <= CMLIB_CAST(int, leftCapacity))
         {
             scratchString.size += written;
             return EVERYTHING_FINE;

@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "Logger.h"
+#include "../Logger.h"
 
 #undef LoggerInitPath
 #undef LoggerInitFile

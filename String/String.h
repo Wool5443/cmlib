@@ -12,7 +12,7 @@
     #include <stdbool.h>
 #endif
 
-#include "Logger.h"
+#include "../Logger/Logger.h"
 
 #define CMLIB_EMPTY_STRING ((String){})
 
@@ -502,13 +502,13 @@ INLINE ResultString StringVPrintf(const char* format, va_list args)
         va_list cpargs = {};
         va_copy(cpargs, args);
 
-        size_t written = vsnprintf(string.data, capacity, format, cpargs);
+        int written = vsnprintf(string.data, capacity, format, cpargs);
 
         if (written < 0)
         {
             HANDLE_ERRNO_ERROR(ERROR_STD, "Error vsnprintf: %s");
         }
-        else if (written <= capacity)
+        else if (written <= CMLIB_CAST(int, capacity))
         {
             string.size = written;
             break;

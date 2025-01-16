@@ -13,8 +13,7 @@
 
 #define FIRST(x, ...) x
 #define SECOND(_, x, ...) x
-#define HAS_COMMA(...) SECOND(__VA_OPT__(,) 0, 1)
-#define IS_EMPTY(...) HAS_COMMA(__VA_ARGS__)
+#define IS_EMPTY(...) SECOND(__VA_OPT__(,) 0, 1)
 #define EXPAND_BUT_FIRST(_, ...) __VA_ARGS__
 #define VA_OPT_BUT_FIRST(_, ...) __VA_OPT__(,)
 
@@ -25,5 +24,11 @@
 
 #define SWITCH_EMPTY(empty_case, non_empty_case, ...) \
     IF(IS_EMPTY(__VA_ARGS__), empty_case, non_empty_case)
+
+#ifdef __cplusplus
+#define CMLIB_CAST(type, value) type(value)
+#else
+#define CMLIB_CAST(type, value) (type)(value)
+#endif
 
 #endif // CMLIB_COMMON_H

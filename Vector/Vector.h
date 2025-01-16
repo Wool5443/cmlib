@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Logger.h"
+#include "../Logger/Logger.h"
 
 #define DEFAULT_CAPACITY 8
 

@@ -1,7 +1,7 @@
 #ifndef CMLIB_SCRATCH_BUF_H_
 #define CMLIB_SCRATCH_BUF_H_
 
-#include "String.h"
+#include "../String/String.h"
 
 String* getScratchBuffer_UNSAFE_();
 

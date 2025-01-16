@@ -1,3 +1,3 @@
-#include "include/ConsoleColor.h"
+#include "../include/ConsoleColor.h"
 
 void SetConsoleColor(FILE* file, ConsoleColor color);
