@@ -74,12 +74,13 @@ INLINE void ErrorPrint(Error error, FILE* file)
 
     if (error.code) fprintf(file, "%s ", GetErrorName(error.code));
 
-    fprintf(file,
-            "in %s:%zu in %s",
-            error.file,
-            error.line,
-            error.function
-           );
+    fprintf(
+        file,
+        "in %s:%zu in %s",
+        error.file,
+        error.line,
+        error.function
+   );
 }
 
 #define ERROR_CHECKING()                                                \
@@ -101,7 +102,7 @@ INLINE void ErrorPrint(Error error, FILE* file)
 #define CREATE_ERROR(errorCode) \
 ErrorCtor(errorCode, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
 
-#define CHECK_ERROR(expr, ...)                                          \
+#define CHECK_ERROR(expr)                                               \
 do                                                                      \
 {                                                                       \
     if ((err = (expr)))                                                 \
