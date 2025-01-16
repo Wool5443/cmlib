@@ -26,9 +26,15 @@
     IF(IS_EMPTY(__VA_ARGS__), empty_case, non_empty_case)
 
 #ifdef __cplusplus
+#define CMLIB_NULL nullptr
 #define CMLIB_CAST(type, value) type(value)
+#define CMLIB_PTR_CAST(ptrtype, value) reinterpret_cast<ptrtype>(value)
+#define CMLIB_PTR_DECL_CAST(ptr, value) reinterpret_cast<decltype(ptr)>(value)
 #else
+#define CMLIB_NULL NULL
 #define CMLIB_CAST(type, value) (type)(value)
+#define CMLIB_PTR_CAST(ptrtype, value) value
+#define CMLIB_PTR_DECL_CAST(ptr, value) value
 #endif
 
 #endif // CMLIB_COMMON_H

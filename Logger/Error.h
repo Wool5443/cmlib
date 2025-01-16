@@ -36,11 +36,11 @@ INLINE Error ErrorCtor(ErrorCode errorCode,
 {
     return (Error)
     {
-        .time = time(NULL),
-        .code = errorCode,
-        .file = fileName,
-        .line = lineNumber,
-        .function = functionName,
+        errorCode,
+        fileName,
+        lineNumber,
+        functionName,
+        time(NULL),
     };
 }
 

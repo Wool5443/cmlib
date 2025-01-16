@@ -22,7 +22,7 @@ typedef struct VHeader_
 /**
  * @brief Get pointer to vectors header
  */
-#define GET_HEADER(vec) (&((VHeader_*)(vec))[-1])
+#define GET_HEADER(vec) (&CMLIB_PTR_CAST(VHeader_*, vec)[-1])
 
 /**
  * @brief Creates a Vector
@@ -39,7 +39,7 @@ INLINE void* vecCtor_(size_t elemSize, size_t capacity)
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 
-    VHeader_* header = calloc(capacity * elemSize + sizeof(VHeader_), 1);
+    VHeader_* header = CMLIB_PTR_DECL_CAST(header, (calloc(capacity * elemSize + sizeof(VHeader_), 1)));
     if (!header)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
@@ -121,11 +121,11 @@ INLINE void VecClear(void* vec)
 #define VecAdd(vec, value)                                                      \
 ({                                                                              \
     ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
-    void* temp = vecRealloc_((vec), sizeof(*vec));                               \
+    void* temp = vecRealloc_((vec), sizeof(*vec));                              \
     if (temp)                                                                   \
     {                                                                           \
         vecAddError_ = EVERYTHING_FINE;                                         \
-        (vec) = temp;                                                           \
+        (vec) = CMLIB_PTR_DECL_CAST(vec, temp);                                 \
         VHeader_* header = GET_HEADER(vec);                                     \
         (vec)[header->size++] = value;                                          \
     }                                                                           \
