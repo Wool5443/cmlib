@@ -32,26 +32,19 @@ typedef struct VHeader_
  *
  * @return void* vector
  */
-INLINE void* vecCtor_(size_t elemSize, size_t capacity)
-{
-    ERROR_CHECKING();
-    assert(elemSize);
+INLINE void* vecCtor_(size_t elemSize, size_t capacity);
 
-    capacity = capacity ? capacity : DEFAULT_CAPACITY;
-
-    VHeader_* header = calloc(capacity * elemSize + sizeof(VHeader_), 1);
-    if (!header)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
-    }
-
-    header->capacity = capacity;
-
-    return &header[1];
-
- ERROR_CASE
-    return NULL;
-}
+/**
+ * @brief Reallocate a vector if it is full
+ *
+ * Safe to realloc NULL
+ *
+ * @param [in] vec
+ * @param [in] elemSize
+ *
+ * @return void* vec or NULL on error
+ */
+INLINE void* vecRealloc_(void* vec, size_t elemSize);
 
 /**
  * @brief Destroys a vector
@@ -121,7 +114,7 @@ INLINE void VecClear(void* vec)
 #define VecAdd(vec, value)                                                      \
 ({                                                                              \
     ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
-    void* temp = vecRealloc_((vec), sizeof(*vec));                               \
+    void* temp = vecRealloc_((vec), sizeof(*vec));                              \
     if (temp)                                                                   \
     {                                                                           \
         vecAddError_ = EVERYTHING_FINE;                                         \
@@ -167,7 +160,7 @@ INLINE void VecClear(void* vec)
 #define VecExpand(vec, newCapacity)                                             \
 ({                                                                              \
     ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
-    void* temp = vecCtor_(sizeof(*(vec)), newCapacity);                          \
+    void* temp = vecCtor_(sizeof(*(vec)), newCapacity);                         \
     if (temp)                                                                   \
     {                                                                           \
         vecExpandError_ = EVERYTHING_FINE;                                      \
@@ -180,16 +173,27 @@ INLINE void VecClear(void* vec)
     vecExpandError_;                                                            \
 })
 
-/**
- * @brief Reallocate a vector if it is full
- *
- * Safe to realloc NULL
- *
- * @param [in] vec
- * @param [in] elemSize
- *
- * @return void* vec or NULL on error
- */
+INLINE void* vecCtor_(size_t elemSize, size_t capacity)
+{
+    ERROR_CHECKING();
+    assert(elemSize);
+
+    capacity = capacity ? capacity : DEFAULT_CAPACITY;
+
+    VHeader_* header = calloc(capacity * elemSize + sizeof(VHeader_), 1);
+    if (!header)
+    {
+        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
+    }
+
+    header->capacity = capacity;
+
+    return &header[1];
+
+ ERROR_CASE
+    return NULL;
+}
+
 INLINE void* vecRealloc_(void* vec, size_t elemSize)
 {
     if (!vec)
