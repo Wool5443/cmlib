@@ -24,14 +24,14 @@ typedef struct
 {
     ErrorCode   code;
     const char* file;
-    size_t      line;
+    const char* line;
     const char* function;
     time_t      time;
 } Error;
 
 INLINE Error ErrorCtor(ErrorCode errorCode,
                        const char* fileName,
-                       size_t lineNumber,
+                       const char* lineNumber,
                        const char* functionName)
 {
     return (Error)
@@ -76,22 +76,21 @@ INLINE void ErrorPrint(Error error, FILE* file)
 
     fprintf(
         file,
-        "in %s:%zu in %s",
+        "in %s:%s in %s",
         error.file,
         error.line,
         error.function
    );
 }
 
-#define ERROR_CHECKING()                                                \
-    UNUSED ErrorCode err = EVERYTHING_FINE
+#define ERROR_CHECKING() UNUSED ErrorCode err = EVERYTHING_FINE
 
 #define ERROR_CASE ERROR_CASE_:;
 
 #define ERROR_LEAVE() goto ERROR_CASE_
 
 #define GET_FILE_NAME() __FILE__
-#define GET_LINE()      __LINE__
+#define GET_LINE()      STRGY(__LINE__)
 
 #if defined(__GNUC__) || defined(__clang__)
     #define GET_FUNCTION()  __PRETTY_FUNCTION__

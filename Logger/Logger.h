@@ -23,7 +23,7 @@ typedef struct
 
 #ifndef DISABLE_LOGGING
 
-extern Logger LOGGER_;
+extern Logger cmlibLogger_;
 
 void LoggerInitPath(const char* path);
 
@@ -31,74 +31,31 @@ void LoggerInitFile(FILE* file);
 
 void LoggerInitConsole();
 
-void LoggerFinish();
-
-INLINE Logger* GetLogger()
-{
-    return &LOGGER_;
-}
-
-INLINE const char* getTypeString_(LogType type)
-{
-    switch (type)
-    {
-        case LOG_TYPE_INFO:
-            return "INFO";
-        case LOG_TYPE_DEBUG:
-            return "DEBUG";
-        case LOG_TYPE_ERROR:
-            return "ERROR";
-        default:
-            return "UNKNOWN LOG TYPE";
-    }
-}
-
-INLINE ConsoleColor getTypeColor_(LogType type)
-{
-    switch (type)
-    {
-        case LOG_TYPE_INFO:
-            return CONSOLE_COLOR_CYAN;
-        case LOG_TYPE_DEBUG:
-            return CONSOLE_COLOR_YELLOW;
-        case LOG_TYPE_ERROR:
-            return CONSOLE_COLOR_RED;
-        default:
-            return CONSOLE_COLOR_MAGENTA;
-    }
-}
-
-INLINE void log_(LogType type, Error error, const char* format, ...)
-{
-    FILE* logFile = GetLogger()->file;
-    if (!logFile) return;
-
-    SetConsoleColor(logFile, getTypeColor_(type));
-
-    fprintf(logFile, "[%s] ", getTypeString_(type));
-
-    ErrorPrint(error, logFile);
-
-    if (format)
-    {
-        va_list args;
-        va_start(args, format);
-
-        fprintf(logFile, "\n");
-        vfprintf(logFile, format, args);
-    }
-
-    fprintf(logFile, "\n\n");
-    SetConsoleColor(logFile, CONSOLE_COLOR_WHITE);
-}
+INLINE Logger* GetLogger();
 
 #define LOG_(type, error, ...)                                          \
-log_(                                                                   \
-type,                                                                   \
-error,                                                                  \
-SWITCH_EMPTY(NULL, FIRST(__VA_ARGS__), __VA_ARGS__)                     \
-VA_OPT_BUT_FIRST(__VA_ARGS__)                                           \
-EXPAND_BUT_FIRST(__VA_ARGS__))
+do                                                                      \
+{                                                                       \
+    FILE* logFile = GetLogger()->file;                                  \
+    if (!logFile) break;                                                \
+                                                                        \
+    SetConsoleColor(logFile, getTypeColor_(type));                      \
+                                                                        \
+    fprintf(logFile, "[%s] ", getTypeString_(type));                    \
+                                                                        \
+    ErrorPrint(error, logFile);                                         \
+                                                                        \
+    SWITCH_EMPTY(,                                                      \
+            (fprintf(logFile, "\n"),                                    \
+             fprintf(logFile,                                           \
+              "" FIRST(__VA_ARGS__) ""                                  \
+                 VA_OPT_BUT_FIRST(__VA_ARGS__)                          \
+                 EXPAND_BUT_FIRST(__VA_ARGS__))),                       \
+            __VA_ARGS__);                                               \
+                                                                        \
+    fprintf(logFile, "\n\n");                                           \
+    SetConsoleColor(logFile, CONSOLE_COLOR_WHITE);                      \
+} while (0)
 
 #define LogInfo(...) LOG_(LOG_TYPE_INFO, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
 #define LogDebug(...) LOG_(LOG_TYPE_DEBUG, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
@@ -135,5 +92,40 @@ do                                                                      \
     LogError(__VA_ARGS__, strerror(ern));                               \
     ERROR_LEAVE();                                                      \
 } while (0)
+
+INLINE Logger* GetLogger()
+{
+    return &cmlibLogger_;
+}
+
+INLINE const char* getTypeString_(LogType type)
+{
+    switch (type)
+    {
+        case LOG_TYPE_INFO:
+            return "INFO";
+        case LOG_TYPE_DEBUG:
+            return "DEBUG";
+        case LOG_TYPE_ERROR:
+            return "ERROR";
+        default:
+            return "UNKNOWN LOG TYPE";
+    }
+}
+
+INLINE ConsoleColor getTypeColor_(LogType type)
+{
+    switch (type)
+    {
+        case LOG_TYPE_INFO:
+            return CONSOLE_COLOR_CYAN;
+        case LOG_TYPE_DEBUG:
+            return CONSOLE_COLOR_YELLOW;
+        case LOG_TYPE_ERROR:
+            return CONSOLE_COLOR_RED;
+        default:
+            return CONSOLE_COLOR_MAGENTA;
+    }
+}
 
 #endif // CMLIB_LOGGER_H_

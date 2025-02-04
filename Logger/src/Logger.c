@@ -1,4 +1,7 @@
 #include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "../Logger.h"
@@ -14,7 +17,9 @@
 
 #undef HANDLE_ERRNO_ERROR
 
-Logger LOGGER_ = {};
+static void loggerFinish_();
+
+Logger cmlibLogger_ = {};
 
 void LoggerInitFile(FILE* file)
 {
@@ -22,7 +27,7 @@ void LoggerInitFile(FILE* file)
 
     setbuf(file, NULL);
 
-    LOGGER_.file = file;
+    cmlibLogger_.file = file;
 }
 
 void LoggerInitPath(const char* path)
@@ -30,10 +35,16 @@ void LoggerInitPath(const char* path)
     FILE* file = fopen(path, "w");
 
     if (!file)
-        fprintf(stderr, "Logger could not initialize\n%s was a bad file",
-                path);
+    {
+        fprintf(stderr, "Logger could not initialize\n%s was a bad file", path);
+    }
 
     LoggerInitFile(file);
+
+    if (atexit(loggerFinish_) != 0)
+    {
+        fprintf(stderr, "Failed to atexit(loggerFinish_): %s", strerror(errno));
+    }
 }
 
 void LoggerInitConsole()
@@ -41,16 +52,15 @@ void LoggerInitConsole()
     LoggerInitFile(stderr);
 }
 
-void LoggerFinish()
+static void loggerFinish_()
 {
-    if (!LOGGER_.file) return;
+    if (!cmlibLogger_.file) return;
 
-    if (isatty(fileno(LOGGER_.file))) return;
+    if (isatty(fileno(cmlibLogger_.file))) return;
 
-    fclose(LOGGER_.file);
+    fclose(cmlibLogger_.file);
 }
 
 Logger* GetLogger();
 const char* getTypeString_(LogType type);
 ConsoleColor getTypeColor_(LogType type);
-void log_(LogType type, Error error, const char* format, ...);
