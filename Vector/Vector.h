@@ -22,7 +22,7 @@ typedef struct VHeader_
 /**
  * @brief Get pointer to vectors header
  */
-#define GET_HEADER(vec) (&((VHeader_*)(vec))[-1])
+#define GET_VEC_HEADER(vec) (&((VHeader_*)(vec))[-1])
 
 /**
  * @brief Creates a Vector
@@ -53,7 +53,7 @@ INLINE void* vecRealloc_(void* vec, size_t elemSize);
  */
 INLINE void VecDtor(void* vec)
 {
-    if (vec) free(GET_HEADER(vec));
+    if (vec) free(GET_VEC_HEADER(vec));
 }
 
 /**
@@ -67,7 +67,7 @@ INLINE size_t VecSize(void* vec)
 {
     if (!vec) return 0;
 
-    VHeader_* header = GET_HEADER(vec);
+    VHeader_* header = GET_VEC_HEADER(vec);
     return header->size;
 }
 
@@ -82,7 +82,7 @@ INLINE size_t VecCapacity(void* vec)
 {
     if (!vec) return 0;
 
-    VHeader_* header = GET_HEADER(vec);
+    VHeader_* header = GET_VEC_HEADER(vec);
     return header->capacity;
 }
 
@@ -95,7 +95,7 @@ INLINE void VecClear(void* vec)
 {
     if (!vec) return;
 
-    VHeader_* header = GET_HEADER(vec);
+    VHeader_* header = GET_VEC_HEADER(vec);
     header->size = 0;
 }
 
@@ -119,7 +119,7 @@ INLINE void VecClear(void* vec)
     {                                                                           \
         vecAddError_ = EVERYTHING_FINE;                                         \
         (vec) = temp;                                                           \
-        VHeader_* header = GET_HEADER(vec);                                     \
+        VHeader_* header = GET_VEC_HEADER(vec);                                 \
         (vec)[header->size++] = value;                                          \
     }                                                                           \
     vecAddError_;                                                               \
@@ -140,7 +140,7 @@ INLINE void VecClear(void* vec)
     __typeof__(*vec) ret = {};                                                  \
     if (vec)                                                                    \
     {                                                                           \
-        VHeader_* header = GET_HEADER(vec);                                     \
+        VHeader_* header = GET_VEC_HEADER(vec);                                 \
         ret = (vec)[--header->size];                                            \
     }                                                                           \
     ret;                                                                        \
@@ -199,7 +199,7 @@ INLINE void* vecRealloc_(void* vec, size_t elemSize)
     if (!vec)
         return vecCtor_(elemSize, DEFAULT_CAPACITY);
 
-    VHeader_ header = *GET_HEADER(vec);
+    VHeader_ header = *GET_VEC_HEADER(vec);
 
     if (header.size < header.capacity)
         return vec;
@@ -211,9 +211,9 @@ INLINE void* vecRealloc_(void* vec, size_t elemSize)
 
     memcpy(newVec, vec, elemSize * header.size);
 
-    VHeader_* newHeader = GET_HEADER(newVec);
+    VHeader_* newHeader = GET_VEC_HEADER(newVec);
     *newHeader = (VHeader_){ header.size, newCap };
-    free(GET_HEADER(vec));
+    free(GET_VEC_HEADER(vec));
 
     return newVec;
 }
