@@ -42,6 +42,7 @@ typedef struct Str
     const char* data; ///< data
     size_t size; ///< size
 } Str;
+#define STR_LITERAL(string) ((Str){ .data = string, .size = sizeof(string) - 1 })
 
 DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
