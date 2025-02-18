@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "../Logger/Logger.h"
+#include "../Allocator/Allocator.h"
 
 #define DEFAULT_CAPACITY 8
 
@@ -15,14 +16,20 @@
  */
 typedef struct VHeader_
 {
-    size_t size; ///<vector size
+    Allocator allocator; ///< allocator
+    size_t size; ///< vector size
     size_t capacity; ///< vector capacity
 } VHeader_;
+
+extern Allocator Current_vector_allocator;
 
 /**
  * @brief Get pointer to vectors header
  */
 #define GET_VEC_HEADER(vec) (&((VHeader_*)(vec))[-1])
+#define GET_VEC_ALLOCATOR(vec) ((vec) ? GET_VEC_HEADER(vec)->allocator : Current_vector_allocator)
+
+#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec).free(GET_VEC_HEADER(vec))
 
 /**
  * @brief Destroys a vector
@@ -59,12 +66,12 @@ INLINE void vec_clear(void* vec);
 /**
  * @brief Creates a Vector
  *
- * @param [in] elemSize
+ * @param [in] elem_size
  * @param [in] capacity
  *
  * @return void* vector
  */
-INLINE void* vec_ctor_(size_t elemSize, size_t capacity);
+INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity);
 
 /**
  * @brief Reallocate a vector if it is full
@@ -72,15 +79,15 @@ INLINE void* vec_ctor_(size_t elemSize, size_t capacity);
  * Safe to realloc NULL
  *
  * @param [in] vec
- * @param [in] elemSize
+ * @param [in] elem_size
  *
  * @return void* vec or NULL on error
  */
-INLINE void* vec_realloc_(void* vec, size_t elemSize);
+INLINE void* vec_realloc_(void* vec, size_t elem_size);
 
 INLINE void vec_dtor(void* vec)
 {
-    if (vec) free(GET_VEC_HEADER(vec));
+    if (vec) VEC_FREE(vec);
 }
 
 INLINE size_t vec_size(void* vec)
@@ -121,16 +128,16 @@ INLINE void vec_clear(void* vec)
  */
 #define vec_add(vec, value)                                                     \
 ({                                                                              \
-    ErrorCode vecAddError_ = ERROR_NO_MEMORY;                                   \
-    void* temp = vecRealloc_((vec), sizeof(*vec));                              \
+    Error_code vec_add_error = ERROR_NO_MEMORY;                                 \
+    void* temp = vec_realloc_((vec), sizeof(*vec));                             \
     if (temp)                                                                   \
     {                                                                           \
-        vecAddError_ = EVERYTHING_FINE;                                         \
+        vec_add_error = EVERYTHING_FINE;                                        \
         (vec) = temp;                                                           \
         VHeader_* header = GET_VEC_HEADER(vec);                                 \
         (vec)[header->size++] = value;                                          \
     }                                                                           \
-    vecAddError_;                                                               \
+    vec_add_error;                                                              \
 })
 
 /**
@@ -167,34 +174,36 @@ INLINE void vec_clear(void* vec)
  */
 #define vec_reserve(vec, newCapacity)                                           \
 ({                                                                              \
-    ErrorCode vecExpandError_ = ERROR_NO_MEMORY;                                \
-    void* temp = vecCtor_(sizeof(*(vec)), newCapacity);                         \
+    Error_code vec_expand_error = ERROR_NO_MEMORY;                              \
+    void* temp = vec_ctor_(GET_VEC_ALLOCATOR(vec), sizeof(*(vec)), newCapacity);\
     if (temp)                                                                   \
     {                                                                           \
-        vecExpandError_ = EVERYTHING_FINE;                                      \
-        size_t vecSize = VecSize(vec);                                          \
-        if ((vec) && vecSize)                                                   \
-            memcpy(temp, vec, sizeof(*(vec)) * vecSize);                        \
-        VecDtor(vec);                                                           \
+        vec_expand_error = EVERYTHING_FINE;                                     \
+        size_t size = vec_size(vec);                                            \
+        if ((vec) && size)                                                      \
+            memcpy(temp, vec, sizeof(*(vec)) * size);                           \
+        vec_dtor(vec);                                                          \
         (vec) = temp;                                                           \
     }                                                                           \
-    vecExpandError_;                                                            \
+    vec_expand_error;                                                           \
 })
 
-INLINE void* vec_ctor_(size_t elemSize, size_t capacity)
+INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 {
     ERROR_CHECKING();
-    assert(elemSize);
+    assert(elem_size);
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 
-    VHeader_* header = calloc(capacity * elemSize + sizeof(VHeader_), 1);
+    VHeader_* header = allocator.allocate(capacity * elem_size + sizeof(VHeader_));
     if (!header)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
     }
 
-    header->capacity = capacity;
+    header->allocator = allocator;
+    header->capacity  = capacity;
+    *header = (VHeader_){ allocator, 0, capacity };
 
     return &header[1];
 
@@ -202,26 +211,25 @@ INLINE void* vec_ctor_(size_t elemSize, size_t capacity)
     return NULL;
 }
 
-INLINE void* vec_realloc_(void* vec, size_t elemSize)
+INLINE void* vec_realloc_(void* vec, size_t elem_size)
 {
     if (!vec)
-        return vec_ctor_(elemSize, DEFAULT_CAPACITY);
+        return vec_ctor_(Current_vector_allocator, elem_size, DEFAULT_CAPACITY);
 
     VHeader_ header = *GET_VEC_HEADER(vec);
 
     if (header.size < header.capacity)
         return vec;
 
-    size_t newCap = header.capacity * 2;
+    size_t new_capacity = header.capacity * 2;
 
-    void* newVec = vec_ctor_(elemSize, newCap);
+    void* newVec = vec_ctor_(header.allocator, elem_size, new_capacity);
     if (!newVec) return NULL;
 
-    memcpy(newVec, vec, elemSize * header.size);
+    memcpy(newVec, vec, elem_size * header.size);
 
-    VHeader_* newHeader = GET_VEC_HEADER(newVec);
-    *newHeader = (VHeader_){ header.size, newCap };
-    free(GET_VEC_HEADER(vec));
+    *GET_VEC_HEADER(newVec) = (VHeader_){ header.allocator, header.size, new_capacity };
+    VEC_FREE(vec);
 
     return newVec;
 }
