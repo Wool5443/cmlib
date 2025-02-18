@@ -14,7 +14,7 @@ typedef enum
     LOG_TYPE_INFO,
     LOG_TYPE_DEBUG,
     LOG_TYPE_ERROR,
-} LogType;
+} Log_type;
 
 typedef struct
 {
@@ -25,25 +25,25 @@ typedef struct
 
 extern Logger cmlibLogger_;
 
-void LoggerInitPath(const char* path);
+void logger_init_path(const char* restrict path);
 
-void LoggerInitFile(FILE* file);
+void logger_init_file(FILE* file);
 
-void LoggerInitConsole();
+void logger_init_console();
 
-INLINE Logger* GetLogger();
+INLINE Logger* get_logger();
 
 #define LOG_(type, error, ...)                                          \
 do                                                                      \
 {                                                                       \
-    FILE* logFile = GetLogger()->file;                                  \
+    FILE* logFile = get_logger()->file;                                 \
     if (!logFile) break;                                                \
                                                                         \
-    SetConsoleColor(logFile, getTypeColor_(type));                      \
+    SetConsoleColor(logFile, get_log_type_color_(type));                \
                                                                         \
-    fprintf(logFile, "[%s] ", getTypeString_(type));                    \
+    fprintf(logFile, "[%s] ", get_log_type_string_(type));              \
                                                                         \
-    ErrorPrint(error, logFile);                                         \
+    error_print(error, logFile);                                        \
                                                                         \
     SWITCH_EMPTY(,                                                      \
             (fprintf(logFile, "\n"),                                    \
@@ -57,20 +57,19 @@ do                                                                      \
     SetConsoleColor(logFile, CONSOLE_COLOR_WHITE);                      \
 } while (0)
 
-#define LogInfo(...) LOG_(LOG_TYPE_INFO, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
-#define LogDebug(...) LOG_(LOG_TYPE_DEBUG, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
-#define LogError(...) LOG_(LOG_TYPE_ERROR, CREATE_ERROR(err) __VA_OPT__(,) __VA_ARGS__)
+#define log_info(...) LOG_(LOG_TYPE_INFO, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
+#define log_debug(...) LOG_(LOG_TYPE_DEBUG, CREATE_ERROR(EVERYTHING_FINE) __VA_OPT__(,) __VA_ARGS__)
+#define log_error(...) LOG_(LOG_TYPE_ERROR, CREATE_ERROR(err) __VA_OPT__(,) __VA_ARGS__)
 
 #else
 
-#define LoggerInitPath(...)
-#define LoggerInitFile(...)
-#define LoggerInitConsole(...)
-#define LoggerFinish(...)
+#define logger_init_path(...)
+#define logger_init_file(...)
+#define logger_init_console(...)
 
-#define LogInfo(...)
-#define LogDebug(...)
-#define LogError(...)
+#define log_info(...)
+#define log_debug(...)
+#define log_error(...)
 
 #endif // #ifndef DISABLE_LOGGING
 
@@ -89,16 +88,16 @@ do                                                                      \
 {                                                                       \
     UNUSED int ern = errno;                                             \
     err = error;                                                        \
-    LogError(__VA_ARGS__, strerror(ern));                               \
+    log_error(__VA_ARGS__, strerror(ern));                              \
     ERROR_LEAVE();                                                      \
 } while (0)
 
-INLINE Logger* GetLogger()
+INLINE Logger* get_logger()
 {
     return &cmlibLogger_;
 }
 
-INLINE const char* getTypeString_(LogType type)
+INLINE const char* get_log_type_string_(Log_type type)
 {
     switch (type)
     {
@@ -113,7 +112,7 @@ INLINE const char* getTypeString_(LogType type)
     }
 }
 
-INLINE ConsoleColor getTypeColor_(LogType type)
+INLINE ConsoleColor get_log_type_color_(Log_type type)
 {
     switch (type)
     {

@@ -18,35 +18,35 @@ code,
 
 #undef DEF_ERROR
 
-} ErrorCode;
+} Error_code;
 
 typedef struct
 {
-    ErrorCode   code;
+    Error_code   code;
     const char* file;
     const char* line;
     const char* function;
     time_t      time;
 } Error;
 
-INLINE Error ErrorCtor(ErrorCode errorCode,
-                       const char* fileName,
-                       const char* lineNumber,
-                       const char* functionName)
+INLINE Error error_ctor(Error_code error_code,
+                        const char* fileName,
+                        const char* lineNumber,
+                        const char* functionName)
 {
     return (Error)
     {
         .time = time(NULL),
-        .code = errorCode,
+        .code = error_code,
         .file = fileName,
         .line = lineNumber,
         .function = functionName,
     };
 }
 
-INLINE const char* GetErrorName(ErrorCode errorCode)
+INLINE const char* get_error_name(Error_code error_code)
 {
-    switch (errorCode)
+    switch (error_code)
     {
 
 #define DEF_ERROR(code) \
@@ -62,7 +62,7 @@ case code: return #code;
     }
 }
 
-INLINE void ErrorPrint(Error error, FILE* file)
+INLINE void error_print(Error error, FILE* file)
 {
     assert(file);
 
@@ -72,7 +72,7 @@ INLINE void ErrorPrint(Error error, FILE* file)
 
     fprintf(file, "%s: ", timeString);
 
-    if (error.code) fprintf(file, "%s ", GetErrorName(error.code));
+    if (error.code) fprintf(file, "%s ", get_error_name(error.code));
 
     fprintf(
         file,
@@ -83,14 +83,14 @@ INLINE void ErrorPrint(Error error, FILE* file)
    );
 }
 
-#define ERROR_CHECKING() UNUSED ErrorCode err = EVERYTHING_FINE
+#define ERROR_CHECKING() UNUSED Error_code err = EVERYTHING_FINE
 
 #define ERROR_CASE ERROR_CASE_:;
 
 #define ERROR_LEAVE() goto ERROR_CASE_
 
 #define GET_FILE_NAME() __FILE__
-#define GET_LINE()      STRGY(__LINE__)
+#define GET_LINE()      STRINGIFY_VALUE(__LINE__)
 
 #if defined(__GNUC__) || defined(__clang__)
     #define GET_FUNCTION()  __PRETTY_FUNCTION__
@@ -98,8 +98,8 @@ INLINE void ErrorPrint(Error error, FILE* file)
     #define GET_FUNCTION()  __func__
 #endif
 
-#define CREATE_ERROR(errorCode) \
-ErrorCtor(errorCode, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
+#define CREATE_ERROR(error_code) \
+error_ctor(error_code, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
 
 #define CHECK_ERROR(expr)                                               \
 do                                                                      \

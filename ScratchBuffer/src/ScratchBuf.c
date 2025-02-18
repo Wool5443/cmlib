@@ -6,8 +6,8 @@ do                                                                  \
 {                                                                   \
     if (!scratchString.data)                                        \
     {                                                               \
-        UNUSED ErrorCode err = ERROR_UNINITIALIZED;                 \
-        LogError("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");  \
+        UNUSED Error_code err = ERROR_UNINITIALIZED;                \
+        log_error("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");  \
         abort();                                                    \
     }                                                               \
 } while (0)
@@ -19,18 +19,18 @@ String* GetScratchBuffer_UNSAFE_()
     return &scratchString;
 }
 
-ErrorCode ScratchInit(size_t capacity)
+Error_code scratch_init(size_t capacity)
 {
     ERROR_CHECKING();
 
     assert(capacity != 0 && "Capacity can't be zero!");
 
-    ResultString strRes = StringCtorCapacity(capacity);
+    Result_String strRes = string_ctor_capacity(capacity);
 
-    err = strRes.errorCode;
+    err = strRes.error_code;
     if (err)
     {
-        LogError();
+        log_error();
         return err;
     }
 
@@ -39,35 +39,35 @@ ErrorCode ScratchInit(size_t capacity)
     return err;
 }
 
-void ScratchDtor()
+void scratch_dtor()
 {
-    StringDtor(&scratchString);
+    string_dtor(&scratchString);
 }
 
-size_t ScratchGetSize()
+size_t scratch_get_size()
 {
     CHECK_SCRATCH_STATE();
     return scratchString.size;
 }
 
-char* ScratchGet()
+char* scratch_get()
 {
     CHECK_SCRATCH_STATE();
     return scratchString.data;
 }
 
-Str ScratchGetStr()
+Str scratch_get_str()
 {
     CHECK_SCRATCH_STATE();
-    return StrCtorFromString(scratchString);
+    return str_ctor_string(scratchString);
 }
 
-ResultString ScratchCopyString()
+Result_String scratch_copy_string()
 {
-    return StringCopy(scratchString);
+    return string_copy(scratchString);
 }
 
-void ScratchPop(size_t count)
+void scratch_pop(size_t count)
 {
     CHECK_SCRATCH_STATE();
 
@@ -78,14 +78,14 @@ void ScratchPop(size_t count)
     memset(scratchString.data + scratchString.size - count, '\0', count);
 }
 
-void ScratchClear()
+void scratch_clear()
 {
     CHECK_SCRATCH_STATE();
 
-    StringClear(&scratchString);
+    string_clear(&scratchString);
 }
 
-ErrorCode ScratchVPrintf(const char* format, va_list args)
+Error_code scratch_vprintf(const char* format, va_list args)
 {
     CHECK_SCRATCH_STATE();
 
@@ -112,13 +112,13 @@ ErrorCode ScratchVPrintf(const char* format, va_list args)
                                "Error vsnrprintf(%p, %zu, %s, ...): %s",
                                buffer, leftCapacity, format);
         }
-        else if (written <= CMLIB_CAST(int, leftCapacity))
+        else if (written <= (int)leftCapacity)
         {
             scratchString.size += written;
             return EVERYTHING_FINE;
         }
 
-        CHECK_ERROR(StringRealloc(&scratchString, scratchString.capacity + written));
+        CHECK_ERROR(string_realloc(&scratchString, scratchString.capacity + written));
     }
 
     return EVERYTHING_FINE;
@@ -127,35 +127,35 @@ ERROR_CASE
     return err;
 }
 
-ErrorCode ScratchPrintf(const char* format, ...)
+Error_code scratch_printf(const char* format, ...)
 {
     va_list args = {};
     va_start(args, format);
 
-    return ScratchVPrintf(format, args);
+    return scratch_vprintf(format, args);
 }
 
-ErrorCode ScratchAppend(const char* string)
+Error_code scratch_append(const char* string)
 {
     CHECK_SCRATCH_STATE();
-    return StringAppend(&scratchString, string);
+    return string_append(&scratchString, string);
 }
 
-ErrorCode ScratchAppendStr(Str string)
+Error_code scratch_append_str(Str string)
 {
     CHECK_SCRATCH_STATE();
 
-    return StringAppendStr(&scratchString, string);
+    return string_append_str(&scratchString, string);
 }
 
-ErrorCode ScratchAppendString(const String string)
+Error_code scratch_append_string(const String string)
 {
     CHECK_SCRATCH_STATE();
-    return StringAppendString(&scratchString, string);
+    return string_append_string(&scratchString, string);
 }
 
-ErrorCode ScratchAppendChar(char c)
+Error_code scratch_append_char(char c)
 {
     CHECK_SCRATCH_STATE();
-    return StringAppendChar(&scratchString, c);
+    return string_append_char(&scratchString, c);
 }

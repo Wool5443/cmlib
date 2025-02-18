@@ -14,26 +14,26 @@ String* getScratchBuffer_UNSAFE_();
  *
  * @see ErrorCode
  */
-ErrorCode ScratchInit(size_t capacity);
+Error_code scratch_init(size_t capacity);
 
 /**
  * @brief Destroys the ScratchBuffer
  */
-void ScratchDtor();
+void scratch_dtor();
 
 /**
  * @brief Get ScratchBuffer size
  *
  * @return size
  */
-size_t ScratchGetSize();
+size_t scratch_get_size();
 
 /**
  * @brief Get ScratchBuffer raw data
  *
  * @return char*
  */
-char* ScratchGet();
+char* scratch_get();
 
 /**
  * @brief Get ScratchBuffer as Str
@@ -42,29 +42,29 @@ char* ScratchGet();
  *
  * @see Str
  */
-Str ScratchGetStr();
+Str scratch_get_str();
 
 /**
  * @brief Copy ScratchBuffer to a String
  *
- * @return ResultString
+ * @return Result_String
  *
  * @see String
  * @see ErrorCode
  */
-ResultString ScratchCopyString();
+Result_String scratch_copy_string();
 
 /**
  * @brief Sets count characters to '\0' from ScratchBuffer
  *
  * @param [in] count
  */
-void ScratchPop(size_t count);
+void scratch_pop(size_t count);
 
 /**
  * @brief Cleans the buffer
  */
-void ScratchClear();
+void scratch_clear();
 
 
 /**
@@ -76,7 +76,7 @@ void ScratchClear();
  *
  * @see ErrorCode
  */
-ErrorCode ScratchPrintf(const char* format, ...);
+Error_code scratch_printf(const char* format, ...);
 
 /**
  * @brief Printf in Scratch buffer
@@ -88,7 +88,7 @@ ErrorCode ScratchPrintf(const char* format, ...);
  *
  * @see ErrorCode
  */
-ErrorCode ScratchVPrintf(const char* format, va_list args);
+Error_code scratch_vprintf(const char* format, va_list args);
 
 /**
  * @brief Append c-style string to ScratchBuffer
@@ -99,7 +99,7 @@ ErrorCode ScratchVPrintf(const char* format, va_list args);
  *
  * @see ErrorCode
  */
-ErrorCode ScratchAppend(const char* string);
+Error_code scratch_append(const char* string);
 
 /**
  * @brief Append Str to ScratchBuffer
@@ -111,7 +111,7 @@ ErrorCode ScratchAppend(const char* string);
  * @see Str
  * @see ErrorCode
  */
-ErrorCode ScratchAppendStr(Str string);
+Error_code scratch_append_str(Str string);
 
 /**
  * @brief Append String to ScratchBuffer
@@ -123,7 +123,7 @@ ErrorCode ScratchAppendStr(Str string);
  * @see String
  * @see ErrorCode
  */
-ErrorCode ScratchAppendString(const String string);
+Error_code scratch_append_string(const String string);
 
 /**
  * @brief Append char to ScratchBuffer
@@ -135,6 +135,6 @@ ErrorCode ScratchAppendString(const String string);
  * @see Str
  * @see ErrorCode
  */
-ErrorCode ScratchAppendChar(char c);
+Error_code scratch_append_char(char c);
 
 #endif // CMLIB_SCRATCH_BUF_H_

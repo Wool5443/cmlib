@@ -1,4 +1,4 @@
-set(LIB_NAME "cmlibLogger")
+set(LIB_NAME "cmlib_logger")
 
 set(SOURCES
     "src/Logger.c"

@@ -25,10 +25,7 @@
 #define SWITCH_EMPTY(empty_case, non_empty_case, ...) \
     IF(IS_EMPTY(__VA_ARGS__), empty_case, non_empty_case)
 
-#ifdef __cplusplus
-#define CMLIB_CAST(type, value) type(value)
-#else
-#define CMLIB_CAST(type, value) (type)(value)
-#endif
+#define STRINGIFY(x) #x
+#define STRINGIFY_VALUE(x) STRINGIFY(x)
 
 #endif // CMLIB_COMMON_H

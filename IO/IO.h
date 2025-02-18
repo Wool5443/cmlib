@@ -5,7 +5,7 @@
 
 #include "String.h"
 
-INLINE ResultString RealPath(const char* path)
+INLINE Result_String RealPath(const char* path)
 {
     ERROR_CHECKING();
 
@@ -31,10 +31,10 @@ INLINE ResultString RealPath(const char* path)
         goodPath[size++] = '/';
     }
 
-    return StringCtorFromStr(StrCtorSize(goodPath, size));
+    return string_ctor_str(str_ctor_size(goodPath, size));
 
 ERROR_CASE
-    return ResultStringCtor((String){}, err);
+    return Result_String_ctor((String){}, err);
 }
 
 INLINE Str GetFileNameStr(const Str path)
@@ -64,7 +64,7 @@ INLINE Str GetFileNameStr(const Str path)
 
 INLINE Str GetFileName(const char* path)
 {
-    return GetFileNameStr(StrCtor(path));
+    return GetFileNameStr(str_ctor(path));
 }
 
 INLINE Str GetFolderStr(const Str path)
@@ -85,7 +85,7 @@ INLINE Str GetFolderStr(const Str path)
 
 INLINE Str GetFolder(const char* path)
 {
-    return GetFolderStr(StrCtor(path));
+    return GetFolderStr(str_ctor(path));
 }
 
 #endif // CMLIB_IO_UTILS_H_

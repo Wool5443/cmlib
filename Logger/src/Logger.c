@@ -21,7 +21,7 @@ static void loggerFinish_();
 
 Logger cmlibLogger_ = {};
 
-void LoggerInitFile(FILE* file)
+void logger_init_file(FILE* file)
 {
     assert(file);
 
@@ -30,7 +30,7 @@ void LoggerInitFile(FILE* file)
     cmlibLogger_.file = file;
 }
 
-void LoggerInitPath(const char* path)
+void logger_init_path(const char* path)
 {
     FILE* file = fopen(path, "w");
 
@@ -39,7 +39,7 @@ void LoggerInitPath(const char* path)
         fprintf(stderr, "Logger could not initialize\n%s was a bad file", path);
     }
 
-    LoggerInitFile(file);
+    logger_init_file(file);
 
     if (atexit(loggerFinish_) != 0)
     {
@@ -47,9 +47,9 @@ void LoggerInitPath(const char* path)
     }
 }
 
-void LoggerInitConsole()
+void logger_init_console()
 {
-    LoggerInitFile(stderr);
+    logger_init_file(stderr);
 }
 
 static void loggerFinish_()
@@ -61,6 +61,6 @@ static void loggerFinish_()
     fclose(cmlibLogger_.file);
 }
 
-Logger* GetLogger();
-const char* getTypeString_(LogType type);
-ConsoleColor getTypeColor_(LogType type);
+Logger* get_logger();
+const char* get_log_type_string_(Log_type type);
+ConsoleColor get_log_type_color_(Log_type type);

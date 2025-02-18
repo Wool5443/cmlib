@@ -1,5 +1,5 @@
 #include "../Error.h"
 
-Error ErrorCtor(ErrorCode errorCode, const char* fileName, const char* lineNumber, const char* functionName);
-void ErrorPrint(Error error, FILE* file);
-const char* GetErrorName(ErrorCode errorCode);
+Error error_ctor(Error_code errorCode, const char* fileName, const char* lineNumber, const char* functionName);
+void error_print(Error error, FILE* file);
+const char* get_error_name(Error_code errorCode);
