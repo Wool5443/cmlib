@@ -13,6 +13,7 @@
 #endif
 
 #include "../Logger/Logger.h"
+#include "../Allocator/Allocator.h"
 
 #define CMLIB_EMPTY_STRING ((String){})
 
@@ -23,10 +24,13 @@
  */
 typedef struct String
 {
+    Allocator allocator; ///< allocator
     char*  data; ///< data
     size_t size; ///< size
     size_t capacity; ///< capacity number of symbols it can store not including 0. So real capacity is capacity + 1
 } String;
+
+extern Allocator Current_string_allocator;
 
 /**
  * @struct Str
@@ -328,7 +332,7 @@ INLINE Result_String string_ctor_capacity(size_t capacity)
 
     assert(capacity != 0 && "Capacity can't be zero!");
 
-    char* data = calloc(capacity + 1, 1);
+    char* data = Current_string_allocator.allocate(capacity + 1);
 
     if (!data)
     {
@@ -367,7 +371,7 @@ INLINE Result_String string_ctor_str(Str string)
 INLINE void string_dtor(String* restrict this)
 {
     if (!this) return;
-    free(this->data);
+    this->allocator.free(this->data);
     this->data = NULL;
 }
 
