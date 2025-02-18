@@ -4,6 +4,7 @@
 #include <errno.h> // IWYU pragma: export
 #include <stdio.h> // IWYU pragma: export
 #include <stdarg.h> // IWYU pragma: export
+#include <string.h> // IWYU pragma: export
 
 #include "include/ConsoleColor.h" // IWYU pragma: export
 #include "Error.h" // IWYU pragma: export
@@ -78,7 +79,7 @@ do                                                                      \
 {                                                                       \
     if ((err = (expr)))                                                 \
     {                                                                   \
-        LogError(__VA_ARGS__);                                          \
+        log_error(__VA_ARGS__);                                         \
         ERROR_LEAVE();                                                  \
     }                                                                   \
 } while (0)

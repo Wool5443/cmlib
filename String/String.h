@@ -343,6 +343,7 @@ ERROR_CASE
     return Result_String_ctor(
         (String)
         {
+            .allocator = Current_string_allocator,
             .data = data,
             .size = 0,
             .capacity = data ? capacity : 0,

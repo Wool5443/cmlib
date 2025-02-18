@@ -2,6 +2,7 @@ set(LIB_NAME "cmlib_allocator")
 
 set(SOURCES
     "src/Allocator.c"
+    "src/Arena.c"
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})

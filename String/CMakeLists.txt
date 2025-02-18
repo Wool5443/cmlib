@@ -7,4 +7,4 @@ set(SOURCES
 add_library(${LIB_NAME} STATIC ${SOURCES})
 
 target_include_directories(${LIB_NAME} PUBLIC .)
-target_link_libraries(${LIB_NAME} PUBLIC cmlib_logger)
+target_link_libraries(${LIB_NAME} PUBLIC cmlib_logger cmlib_allocator)
