@@ -335,8 +335,11 @@ INLINE Str str_ctor_string(const String string)
 
 INLINE int str_compare(const Str lhs, const Str rhs)
 {
-    size_t min_size = lhs.size < rhs.size ? lhs.size : rhs.size;
-    return memcmp(lhs.data, rhs.data, min_size);
+    if (lhs.size == rhs.size)
+    {
+        return memcmp(lhs.data, rhs.data, lhs.size);
+    }
+    return memcmp(lhs.data, rhs.data, MIN(lhs.size, rhs.size) + 1);
 }
 
 INLINE void str_print(const Str string, FILE* out)
@@ -414,8 +417,7 @@ INLINE Result_String string_copy(const String string)
 
 INLINE int string_compare(const String lhs, const String rhs)
 {
-    size_t min_size = lhs.size < rhs.size ? lhs.size : rhs.size;
-    return memcmp(lhs.data, rhs.data, min_size);
+    return str_compare(str_ctor_string(lhs), str_ctor_string(rhs));
 }
 
 INLINE Error_code string_realloc(String* restrict this, size_t newCapacity)
