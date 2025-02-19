@@ -420,29 +420,30 @@ INLINE int string_compare(const String lhs, const String rhs)
     return str_compare(str_ctor_string(lhs), str_ctor_string(rhs));
 }
 
-INLINE Error_code string_realloc(String* restrict this, size_t newCapacity)
+INLINE Error_code string_realloc(String* restrict this, size_t new_capacity)
 {
     ERROR_CHECKING();
 
     assert(this);
-    assert(newCapacity);
+    assert(new_capacity);
 
-    char* newData = NULL;
+    char* new_data = NULL;
 
-    if (this->capacity >= newCapacity) return EVERYTHING_FINE;
+    if (this->capacity >= new_capacity) return EVERYTHING_FINE;
 
-    newData = realloc(this->data, newCapacity + 1);
+    new_data = this->allocator.allocate(new_capacity + 1);
 
-    if (!newData)
+    if (!new_data)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Failed to realloc string: %s");
     }
 
     *this = (String)
     {
-        .data = newData,
+        .allocator = this->allocator,
+        .data = new_data,
         .size = this->size,
-        .capacity = newCapacity
+        .capacity = new_capacity
     };
 
 ERROR_CASE
