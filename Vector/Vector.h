@@ -16,12 +16,12 @@
  */
 typedef struct VHeader_
 {
-    Allocator allocator; ///< allocator
+    Allocator* allocator; ///< allocator
     size_t size; ///< vector size
     size_t capacity; ///< vector capacity
 } VHeader_;
 
-extern Allocator Current_vector_allocator;
+extern Allocator* Current_vector_allocator;
 
 /**
  * @brief Get pointer to vectors header
@@ -29,14 +29,14 @@ extern Allocator Current_vector_allocator;
 #define GET_VEC_HEADER(vec) (&((VHeader_*)(vec))[-1])
 #define GET_VEC_ALLOCATOR(vec) ((vec) ? GET_VEC_HEADER(vec)->allocator : Current_vector_allocator)
 
-#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec).free(GET_VEC_HEADER(vec))
+#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec)->free(GET_VEC_HEADER(vec))
 
 /**
  * @brief Destroys a vector
  *
  * @param [in] vec
  */
-INLINE void vec_dtor(void* vec);
+INLINE void vec_dtor(void* restrict vec);
 
 /**
  * @brief Get vector size
@@ -45,7 +45,7 @@ INLINE void vec_dtor(void* vec);
  *
  * @return size_t size
  */
-INLINE size_t vec_size(void* vec);
+INLINE size_t vec_size(void* restrict vec);
 
 /**
  * @brief Get vector capacity
@@ -54,14 +54,14 @@ INLINE size_t vec_size(void* vec);
  *
  * @return size_t size
  */
-INLINE size_t vec_capacity(void* vec);
+INLINE size_t vec_capacity(void* restrict vec);
 
 /**
  * @brief Clears the vector
  *
  * @param [in] vec
  */
-INLINE void vec_clear(void* vec);
+INLINE void vec_clear(void* restrict vec);
 
 /**
  * @brief Creates a Vector
@@ -69,9 +69,9 @@ INLINE void vec_clear(void* vec);
  * @param [in] elem_size
  * @param [in] capacity
  *
- * @return void* vector
+ * @return void* restrict vector
  */
-INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity);
+INLINE void* vec_ctor_(Allocator* restrict allocator, size_t elem_size, size_t capacity);
 
 /**
  * @brief Reallocate a vector if it is full
@@ -81,16 +81,16 @@ INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity);
  * @param [in] vec
  * @param [in] elem_size
  *
- * @return void* vec or NULL on error
+ * @return void* restrict vec or NULL on error
  */
-INLINE void* vec_realloc_(void* vec, size_t elem_size);
+INLINE void* vec_realloc_(void* restrict vec, size_t elem_size);
 
-INLINE void vec_dtor(void* vec)
+INLINE void vec_dtor(void* restrict vec)
 {
     if (vec) VEC_FREE(vec);
 }
 
-INLINE size_t vec_size(void* vec)
+INLINE size_t vec_size(void* restrict vec)
 {
     if (!vec) return 0;
 
@@ -98,7 +98,7 @@ INLINE size_t vec_size(void* vec)
     return header->size;
 }
 
-INLINE size_t vec_capacity(void* vec)
+INLINE size_t vec_capacity(void* restrict vec)
 {
     if (!vec) return 0;
 
@@ -106,7 +106,7 @@ INLINE size_t vec_capacity(void* vec)
     return header->capacity;
 }
 
-INLINE void vec_clear(void* vec)
+INLINE void vec_clear(void* restrict vec)
 {
     if (!vec) return;
 
@@ -188,14 +188,14 @@ INLINE void vec_clear(void* vec)
     vec_expand_error;                                                           \
 })
 
-INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
+INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity)
 {
     ERROR_CHECKING();
     assert(elem_size);
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 
-    VHeader_* header = allocator.allocate(capacity * elem_size + sizeof(VHeader_));
+    VHeader_* header = allocator->allocate(capacity * elem_size + sizeof(VHeader_));
     if (!header)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
@@ -211,7 +211,7 @@ INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
     return NULL;
 }
 
-INLINE void* vec_realloc_(void* vec, size_t elem_size)
+INLINE void* vec_realloc_(void* restrict vec, size_t elem_size)
 {
     if (!vec)
         return vec_ctor_(Current_vector_allocator, elem_size, DEFAULT_CAPACITY);

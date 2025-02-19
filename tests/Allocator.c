@@ -26,7 +26,7 @@ int main()
         myfree,
     };
 
-    Current_vector_allocator = myallocator;
+    Current_vector_allocator = &myallocator;
 
     int* vec = NULL;
 
@@ -36,5 +36,5 @@ int main()
     }
 
 ERROR_CASE
-    free_arena(&arena);
+    arena_dtor(&arena);
 }

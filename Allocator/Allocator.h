@@ -17,12 +17,12 @@ typedef struct Allocator
 
 INLINE void* cmlib_calloc_proxy(size_t size);
 
-static const Allocator Malloc_allocator = {
+UNUSED static Allocator Malloc_allocator = {
     malloc,
     free,
 };
 
-static const Allocator Calloc_allocator = {
+UNUSED static Allocator Calloc_allocator = {
     cmlib_calloc_proxy,
     free,
 };
