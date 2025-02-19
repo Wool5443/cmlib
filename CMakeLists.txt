@@ -8,3 +8,5 @@ add_subdirectory(String)
 add_subdirectory(IO)
 add_subdirectory(Allocator)
 add_subdirectory(tests)
+
+set(CMAKE_C_FLAGS_DEBUG "-fsanitize=address")

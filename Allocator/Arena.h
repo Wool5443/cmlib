@@ -51,7 +51,14 @@ INLINE void* arena_allocate(Arena* arena, size_t size)
 {
     assert(arena);
 
-    size += (sizeof(void*) - (size % sizeof(void*))) % sizeof(void*);
+    if (size == 0)
+    {
+        size = 1;
+    }
+
+    size_t align = sizeof(void*);
+    size = (size + align - 1) & ~(align - 1);
+
     if (arena->current + size >= arena->end)
     {
         return NULL;
