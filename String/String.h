@@ -205,7 +205,7 @@ INLINE Result_String read_file(const char* restrict path);
  * @see Str
  * @see ErrorCode
  */
-INLINE Result_Str string_slice(const String this, size_t startIdx, size_t endIdx);
+INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_idx);
 
 /**
  * @brief Appends a char to this
@@ -515,8 +515,8 @@ INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_i
     {
         err = ERROR_BAD_ARGS;
         log_error("Failed to create slice:\n"
-                 "startIdx: %zu, endIdx: %zu",
-                 start_idx, end_idx);
+                  "startIdx: %zu, endIdx: %zu",
+                  start_idx, end_idx);
         return Result_Str_ctor((Str){}, err);
     }
 

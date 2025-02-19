@@ -20,7 +20,7 @@ Error_code string_append_str(String* this, Str string);
 Error_code string_append(String* this, const char* string);
 Error_code string_append_string(String* this, const String string);
 Error_code string_append_char(String* this, char ch);
-Result_Str string_slice(const String* this, size_t startIdx, size_t endIdx);
+Result_Str string_slice(const String this, size_t startIdx, size_t endIdx);
 Result_String read_file(const char* path);
 Result_String string_vprintf(const char* format, va_list args);
 Result_String string_printf(const char* format, ...);
