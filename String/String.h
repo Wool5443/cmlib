@@ -83,6 +83,18 @@ INLINE Str str_ctor_size(const char* restrict string, size_t size);
 INLINE Str str_ctor_string(const String string);
 
 /**
+ * @brief Compares 2 strs
+ *
+ * @param [in] lhs
+ * @param [in] rhs
+ *
+ * @return int
+ *
+ * @see Str
+ */
+INLINE int str_compare(const Str lhs, const Str rhs);
+
+/**
  * @brief Prints str slice to out
  *
  * @param [in] string
@@ -193,7 +205,7 @@ INLINE Result_String read_file(const char* restrict path);
  * @see Str
  * @see ErrorCode
  */
-INLINE Result_Str string_slice(const String* restrict this, size_t startIdx, size_t endIdx);
+INLINE Result_Str string_slice(const String this, size_t startIdx, size_t endIdx);
 
 /**
  * @brief Appends a char to this
@@ -269,6 +281,18 @@ INLINE Error_code string_append_str(String* restrict this, Str string);
 INLINE void string_clear(String* restrict this);
 
 /**
+ * @brief Compares 2 strings
+ *
+ * @param [in] lhs
+ * @param [in] rhs
+ *
+ * @return int
+ *
+ * @see Str
+ */
+INLINE int string_compare(const String lhs, const String rhs);
+
+/**
  * @brief Reallocs a String to new capacity
  *
  * Unsafe to realloc NULL
@@ -307,6 +331,12 @@ INLINE Str str_ctor_string(const String string)
         .data = string.data,
         .size = string.size,
     };
+}
+
+INLINE int str_compare(const Str lhs, const Str rhs)
+{
+    size_t min_size = lhs.size < rhs.size ? lhs.size : rhs.size;
+    return memcmp(lhs.data, rhs.data, min_size);
 }
 
 INLINE void str_print(const Str string, FILE* out)
@@ -380,6 +410,12 @@ INLINE void string_dtor(String* restrict this)
 INLINE Result_String string_copy(const String string)
 {
     return string_ctor_str(str_ctor_string(string));
+}
+
+INLINE int string_compare(const String lhs, const String rhs)
+{
+    size_t min_size = lhs.size < rhs.size ? lhs.size : rhs.size;
+    return memcmp(lhs.data, rhs.data, min_size);
 }
 
 INLINE Error_code string_realloc(String* restrict this, size_t newCapacity)
@@ -470,24 +506,22 @@ INLINE Error_code string_append_char(String* restrict this, char ch)
     return EVERYTHING_FINE;
 }
 
-INLINE Result_Str string_slice(const String* restrict this, size_t startIdx, size_t endIdx)
+INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_idx)
 {
     ERROR_CHECKING();
 
-    assert(this);
-
-    if (startIdx >= this->size || endIdx >= this->size
-        || endIdx < startIdx)
+    if (start_idx >= this.size || end_idx >= this.size
+        || end_idx < start_idx)
     {
         err = ERROR_BAD_ARGS;
         log_error("Failed to create slice:\n"
                  "startIdx: %zu, endIdx: %zu",
-                 startIdx, endIdx);
+                 start_idx, end_idx);
         return Result_Str_ctor((Str){}, err);
     }
 
     return Result_Str_ctor(
-        (Str){ .data = this->data + startIdx, .size = endIdx - startIdx },
+        (Str) { .data = this.data + start_idx, .size = end_idx - start_idx },
         err
     );
 }
