@@ -9,6 +9,8 @@
 
 #define DEFAULT_CAPACITY 8
 
+// TODO: vec_iter
+
 /**
  * @struct VHeader_
  *
