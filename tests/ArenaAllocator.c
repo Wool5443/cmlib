@@ -65,7 +65,7 @@ int main()
         }
     }
 
-    log_info("Allocator test succeed!");
+    log_info("ArenaAllocator test succeed!");
 
 ERROR_CASE
     vec_dtor(vec);
