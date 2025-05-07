@@ -28,7 +28,18 @@
 #define STRINGIFY(x) #x
 #define STRINGIFY_VALUE(x) STRINGIFY(x)
 
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define MIN(x, y)                                       \
+({                                                      \
+    auto x_t = (x);                                     \
+    auto y_t = (y);                                     \
+    x_t < y_t ? x_t : y_t;                              \
+})
+
+#define MAX(x, y)                                       \
+({                                                      \
+    auto x_t = (x);                                     \
+    auto y_t = (y);                                     \
+    x_t > y_t ? x_t : y_t;                              \
+})
 
 #endif // CMLIB_COMMON_H

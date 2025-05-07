@@ -18,33 +18,27 @@ int main(void)
 
     for (int i = 0; i < 1000; i++)
     {
-
-      do {
-        if ((err = (({
-               Error_code vecAddError_ = ERROR_NO_MEMORY;
-               void *temp = vec_realloc_((vec), sizeof(*vec));
-               if (temp) {
-                 vecAddError_ = EVERYTHING_FINE;
-                 (vec) = temp;
-                 VHeader_ *header = (&((VHeader_ *)(vec))[-1]);
-                 (vec)[header->size++] = i;
-               }
-               vecAddError_;
-             })))) {
-          goto ERROR_CASE_;
-        }
-      } while (0);
+        CHECK_ERROR(vec_add(vec, i));
     }
 
-    vec_reserve(vec, 2000);
+    CHECK_ERROR(vec_reserve(vec, 2000));
 
     int sum = 0;
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0, end = vec_size(vec); i < end; i++)
     {
         sum += vec[i];
     }
+    printf("Got: %d\nShould be: %d\n\n", sum, 999 * 1000 / 2);
 
-    printf("Got: %d\nShould be: %d\n", sum, 999 * 1000 / 2);
+    CHECK_ERROR(vec_reserve(vec, 500));
+
+    sum = 0;
+    for (int i = 0, end = vec_size(vec); i < end; i++)
+    {
+        sum += vec[i];
+    }
+    printf("Got: %d\nShould be: %d\n", sum, 499 * 500 / 2);
 
 ERROR_CASE
+    vec_dtor(vec);
 }

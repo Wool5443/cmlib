@@ -65,6 +65,8 @@ int main()
         }
     }
 
+    log_info("Allocator test succeed!");
+
 ERROR_CASE
     vec_dtor(vec);
     vec_dtor(allocations);

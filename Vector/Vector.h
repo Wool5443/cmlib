@@ -33,6 +33,8 @@ extern Allocator* Current_vector_allocator;
 
 #define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec)->free(GET_VEC_HEADER(vec))
 
+#define VEC_ITER(vec, iter_name)
+
 /**
  * @brief Destroys a vector
  *
@@ -176,18 +178,19 @@ INLINE void vec_clear(void* restrict vec)
  */
 #define vec_reserve(vec, newCapacity)                                           \
 ({                                                                              \
-    Error_code vec_expand_error = ERROR_NO_MEMORY;                              \
+    Error_code vec_reserve_error = ERROR_NO_MEMORY;                             \
     void* temp = vec_ctor_(GET_VEC_ALLOCATOR(vec), sizeof(*(vec)), newCapacity);\
     if (temp)                                                                   \
     {                                                                           \
-        vec_expand_error = EVERYTHING_FINE;                                     \
-        size_t size = vec_size(vec);                                            \
+        vec_reserve_error = EVERYTHING_FINE;                                    \
+        size_t size = MIN(vec_size(vec), (size_t)newCapacity);                  \
         if ((vec) && size)                                                      \
             memcpy(temp, vec, sizeof(*(vec)) * size);                           \
         vec_dtor(vec);                                                          \
         (vec) = temp;                                                           \
+        GET_VEC_HEADER(vec)->size = size;                                       \
     }                                                                           \
-    vec_expand_error;                                                           \
+    vec_reserve_error;                                                          \
 })
 
 INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity)
