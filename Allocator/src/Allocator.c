@@ -2,3 +2,4 @@
 
 void* cmlib_calloc_proxy(size_t size);
 size_t align_size(size_t size);
+void* align_ptr(void* ptr);

@@ -2,6 +2,7 @@
 #define CMLIB_ALLOCATOR_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "../common.h"
@@ -17,6 +18,7 @@ typedef struct Allocator
 
 INLINE void* cmlib_calloc_proxy(size_t size);
 INLINE size_t align_size(size_t size);
+INLINE void* align_ptr(void* ptr);
 
 UNUSED static Allocator Malloc_allocator = {
     malloc,
@@ -43,6 +45,14 @@ INLINE size_t align_size(size_t size)
     size_t align = sizeof(void*);
     size = (size + align - 1) & ~(align - 1);
     return size;
+}
+
+INLINE void* align_ptr(void* ptr)
+{
+    size_t align = sizeof(void*);
+    auto p = (uintptr_t)ptr;
+    p = (p + align - 1) & ~(align - 1);
+    return (void*)p;
 }
 
 #endif // CMLIB_ALLOCATOR_H_
