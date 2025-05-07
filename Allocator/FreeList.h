@@ -23,14 +23,110 @@ struct FreeListMemoryPool
 {
     FreeListMemoryPool* next_pool;
     FreeListFreeBlockHeader* next_block;
-    size_t size;
+    void* pool_end;
 };
+
+typedef struct FreeList
+{
+    FreeListMemoryPool* pool;
+} FreeList;
+DECLARE_RESULT_HEADER(FreeList);
+
+INLINE Result_FreeList free_list_ctor(size_t pool_size);
+INLINE void free_list_dtor(FreeList* allocator);
+INLINE void* free_list_allocate(FreeList* allocator, size_t size);
+INLINE void free_list_free(FreeList* allocator, void* ptr);
 
 INLINE FreeListMemoryPool* free_list_pool_ctor(size_t size);
 INLINE void free_list_pool_dtor(FreeListMemoryPool* pool);
-INLINE void* free_list_memory_pool_allocate(FreeListMemoryPool* pool, size_t size);
-INLINE bool free_list_memory_pool_check_ptr(FreeListMemoryPool* pool, void* ptr);
-INLINE void free_list_memory_pool_free(FreeListMemoryPool* pool, void* ptr);
+INLINE void* free_list_pool_allocate(FreeListMemoryPool* pool, size_t size);
+INLINE bool free_list_pool_check_ptr(FreeListMemoryPool* pool, void* ptr);
+INLINE bool free_list_pool_free(FreeListMemoryPool* pool, void* ptr);
+
+INLINE Result_FreeList free_list_ctor(size_t pool_size)
+{
+    FreeListMemoryPool* pool = free_list_pool_ctor(pool_size);
+
+    if (!pool)
+    {
+        return (Result_FreeList) {
+            .error_code = ERROR_NO_MEMORY,
+        };
+    }
+
+    return (Result_FreeList) {
+        .value = (FreeList) {
+            .pool = pool,
+        },
+    };
+}
+
+INLINE void free_list_dtor(FreeList* allocator)
+{
+    if (!allocator)
+    {
+        return;
+    }
+
+    FreeListMemoryPool* curr_pool = allocator->pool;
+
+    while (curr_pool)
+    {
+        FreeListMemoryPool* next_pool = curr_pool->next_pool;
+        free_list_pool_dtor(curr_pool);
+        curr_pool = next_pool;
+    }
+
+    *allocator = (FreeList){};
+}
+
+INLINE void* free_list_allocate(FreeList* allocator, size_t size)
+{
+    assert(allocator);
+
+    void* allocated = NULL;
+    FreeListMemoryPool* prev_pool = NULL;
+    FreeListMemoryPool* curr_pool = allocator->pool;
+
+    while (curr_pool && !allocated)
+    {
+        allocated = free_list_pool_allocate(curr_pool, size);
+        prev_pool = curr_pool;
+        curr_pool = curr_pool->next_pool;
+    }
+
+    if (allocated)
+    {
+        return allocated;
+    }
+
+    FreeListMemoryPool* new_pool = free_list_pool_ctor(size);
+    if (!new_pool)
+    {
+        return NULL;
+    }
+
+    prev_pool->next_pool = new_pool;
+
+    return free_list_pool_allocate(new_pool, size);
+}
+
+INLINE void free_list_free(FreeList* allocator, void* ptr)
+{
+    assert(allocator);
+
+    if (!ptr)
+    {
+        return;
+    }
+
+    FreeListMemoryPool* curr_pool = allocator->pool;
+
+    while (curr_pool && !free_list_pool_free(curr_pool, ptr))
+    {
+        curr_pool = curr_pool->next_pool;
+    }
+}
 
 INLINE FreeListMemoryPool* free_list_pool_ctor(size_t size)
 {
@@ -50,10 +146,12 @@ INLINE FreeListMemoryPool* free_list_pool_ctor(size_t size)
         .next = NULL,
     };
 
+    void* pool_start = pool + 1;
+
     *pool = (FreeListMemoryPool) {
         .next_pool = NULL,
         .next_block = block,
-        .size = size,
+        .pool_end = (char*)pool_start + size - sizeof(void*),
     };
 
     return pool;
@@ -64,7 +162,7 @@ INLINE void free_list_pool_dtor(FreeListMemoryPool* pool)
     free(pool);
 }
 
-INLINE void* free_list_memory_pool_allocate(FreeListMemoryPool* pool, size_t size)
+INLINE void* free_list_pool_allocate(FreeListMemoryPool* pool, size_t size)
 {
     assert(pool);
 
@@ -115,7 +213,7 @@ INLINE void* free_list_memory_pool_allocate(FreeListMemoryPool* pool, size_t siz
     return allocated;
 }
 
-INLINE bool free_list_memory_pool_check_ptr(FreeListMemoryPool* pool, void* ptr)
+INLINE bool free_list_pool_check_ptr(FreeListMemoryPool* pool, void* ptr)
 {
     assert(pool);
 
@@ -125,23 +223,25 @@ INLINE bool free_list_memory_pool_check_ptr(FreeListMemoryPool* pool, void* ptr)
     }
 
     void* pool_start = pool + 1;
-    void* pool_end = (char*)pool_start + pool->size - sizeof(void*);
 
-    return ptr == align_ptr(ptr) && pool_start <= ptr && ptr <= pool_end;
+    return ptr == align_ptr(ptr) && pool_start <= ptr && ptr <= pool->pool_end;
 }
 
-INLINE void free_list_memory_pool_free(FreeListMemoryPool* pool, void* ptr)
+INLINE bool free_list_pool_free(FreeListMemoryPool* pool, void* ptr)
 {
     assert(pool);
-    if (!free_list_memory_pool_check_ptr(pool, ptr))
+
+    if (!free_list_pool_check_ptr(pool, ptr))
     {
-        return;
+        return false;
     }
 
     auto block = (FreeListFreeBlockHeader*)((FreeListOccupiedBlockHeader*)ptr - 1);
     block->next = pool->next_block;
 
     pool->next_block = block;
+
+    return true;
 }
 
 #endif // CMLIB_FREE_LIST_H_

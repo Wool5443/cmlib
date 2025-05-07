@@ -71,4 +71,6 @@ ERROR_CASE
     vec_dtor(vec);
     vec_dtor(allocations);
     arena_dtor(&arena);
+
+    return err;
 }
