@@ -2,11 +2,10 @@
 #define CMLIB_ARENA_H_
 
 #include <stddef.h>
-#include <stdlib.h>
 #include <assert.h>
 
 #include "../Logger/Logger.h"
-#include "../common.h"
+#include "Allocator.h"
 
 typedef struct Arena
 {
@@ -51,13 +50,7 @@ INLINE void* arena_allocate(Arena* arena, size_t size)
 {
     assert(arena);
 
-    if (size == 0)
-    {
-        size = 1;
-    }
-
-    size_t align = sizeof(void*);
-    size = (size + align - 1) & ~(align - 1);
+    size = align_size(size);
 
     if (arena->current + size >= arena->end)
     {

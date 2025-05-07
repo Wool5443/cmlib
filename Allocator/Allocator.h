@@ -16,6 +16,7 @@ typedef struct Allocator
 } Allocator;
 
 INLINE void* cmlib_calloc_proxy(size_t size);
+INLINE size_t align_size(size_t size);
 
 UNUSED static Allocator Malloc_allocator = {
     malloc,
@@ -30,6 +31,18 @@ UNUSED static Allocator Calloc_allocator = {
 INLINE void* cmlib_calloc_proxy(size_t size)
 {
     return calloc(1, size);
+}
+
+INLINE size_t align_size(size_t size)
+{
+    if (size == 0)
+    {
+        size = 1;
+    }
+
+    size_t align = sizeof(void*);
+    size = (size + align - 1) & ~(align - 1);
+    return size;
 }
 
 #endif // CMLIB_ALLOCATOR_H_
