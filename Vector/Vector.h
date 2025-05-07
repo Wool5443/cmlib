@@ -33,7 +33,20 @@ extern Allocator* Current_vector_allocator;
 
 #define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec)->free(GET_VEC_HEADER(vec))
 
-#define VEC_ITER(vec, iter_name)
+#define VEC_ITER(vec, iter_name, ...)                                       \
+SWITCH_EMPTY(                                                               \
+    for (size_t iter_name = 0, iter_name ## _end = vec_size(vec);           \
+        iter_name < iter_name ## _end;                                      \
+        iter_name++                                                         \
+    ),                                                                      \
+    for (size_t iter_name = FIRST(__VA_ARGS__),                             \
+        iter_name ## _end =                                                 \
+            MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__), vec_size(vec));      \
+        iter_name < iter_name ## _end;                                      \
+        iter_name++                                                         \
+    ),                                                                      \
+    __VA_ARGS__                                                             \
+)
 
 /**
  * @brief Destroys a vector

@@ -24,7 +24,7 @@ int main(void)
     CHECK_ERROR(vec_reserve(vec, 2000));
 
     int sum = 0;
-    for (int i = 0, end = vec_size(vec); i < end; i++)
+    VEC_ITER(vec, i)
     {
         sum += vec[i];
     }
@@ -33,11 +33,11 @@ int main(void)
     CHECK_ERROR(vec_reserve(vec, 500));
 
     sum = 0;
-    for (int i = 0, end = vec_size(vec); i < end; i++)
+    VEC_ITER(vec, i, 10, 15)
     {
         sum += vec[i];
     }
-    printf("Got: %d\nShould be: %d\n", sum, 499 * 500 / 2);
+    printf("Got: %d\nShould be: %d\n", sum, 60);
 
 ERROR_CASE
     vec_dtor(vec);

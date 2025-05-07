@@ -57,7 +57,7 @@ int main()
 
     qsort(allocations, vec_size(allocations), sizeof(*allocations), cmp);
 
-    for (int i = 0, end = vec_size(allocations); i < end - 1; i++)
+    VEC_ITER(allocations, i, 0, vec_size(allocations) - 1)
     {
         if (allocations[i] == allocations[i + 1])
         {
