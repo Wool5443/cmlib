@@ -56,7 +56,7 @@ DECLARE_RESULT_HEADER(Str);
  *
  * @see Str
  */
-INLINE Str str_ctor(const char* restrict string);
+INLINE Str str_ctor(const char* string);
 
 /**
  * @brief Str constructor knowing string size
@@ -68,7 +68,7 @@ INLINE Str str_ctor(const char* restrict string);
  *
  * @see Str
  */
-INLINE Str str_ctor_size(const char* restrict string, size_t size);
+INLINE Str str_ctor_size(const char* string, size_t size);
 
 /**
  * @brief Str constructor from String
@@ -114,7 +114,7 @@ INLINE void str_print(const Str string, FILE* out);
  * @see String
  * @see ErrorCode
  */
-INLINE Result_String string_ctor(const char* restrict string);
+INLINE Result_String string_ctor(const char* string);
 
 /**
  * @brief String constructor with sufficient capacity
@@ -150,7 +150,7 @@ INLINE Result_String string_ctor_str(Str string);
  *
  * @see String
  */
-INLINE void string_dtor(String* restrict this);
+INLINE void string_dtor(String* this);
 
 /**
  * @brief Copies a string
@@ -175,8 +175,8 @@ INLINE Result_String string_copy(const String string);
  * @see String
  * @see ErrorCode
  */
-INLINE Result_String string_printf(const char* restrict format, ...);
-INLINE Result_String string_vprintf(const char* restrict format, va_list args);
+INLINE Result_String string_printf(const char* format, ...);
+INLINE Result_String string_vprintf(const char* format, va_list args);
 
 /**
  * @brief Reads file's contents to a String
@@ -188,7 +188,7 @@ INLINE Result_String string_vprintf(const char* restrict format, va_list args);
  * @see String
  * @see ErrorCode
  */
-INLINE Result_String read_file(const char* restrict path);
+INLINE Result_String read_file(const char* path);
 
 /**
  * @brief Slices a String
@@ -221,7 +221,7 @@ INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_i
  * @see Str
  * @see ErrorCode
  */
-INLINE Error_code string_append_char(String* restrict this, char ch);
+INLINE Error_code string_append_char(String* this, char ch);
 
 /**
  * @brief Appends a String string to this
@@ -237,7 +237,7 @@ INLINE Error_code string_append_char(String* restrict this, char ch);
  * @see Str
  * @see ErrorCode
  */
-INLINE Error_code string_append_string(String* restrict this, const String string);
+INLINE Error_code string_append_string(String* this, const String string);
 
 /**
  * @brief Appends a c-style string string to this
@@ -253,7 +253,7 @@ INLINE Error_code string_append_string(String* restrict this, const String strin
  * @see Str
  * @see ErrorCode
  */
-INLINE Error_code string_append(String* restrict this, const char* restrict string);
+INLINE Error_code string_append(String* this, const char* string);
 
 /**
  * @brief Appends a Str string to this
@@ -269,7 +269,7 @@ INLINE Error_code string_append(String* restrict this, const char* restrict stri
  * @see Str
  * @see ErrorCode
  */
-INLINE Error_code string_append_str(String* restrict this, Str string);
+INLINE Error_code string_append_str(String* this, Str string);
 
 /**
  * @brief Clears a stting
@@ -278,7 +278,7 @@ INLINE Error_code string_append_str(String* restrict this, Str string);
  *
  * @see String
  */
-INLINE void string_clear(String* restrict this);
+INLINE void string_clear(String* this);
 
 /**
  * @brief Compares 2 strings
@@ -305,14 +305,14 @@ INLINE int string_compare(const String lhs, const String rhs);
  * @see String
  * @see ErrorCode
  */
-INLINE Error_code string_realloc(String* restrict this, size_t newCapacity);
+INLINE Error_code string_realloc(String* this, size_t newCapacity);
 
-INLINE Str str_ctor(const char* restrict string)
+INLINE Str str_ctor(const char* string)
 {
     return str_ctor_size(string, strlen(string));
 }
 
-INLINE Str str_ctor_size(const char* restrict string, size_t size)
+INLINE Str str_ctor_size(const char* string, size_t size)
 {
     if (!string) return (Str){};
     if (size == 0) return (Str){};
@@ -355,7 +355,7 @@ INLINE void str_print(const Str string, FILE* out)
     }
 }
 
-INLINE Result_String string_ctor(const char* restrict string)
+INLINE Result_String string_ctor(const char* string)
 {
     return string_ctor_str(str_ctor(string));
 }
@@ -403,7 +403,7 @@ INLINE Result_String string_ctor_str(Str string)
     return stringRes;
 }
 
-INLINE void string_dtor(String* restrict this)
+INLINE void string_dtor(String* this)
 {
     if (!this) return;
     this->allocator->free(this->data);
@@ -420,7 +420,7 @@ INLINE int string_compare(const String lhs, const String rhs)
     return str_compare(str_ctor_string(lhs), str_ctor_string(rhs));
 }
 
-INLINE Error_code string_realloc(String* restrict this, size_t new_capacity)
+INLINE Error_code string_realloc(String* this, size_t new_capacity)
 {
     ERROR_CHECKING();
 
@@ -453,19 +453,19 @@ ERROR_CASE
     return err;
 }
 
-INLINE void string_clear(String* restrict this)
+INLINE void string_clear(String* this)
 {
     if (this->data) this->data[0] = '\0';
     this->size = 0;
 }
 
-INLINE Error_code string_append(String* restrict this, const char* restrict string)
+INLINE Error_code string_append(String* this, const char* string)
 {
     if (!string) return EVERYTHING_FINE;
     return string_append_str(this, str_ctor(string));
 }
 
-INLINE Error_code string_append_str(String* restrict this, Str string)
+INLINE Error_code string_append_str(String* this, Str string)
 {
     ERROR_CHECKING();
 
@@ -490,12 +490,12 @@ INLINE Error_code string_append_str(String* restrict this, Str string)
     return EVERYTHING_FINE;
 }
 
-INLINE Error_code string_append_string(String* restrict this, const String string)
+INLINE Error_code string_append_string(String* this, const String string)
 {
     return string_append_str(this, str_ctor_string(string));
 }
 
-INLINE Error_code string_append_char(String* restrict this, char ch)
+INLINE Error_code string_append_char(String* this, char ch)
 {
     ERROR_CHECKING();
 
@@ -532,7 +532,7 @@ INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_i
     );
 }
 
-INLINE Result_String read_file(const char* restrict path)
+INLINE Result_String read_file(const char* path)
 {
     ERROR_CHECKING();
 
@@ -585,7 +585,7 @@ ERROR_CASE
     return (Result_String){ {}, err };
 }
 
-INLINE Result_String string_vprintf(const char* restrict format, va_list args)
+INLINE Result_String string_vprintf(const char* format, va_list args)
 {
     ERROR_CHECKING();
 
@@ -636,7 +636,7 @@ ERROR_CASE
     return Result_String_ctor(CMLIB_EMPTY_STRING, err);
 }
 
-INLINE Result_String string_printf(const char* restrict format, ...)
+INLINE Result_String string_printf(const char* format, ...)
 {
     va_list args = {};
     va_start(args, format);

@@ -26,7 +26,7 @@ typedef struct
 
 extern Logger cmlibLogger_;
 
-void logger_init_path(const char* restrict path);
+void logger_init_path(const char* path);
 
 void logger_init_file(FILE* file);
 

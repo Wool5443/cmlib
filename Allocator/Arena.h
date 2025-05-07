@@ -18,9 +18,9 @@ typedef struct Arena
 DECLARE_RESULT_HEADER(Arena);
 
 INLINE Result_Arena arena_ctor(size_t capacity);
-INLINE void* arena_allocate(Arena* restrict arena, size_t size);
-INLINE void arena_flush(Arena* restrict arena);
-INLINE void arena_dtor(Arena* restrict arena);
+INLINE void* arena_allocate(Arena* arena, size_t size);
+INLINE void arena_flush(Arena* arena);
+INLINE void arena_dtor(Arena* arena);
 
 INLINE Result_Arena arena_ctor(size_t capacity)
 {
@@ -70,14 +70,14 @@ INLINE void* arena_allocate(Arena* arena, size_t size)
     return allocated;
 }
 
-INLINE void arena_flush(Arena* restrict arena)
+INLINE void arena_flush(Arena* arena)
 {
     assert(arena);
 
     arena->current = arena->buffer;
 }
 
-INLINE void arena_dtor(Arena* restrict arena)
+INLINE void arena_dtor(Arena* arena)
 {
     if (arena)
     {

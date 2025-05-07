@@ -53,7 +53,7 @@ SWITCH_EMPTY(                                                               \
  *
  * @param [in] vec
  */
-INLINE void vec_dtor(void* restrict vec);
+INLINE void vec_dtor(void* vec);
 
 /**
  * @brief Get vector size
@@ -62,7 +62,7 @@ INLINE void vec_dtor(void* restrict vec);
  *
  * @return size_t size
  */
-INLINE size_t vec_size(void* restrict vec);
+INLINE size_t vec_size(void* vec);
 
 /**
  * @brief Get vector capacity
@@ -71,14 +71,14 @@ INLINE size_t vec_size(void* restrict vec);
  *
  * @return size_t size
  */
-INLINE size_t vec_capacity(void* restrict vec);
+INLINE size_t vec_capacity(void* vec);
 
 /**
  * @brief Clears the vector
  *
  * @param [in] vec
  */
-INLINE void vec_clear(void* restrict vec);
+INLINE void vec_clear(void* vec);
 
 /**
  * @brief Creates a Vector
@@ -86,9 +86,9 @@ INLINE void vec_clear(void* restrict vec);
  * @param [in] elem_size
  * @param [in] capacity
  *
- * @return void* restrict vector
+ * @return void* vector
  */
-INLINE void* vec_ctor_(Allocator* restrict allocator, size_t elem_size, size_t capacity);
+INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity);
 
 /**
  * @brief Reallocate a vector if it is full
@@ -98,16 +98,16 @@ INLINE void* vec_ctor_(Allocator* restrict allocator, size_t elem_size, size_t c
  * @param [in] vec
  * @param [in] elem_size
  *
- * @return void* restrict vec or NULL on error
+ * @return void* vec or NULL on error
  */
-INLINE void* vec_realloc_(void* restrict vec, size_t elem_size);
+INLINE void* vec_realloc_(void* vec, size_t elem_size);
 
-INLINE void vec_dtor(void* restrict vec)
+INLINE void vec_dtor(void* vec)
 {
     if (vec) VEC_FREE(vec);
 }
 
-INLINE size_t vec_size(void* restrict vec)
+INLINE size_t vec_size(void* vec)
 {
     if (!vec) return 0;
 
@@ -115,7 +115,7 @@ INLINE size_t vec_size(void* restrict vec)
     return header->size;
 }
 
-INLINE size_t vec_capacity(void* restrict vec)
+INLINE size_t vec_capacity(void* vec)
 {
     if (!vec) return 0;
 
@@ -123,7 +123,7 @@ INLINE size_t vec_capacity(void* restrict vec)
     return header->capacity;
 }
 
-INLINE void vec_clear(void* restrict vec)
+INLINE void vec_clear(void* vec)
 {
     if (!vec) return;
 
@@ -229,7 +229,7 @@ INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity)
     return NULL;
 }
 
-INLINE void* vec_realloc_(void* restrict vec, size_t elem_size)
+INLINE void* vec_realloc_(void* vec, size_t elem_size)
 {
     if (!vec)
         return vec_ctor_(Current_vector_allocator, elem_size, DEFAULT_CAPACITY);
