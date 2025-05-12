@@ -9,6 +9,7 @@
 
 #define MALLOC_ALLOCATOR (Allocator) { malloc, free }
 #define CALLOC_ALLOCATOR (Allocator) { cmlib_calloc_proxy, free }
+#define EMPTY_ALLOCATOR (Allocator) { NULL, NULL }
 
 typedef void* (*allocate_function)(size_t);
 typedef void  (*free_function)(void*);

@@ -104,12 +104,9 @@ INLINE ListHeader* list_end(ListHeader* node);
     ListHeader* node_ = (node);                                                 \
     if (node_)                                                                  \
     {                                                                           \
-        auto value_ = (value);                                                  \
-        Error_code list_insert_error = ERROR_NO_MEMORY;                         \
         ListHeader* new_node = list_node_ctor_(value, node_->allocator);        \
         if (new_node)                                                           \
         {                                                                       \
-            list_insert_error = EVERYTHING_FINE;                                \
             *new_node = (ListHeader) {                                          \
                 .prev = node_,                                                  \
                 .next = node_->next,                                            \
@@ -135,12 +132,9 @@ INLINE ListHeader* list_end(ListHeader* node);
     ListHeader* node_ = (node);                                                 \
     if (node_)                                                                  \
     {                                                                           \
-        auto value_ = (value);                                                  \
-        Error_code list_insert_error = ERROR_NO_MEMORY;                         \
         ListHeader* new_node = list_node_ctor_(value, node_->allocator);        \
         if (new_node)                                                           \
         {                                                                       \
-            list_insert_error = EVERYTHING_FINE;                                \
             *new_node = (ListHeader) {                                          \
                 .prev = node_->prev,                                            \
                 .next = node_,                                                  \

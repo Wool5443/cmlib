@@ -427,9 +427,14 @@ INLINE Result_String string_ctor_str(Str string)
 
 INLINE void string_dtor(String* this)
 {
-    if (!this) return;
-    this->allocator.free(this->data);
-    this->data = NULL;
+    if (!this)
+        return;
+
+    if (this->allocator.free)
+    {
+        this->allocator.free(this->data);
+    }
+    *this = (String){};
 }
 
 INLINE Result_String string_copy(const String string)

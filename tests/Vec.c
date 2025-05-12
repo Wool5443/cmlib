@@ -1,12 +1,12 @@
 #include "Vector.h"
 
-void* myalloc(size_t size)
+void* myalloc(size_t)
 {
     static char buf[1000000];
     return buf;
 }
 
-void myfree(void* ptr) {}
+void myfree(void*) {}
 
 int main(void)
 {

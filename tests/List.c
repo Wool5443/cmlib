@@ -22,7 +22,5 @@ int main()
         current = current->next;
     }
 
-ERROR_CASE
-
     list_dtor(list);
 }
