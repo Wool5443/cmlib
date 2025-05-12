@@ -12,3 +12,6 @@ target_link_libraries(testFreeListAllocator PRIVATE cmlib_vector)
 
 add_executable(testString String.c)
 target_link_libraries(testString PRIVATE cmlib_string)
+
+add_executable(testList List.c)
+target_link_libraries(testList PRIVATE cmlib_list)
