@@ -7,6 +7,9 @@
 
 #include "../common.h"
 
+#define MALLOC_ALLOCATOR (Allocator) { malloc, free }
+#define CALLOC_ALLOCATOR (Allocator) { cmlib_calloc_proxy, free }
+
 typedef void* (*allocate_function)(size_t);
 typedef void  (*free_function)(void*);
 
@@ -19,16 +22,6 @@ typedef struct Allocator
 INLINE void* cmlib_calloc_proxy(size_t size);
 INLINE size_t align_size(size_t size);
 INLINE void* align_ptr(void* ptr);
-
-UNUSED static Allocator Malloc_allocator = {
-    malloc,
-    free,
-};
-
-UNUSED static Allocator Calloc_allocator = {
-    cmlib_calloc_proxy,
-    free,
-};
 
 INLINE void* cmlib_calloc_proxy(size_t size)
 {

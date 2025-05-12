@@ -38,7 +38,7 @@ int main()
         myfree,
     };
 
-    Current_vector_allocator = &myallocator;
+    Current_vector_allocator = myallocator;
 
     int* vec = NULL;
     void** allocations = NULL;
@@ -48,7 +48,7 @@ int main()
         CHECK_ERROR_LOG(vec_add(vec, i));
     }
 
-    Current_vector_allocator = &Calloc_allocator;
+    Current_vector_allocator = CALLOC_ALLOCATOR;
 
     for (void* p = arena_allocate(&arena, 56); p; p = arena_allocate(&arena, 34))
     {

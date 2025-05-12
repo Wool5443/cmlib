@@ -3,8 +3,10 @@
 DECLARE_RESULT_SOURCE(String);
 DECLARE_RESULT_SOURCE(Str);
 
-Allocator* Current_string_allocator = &Calloc_allocator;
+Allocator Current_string_allocator = CALLOC_ALLOCATOR;
 
+void string_set_allocator(Allocator allocator);
+void string_reset_allocator();
 Str str_ctor_size(const char* string, size_t size);
 Str str_ctor(const char* string);
 Str str_ctor_string(const String string);

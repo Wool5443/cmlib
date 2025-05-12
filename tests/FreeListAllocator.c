@@ -65,7 +65,7 @@ int main()
         .free = free_list_allocator_free,
     };
 
-    Current_vector_allocator = &free_list_allocator;
+    Current_vector_allocator = free_list_allocator;
 
     int* numbers = NULL;
 

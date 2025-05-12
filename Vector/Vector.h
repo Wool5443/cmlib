@@ -18,12 +18,12 @@
  */
 typedef struct VHeader_
 {
-    Allocator* allocator; ///< allocator
+    Allocator allocator; ///< allocator
     size_t size; ///< vector size
     size_t capacity; ///< vector capacity
 } VHeader_;
 
-extern Allocator* Current_vector_allocator;
+extern Allocator Current_vector_allocator;
 
 /**
  * @brief Get pointer to vectors header
@@ -31,7 +31,7 @@ extern Allocator* Current_vector_allocator;
 #define GET_VEC_HEADER(vec) (&((VHeader_*)(vec))[-1])
 #define GET_VEC_ALLOCATOR(vec) ((vec) ? GET_VEC_HEADER(vec)->allocator : Current_vector_allocator)
 
-#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec)->free(GET_VEC_HEADER(vec))
+#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec).free(GET_VEC_HEADER(vec))
 
 #define VEC_ITER(vec, iter_name, ...)                                       \
 SWITCH_EMPTY(                                                               \
@@ -47,6 +47,18 @@ SWITCH_EMPTY(                                                               \
     ),                                                                      \
     __VA_ARGS__                                                             \
 )
+
+/**
+ * @brief Set vec allocator
+ *
+ * @param [in] allocator
+ */
+INLINE void vec_set_allocator(Allocator allocator);
+
+/**
+ * @brief Reset default vec allocator(malloc)
+ */
+INLINE void vec_reset_allocator();
 
 /**
  * @brief Destroys a vector
@@ -88,7 +100,7 @@ INLINE void vec_clear(void* vec);
  *
  * @return void* vector
  */
-INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity);
+INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity);
 
 /**
  * @brief Reallocate a vector if it is full
@@ -101,6 +113,16 @@ INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity);
  * @return void* vec or NULL on error
  */
 INLINE void* vec_realloc_(void* vec, size_t elem_size);
+
+INLINE void vec_set_allocator(Allocator allocator)
+{
+    Current_vector_allocator = allocator;
+}
+
+INLINE void vec_reset_allocator()
+{
+    Current_vector_allocator = MALLOC_ALLOCATOR;
+}
 
 INLINE void vec_dtor(void* vec)
 {
@@ -206,14 +228,14 @@ INLINE void vec_clear(void* vec)
     vec_reserve_error;                                                          \
 })
 
-INLINE void* vec_ctor_(Allocator* allocator, size_t elem_size, size_t capacity)
+INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 {
     ERROR_CHECKING();
     assert(elem_size);
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 
-    VHeader_* header = allocator->allocate(capacity * elem_size + sizeof(VHeader_));
+    VHeader_* header = allocator.allocate(capacity * elem_size + sizeof(VHeader_));
     if (!header)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");

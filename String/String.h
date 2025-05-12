@@ -24,13 +24,13 @@
  */
 typedef struct String
 {
-    Allocator* allocator; ///< allocator
+    Allocator allocator; ///< allocator
     char*  data; ///< data
     size_t size; ///< size
     size_t capacity; ///< capacity number of symbols it can store not including 0. So real capacity is capacity + 1
 } String;
 
-extern Allocator* Current_string_allocator;
+extern Allocator Current_string_allocator;
 
 /**
  * @struct Str
@@ -103,6 +103,18 @@ INLINE int str_compare(const Str lhs, const Str rhs);
  * @see Str
  */
 INLINE void str_print(const Str string, FILE* out);
+
+/**
+ * @brief Set string allocator
+ *
+ * @param [in] allocator
+ */
+INLINE void string_set_allocator(Allocator allocator);
+
+/**
+ * @brief Reset default string allocator(calloc)
+ */
+INLINE void string_reset_allocator();
 
 /**
  * @brief String constructor from c-style string
@@ -355,6 +367,16 @@ INLINE void str_print(const Str string, FILE* out)
     }
 }
 
+INLINE void string_set_allocator(Allocator allocator)
+{
+    Current_string_allocator = allocator;
+}
+
+INLINE void string_reset_allocator()
+{
+    Current_string_allocator = CALLOC_ALLOCATOR;
+}
+
 INLINE Result_String string_ctor(const char* string)
 {
     return string_ctor_str(str_ctor(string));
@@ -366,7 +388,7 @@ INLINE Result_String string_ctor_capacity(size_t capacity)
 
     assert(capacity != 0 && "Capacity can't be zero!");
 
-    char* data = Current_string_allocator->allocate(capacity + 1);
+    char* data = Current_string_allocator.allocate(capacity + 1);
 
     if (!data)
     {
@@ -406,7 +428,7 @@ INLINE Result_String string_ctor_str(Str string)
 INLINE void string_dtor(String* this)
 {
     if (!this) return;
-    this->allocator->free(this->data);
+    this->allocator.free(this->data);
     this->data = NULL;
 }
 
@@ -431,7 +453,7 @@ INLINE Error_code string_realloc(String* this, size_t new_capacity)
 
     if (this->capacity >= new_capacity) return EVERYTHING_FINE;
 
-    new_data = this->allocator->allocate(new_capacity + 1);
+    new_data = this->allocator.allocate(new_capacity + 1);
 
     if (!new_data)
     {
