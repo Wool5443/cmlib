@@ -180,15 +180,29 @@ INLINE Result_String string_copy(const String string);
 /**
  * @brief Prints to string like printf
  *
+ * @param [in] this
  * @param [in] format
  *
- * @return Result_String
+ * @return Error_code
  *
  * @see String
  * @see ErrorCode
  */
-INLINE Result_String string_printf(const char* format, ...);
-INLINE Result_String string_vprintf(const char* format, va_list args);
+INLINE Error_code string_printf(String* this, const char* format, ...);
+INLINE Error_code string_vprintf(String* this, const char* format, va_list args);
+
+/**
+ * @brief Creates a string like printf
+ *
+ * @param [in] format
+ *
+ * @return Error_code
+ *
+ * @see String
+ * @see ErrorCode
+ */
+INLINE Result_String string_ctor_printf(const char* format, ...);
+INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
 
 /**
  * @brief Reads file's contents to a String
@@ -458,7 +472,8 @@ INLINE Error_code string_realloc(String* this, size_t new_capacity)
 
     if (this->capacity >= new_capacity) return EVERYTHING_FINE;
 
-    new_data = this->allocator.allocate(new_capacity + 1);
+    Allocator allocator = this->allocator.allocate ? this->allocator : Current_string_allocator;
+    new_data = allocator.allocate(new_capacity + 1);
 
     if (!new_data)
     {
@@ -544,8 +559,7 @@ INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_i
     ERROR_CHECKING();
 
     if (start_idx >= this.size || end_idx >= this.size
-        || end_idx < start_idx)
-    {
+        || end_idx < start_idx) {
         err = ERROR_BAD_ARGS;
         log_error("Failed to create slice:\n"
                   "startIdx: %zu, endIdx: %zu",
@@ -612,26 +626,30 @@ ERROR_CASE
     return (Result_String){ {}, err };
 }
 
-INLINE Result_String string_vprintf(const char* format, va_list args)
+INLINE Error_code string_printf(String* this, const char* format, ...)
+{
+    va_list args = {};
+    va_start(args, format);
+
+    return string_vprintf(this, format, args);
+}
+
+INLINE Error_code string_vprintf(String* this, const char* format, va_list args)
 {
     ERROR_CHECKING();
 
     assert(format);
 
-    String string = {};
-
     size_t formatLength = strlen(format);
 
     if (formatLength == 0)
     {
-        return Result_String_ctor(CMLIB_EMPTY_STRING, EVERYTHING_FINE);
+        return EVERYTHING_FINE;
     }
 
     size_t capacity = formatLength * 2;
 
-    Result_String stringRes = string_ctor_capacity(capacity);
-    CHECK_ERROR(stringRes.error_code);
-    string = stringRes.value;
+    CHECK_ERROR(string_realloc(this, this->capacity + capacity));
 
     // Try until it fits
     while (true)
@@ -639,7 +657,7 @@ INLINE Result_String string_vprintf(const char* format, va_list args)
         va_list cpargs = {};
         va_copy(cpargs, args);
 
-        int written = vsnprintf(string.data, capacity, format, cpargs);
+        int written = vsnprintf(this->data + this->size, capacity, format, cpargs);
 
         if (written < 0)
         {
@@ -647,28 +665,36 @@ INLINE Result_String string_vprintf(const char* format, va_list args)
         }
         else if (written <= (int)capacity)
         {
-            string.size = written;
+            this->size += written;
             break;
         }
 
         capacity = written + 1;
-        CHECK_ERROR(string_realloc(&string, capacity));
+        CHECK_ERROR(string_realloc(this, this->capacity + capacity));
     }
 
-    return Result_String_ctor(string, EVERYTHING_FINE);
+    return EVERYTHING_FINE;
 
 ERROR_CASE
-    string_dtor(&string);
 
-    return Result_String_ctor(CMLIB_EMPTY_STRING, err);
+    return err;
 }
 
-INLINE Result_String string_printf(const char* format, ...)
+INLINE Result_String string_ctor_printf(const char* format, ...)
 {
     va_list args = {};
     va_start(args, format);
 
-    return string_vprintf(format, args);
+    return string_ctor_vprintf(format, args);
+}
+
+INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
+{
+    String s = {};
+    return (Result_String) {
+        .error_code = string_vprintf(&s, format, args),
+        .value = s,
+    };
 }
 
 #endif // CMLIB_STRING_H_
