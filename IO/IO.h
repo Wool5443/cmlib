@@ -9,7 +9,12 @@ INLINE Result_String RealPath(const char* path)
 {
     ERROR_CHECKING();
 
-    assert(path);
+    if (!path)
+    {
+        err = ERROR_NULLPTR;
+        log_error("NULL passed as path");
+        ERROR_LEAVE();
+    }
 
     char goodPath[PATH_MAX + 1] = "";
 

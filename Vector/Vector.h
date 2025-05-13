@@ -231,7 +231,13 @@ INLINE void vec_clear(void* vec)
 INLINE void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 {
     ERROR_CHECKING();
-    assert(elem_size);
+
+    if (elem_size == 0)
+    {
+        err = ERROR_BAD_VALUE;
+        log_error("0 passed as elem_size");
+        ERROR_LEAVE();
+    }
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 

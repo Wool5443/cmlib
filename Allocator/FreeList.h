@@ -82,7 +82,12 @@ INLINE void free_list_dtor(FreeList* allocator)
 
 INLINE void* free_list_allocate(FreeList* allocator, size_t size)
 {
-    assert(allocator);
+    if (!allocator)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to allocate in NULL allocator");
+        return NULL;
+    }
 
     void* allocated = NULL;
     FreeListMemoryPool* prev_pool = NULL;
@@ -113,7 +118,12 @@ INLINE void* free_list_allocate(FreeList* allocator, size_t size)
 
 INLINE void free_list_free(FreeList* allocator, void* ptr)
 {
-    assert(allocator);
+    if (!allocator)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to free in NULL allocator");
+        return;
+    }
 
     if (!ptr)
     {
@@ -164,7 +174,12 @@ INLINE void free_list_pool_dtor(FreeListMemoryPool* pool)
 
 INLINE void* free_list_pool_allocate(FreeListMemoryPool* pool, size_t size)
 {
-    assert(pool);
+    if (!pool)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to alloacte in NULL pool");
+        return NULL;
+    }
 
     size = align_size(size);
     FreeListFreeBlockHeader* prev_block = NULL;
@@ -215,7 +230,12 @@ INLINE void* free_list_pool_allocate(FreeListMemoryPool* pool, size_t size)
 
 INLINE bool free_list_pool_check_ptr(FreeListMemoryPool* pool, void* ptr)
 {
-    assert(pool);
+    if (!pool)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to check ptr in NULL pool");
+        return false;
+    }
 
     if (!ptr)
     {
@@ -229,7 +249,12 @@ INLINE bool free_list_pool_check_ptr(FreeListMemoryPool* pool, void* ptr)
 
 INLINE bool free_list_pool_free(FreeListMemoryPool* pool, void* ptr)
 {
-    assert(pool);
+    if (!pool)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to free from NULL pool");
+        return false;
+    }
 
     if (!free_list_pool_check_ptr(pool, ptr))
     {

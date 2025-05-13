@@ -2,7 +2,6 @@
 #define CMLIB_ARENA_H_
 
 #include <stddef.h>
-#include <assert.h>
 
 #include "../Logger/Logger.h"
 #include "Allocator.h"
@@ -48,7 +47,12 @@ ERROR_CASE
 
 INLINE void* arena_allocate(Arena* arena, size_t size)
 {
-    assert(arena);
+    if (!arena)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to flush NULL arena");
+        return NULL;
+    }
 
     size = align_size(size);
 
@@ -65,7 +69,12 @@ INLINE void* arena_allocate(Arena* arena, size_t size)
 
 INLINE void arena_flush(Arena* arena)
 {
-    assert(arena);
+    if (!arena)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Trying to flush NULL arena");
+        return;
+    }
 
     arena->current = arena->buffer;
 }

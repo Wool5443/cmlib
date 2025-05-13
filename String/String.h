@@ -1,7 +1,6 @@
 #ifndef CMLIB_STRING_H_
 #define CMLIB_STRING_H_
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -433,9 +432,16 @@ INLINE Result_String string_ctor_capacity(size_t capacity)
 {
     ERROR_CHECKING();
 
-    assert(capacity != 0 && "Capacity can't be zero!");
+    char* data = NULL;
 
-    char* data = Current_string_allocator.allocate(capacity + 1);
+    if (capacity == 0)
+    {
+        err = ERROR_NULLPTR;
+        log_error("0 passed as capacity");
+        ERROR_LEAVE();
+    }
+
+    data = Current_string_allocator.allocate(capacity + 1);
 
     if (!data)
     {
@@ -446,7 +452,7 @@ ERROR_CASE
     return Result_String_ctor(
         (String)
         {
-            .allocator = Current_string_allocator,
+            .allocator = err == EVERYTHING_FINE ? Current_string_allocator : (Allocator){},
             .data = data,
             .size = 0,
             .capacity = data ? capacity : 0,
@@ -498,8 +504,19 @@ INLINE Error_code string_realloc(String* this, size_t new_capacity)
 {
     ERROR_CHECKING();
 
-    assert(this);
-    assert(new_capacity);
+    if (!this)
+    {
+        err = ERROR_NULLPTR;
+        log_error("NULL passed as this");
+        ERROR_LEAVE();
+    }
+
+    if (new_capacity == 0)
+    {
+        err = ERROR_BAD_VALUE;
+        log_error("0 passed as new_capacity");
+        ERROR_LEAVE();
+    }
 
     char* new_data = NULL;
 
@@ -547,7 +564,12 @@ INLINE Error_code string_append_str(String* this, Str string)
 {
     ERROR_CHECKING();
 
-    assert(this);
+    if (!this)
+    {
+        err = ERROR_NULLPTR;
+        log_error("NULL passed as this");
+        ERROR_LEAVE();
+    }
 
     if (!string.data) return EVERYTHING_FINE;
     if (string.size == 0) return EVERYTHING_FINE;
@@ -565,7 +587,8 @@ INLINE Error_code string_append_str(String* this, Str string)
     this->size = newSize;
     this->data[newSize] = '\0';
 
-    return EVERYTHING_FINE;
+ERROR_CASE;
+    return err;
 }
 
 INLINE Error_code string_append_string(String* this, const String string)
@@ -599,10 +622,15 @@ INLINE Result_String read_file(const char* path)
 {
     ERROR_CHECKING();
 
-    assert(path);
-
     FILE* file = NULL;
     String string = {};
+
+    if (!path)
+    {
+        err = ERROR_BAD_FILE;
+        log_error("NULL passed as file path");
+        ERROR_LEAVE();
+    }
 
     file = fopen(path, "r");
 
@@ -660,7 +688,12 @@ INLINE Error_code string_vprintf(String* this, const char* format, va_list args)
 {
     ERROR_CHECKING();
 
-    assert(format);
+    if (!format)
+    {
+        err = ERROR_NULLPTR;
+        log_error("NULL passed as format string");
+        ERROR_LEAVE();
+    }
 
     size_t formatLength = strlen(format);
 

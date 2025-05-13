@@ -23,7 +23,12 @@ Error_code scratch_init(size_t capacity)
 {
     ERROR_CHECKING();
 
-    assert(capacity != 0 && "Capacity can't be zero!");
+    if (capacity == 0)
+    {
+        err = ERROR_BAD_VALUE;
+        log_error("Error bad scratch buf capacity of 0");
+        ERROR_LEAVE();
+    }
 
     Result_String strRes = string_ctor_capacity(capacity);
 
@@ -36,6 +41,7 @@ Error_code scratch_init(size_t capacity)
 
     scratchString = strRes.value;
 
+ERROR_CASE;
     return err;
 }
 
