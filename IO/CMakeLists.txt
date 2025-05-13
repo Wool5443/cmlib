@@ -1,7 +1,7 @@
-set(LIB_NAME "cmlib_IO")
+set(LIB_NAME cmlib_IO)
 
 set(SOURCES
-    "src/IO.c"
+    src/IO.c
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})

@@ -1,7 +1,7 @@
-set(LIB_NAME "cmlib_vector")
+set(LIB_NAME cmlib_vector)
 
 set(SOURCES
-    "src/Vector.c"
+    src/Vector.c
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})

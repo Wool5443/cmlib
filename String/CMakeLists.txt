@@ -1,7 +1,7 @@
-set(LIB_NAME "cmlib_string")
+set(LIB_NAME cmlib_string)
 
 set(SOURCES
-    "src/String.c"
+    src/String.c
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})
