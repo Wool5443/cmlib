@@ -105,6 +105,20 @@ INLINE int str_compare(const Str lhs, const Str rhs);
 INLINE void str_print(const Str string, FILE* out);
 
 /**
+ * @brief Slice str
+ *
+ * @param [in] string
+ * @param [in] start_idx
+ * @param [in] end_idx
+ *
+ * @return Result_Str
+ *
+ * @see Str
+ * @see ErrorCode
+ */
+INLINE Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx);
+
+/**
  * @brief Set string allocator
  *
  * @param [in] allocator
@@ -381,6 +395,25 @@ INLINE void str_print(const Str string, FILE* out)
     }
 }
 
+INLINE Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx)
+{
+    ERROR_CHECKING();
+
+    if (start_idx >= string.size || end_idx >= string.size
+        || end_idx < start_idx) {
+        err = ERROR_BAD_ARGS;
+        log_error("Failed to create slice:\n"
+                  "startIdx: %zu, endIdx: %zu, size: %zu",
+                  start_idx, end_idx, string.size);
+        return Result_Str_ctor((Str){}, err);
+    }
+
+    return Result_Str_ctor(
+        (Str) { .data = string.data + start_idx, .size = end_idx - start_idx },
+        err
+    );
+}
+
 INLINE void string_set_allocator(Allocator allocator)
 {
     Current_string_allocator = allocator;
@@ -480,7 +513,10 @@ INLINE Error_code string_realloc(String* this, size_t new_capacity)
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Failed to realloc string: %s");
     }
 
-    memcpy(new_data, this->data, this->size);
+    if (this->data)
+    {
+        memcpy(new_data, this->data, this->size);
+    }
     new_data[this->size] = '\0';
 
     *this = (String)
@@ -556,21 +592,7 @@ INLINE Error_code string_append_char(String* this, char ch)
 
 INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_idx)
 {
-    ERROR_CHECKING();
-
-    if (start_idx >= this.size || end_idx >= this.size
-        || end_idx < start_idx) {
-        err = ERROR_BAD_ARGS;
-        log_error("Failed to create slice:\n"
-                  "startIdx: %zu, endIdx: %zu",
-                  start_idx, end_idx);
-        return Result_Str_ctor((Str){}, err);
-    }
-
-    return Result_Str_ctor(
-        (Str) { .data = this.data + start_idx, .size = end_idx - start_idx },
-        err
-    );
+    return str_slice(str_ctor_string(this), start_idx, end_idx);
 }
 
 INLINE Result_String read_file(const char* path)

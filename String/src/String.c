@@ -12,6 +12,7 @@ Str str_ctor(const char* string);
 Str str_ctor_string(const String string);
 int str_compare(const Str lhs, const Str rhs);
 void str_print(const Str string, FILE* out);
+Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx);
 Result_String string_ctor_capacity(size_t capacity);
 Result_String string_ctor_str(Str string);
 Result_String string_ctor(const char* string);
