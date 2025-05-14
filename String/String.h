@@ -79,7 +79,7 @@ INLINE Str str_ctor_size(const char* string, size_t size);
  * @see Str
  * @see String
  */
-INLINE Str str_ctor_string(const String string);
+INLINE Str str_ctor_string(String string);
 
 /**
  * @brief Compares 2 strs
@@ -91,7 +91,7 @@ INLINE Str str_ctor_string(const String string);
  *
  * @see Str
  */
-INLINE int str_compare(const Str lhs, const Str rhs);
+INLINE int str_compare(Str lhs, Str rhs);
 
 /**
  * @brief Prints str slice to out
@@ -101,7 +101,7 @@ INLINE int str_compare(const Str lhs, const Str rhs);
  *
  * @see Str
  */
-INLINE void str_print(const Str string, FILE* out);
+INLINE void str_print(Str string, FILE* out);
 
 /**
  * @brief Slice str
@@ -115,7 +115,7 @@ INLINE void str_print(const Str string, FILE* out);
  * @see Str
  * @see ErrorCode
  */
-INLINE Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx);
+INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx);
 
 /**
  * @brief Set string allocator
@@ -187,7 +187,7 @@ INLINE void string_dtor(String* this);
  * @see String
  * @see ErrorCode
  */
-INLINE Result_String string_copy(const String string);
+INLINE Result_String string_copy(String string);
 
 
 /**
@@ -218,6 +218,21 @@ INLINE Result_String string_ctor_printf(const char* format, ...);
 INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
 
 /**
+ * @brief Replaces count occurences of from to to
+ * If count == 0, replace all occurences
+ *
+ * @param [in] this
+ * @param [in] from
+ * @param [in] to
+ *
+ * @return Error_code
+ *
+ * @see String
+ * @see ErrorCode
+ */
+INLINE Error_code string_replace_all(String* this, Str from, Str to);
+
+/**
  * @brief Reads file's contents to a String
  *
  * @param [in] path
@@ -244,7 +259,7 @@ INLINE Result_String read_file(const char* path);
  * @see Str
  * @see ErrorCode
  */
-INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_idx);
+INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx);
 
 /**
  * @brief Appends a char to this
@@ -276,7 +291,7 @@ INLINE Error_code string_append_char(String* this, char ch);
  * @see Str
  * @see ErrorCode
  */
-INLINE Error_code string_append_string(String* this, const String string);
+INLINE Error_code string_append_string(String* this, String string);
 
 /**
  * @brief Appends a c-style string string to this
@@ -329,7 +344,7 @@ INLINE void string_clear(String* this);
  *
  * @see Str
  */
-INLINE int string_compare(const String lhs, const String rhs);
+INLINE int string_compare(String lhs, String rhs);
 
 /**
  * @brief Reallocs a String to new capacity
@@ -363,7 +378,7 @@ INLINE Str str_ctor_size(const char* string, size_t size)
     };
 }
 
-INLINE Str str_ctor_string(const String string)
+INLINE Str str_ctor_string(String string)
 {
     return (Str)
     {
@@ -372,7 +387,7 @@ INLINE Str str_ctor_string(const String string)
     };
 }
 
-INLINE int str_compare(const Str lhs, const Str rhs)
+INLINE int str_compare(Str lhs, Str rhs)
 {
     if (lhs.size == rhs.size)
     {
@@ -381,7 +396,7 @@ INLINE int str_compare(const Str lhs, const Str rhs)
     return memcmp(lhs.data, rhs.data, MIN(lhs.size, rhs.size) + 1);
 }
 
-INLINE void str_print(const Str string, FILE* out)
+INLINE void str_print(Str string, FILE* out)
 {
     if (!string.data)
     {
@@ -394,7 +409,7 @@ INLINE void str_print(const Str string, FILE* out)
     }
 }
 
-INLINE Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx)
+INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx)
 {
     ERROR_CHECKING();
 
@@ -481,7 +496,9 @@ INLINE Result_String string_ctor_str(Str string)
 INLINE void string_dtor(String* this)
 {
     if (!this)
+    {
         return;
+    }
 
     if (this->allocator.free)
     {
@@ -490,12 +507,12 @@ INLINE void string_dtor(String* this)
     *this = (String){};
 }
 
-INLINE Result_String string_copy(const String string)
+INLINE Result_String string_copy(String string)
 {
     return string_ctor_str(str_ctor_string(string));
 }
 
-INLINE int string_compare(const String lhs, const String rhs)
+INLINE int string_compare(String lhs, String rhs)
 {
     return str_compare(str_ctor_string(lhs), str_ctor_string(rhs));
 }
@@ -536,9 +553,11 @@ INLINE Error_code string_realloc(String* this, size_t new_capacity)
     }
     new_data[this->size] = '\0';
 
+    allocator.free(this->data);
+
     *this = (String)
     {
-        .allocator = this->allocator,
+        .allocator = allocator,
         .data = new_data,
         .size = this->size,
         .capacity = new_capacity
@@ -591,7 +610,7 @@ ERROR_CASE;
     return err;
 }
 
-INLINE Error_code string_append_string(String* this, const String string)
+INLINE Error_code string_append_string(String* this, String string)
 {
     return string_append_str(this, str_ctor_string(string));
 }
@@ -613,7 +632,7 @@ INLINE Error_code string_append_char(String* this, char ch)
     return EVERYTHING_FINE;
 }
 
-INLINE Result_Str string_slice(const String this, size_t start_idx, size_t end_idx)
+INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx)
 {
     return str_slice(str_ctor_string(this), start_idx, end_idx);
 }
@@ -750,6 +769,94 @@ INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
         .error_code = string_vprintf(&s, format, args),
         .value = s,
     };
+}
+
+INLINE Error_code string_replace_all(String* this, Str from, Str to)
+{
+    ERROR_CHECKING();
+
+    if (!this)
+    {
+        err = ERROR_NULLPTR;
+        log_error("NULL passed as this");
+        ERROR_LEAVE();
+    }
+
+    if (!from.data)
+    {
+        return err;
+    }
+
+    if (to.data == NULL)
+    {
+        to.data = "";
+    }
+
+    ptrdiff_t change = to.size - from.size;
+
+    size_t count_occurences = 0;
+    const char* found = strstr(this->data, from.data);
+    while (found)
+    {
+        count_occurences++;
+        found = strstr(found + 1, from.data);
+    }
+    if (count_occurences == 0)
+    {
+        return err;
+    }
+    size_t new_size = this->size + count_occurences * change;
+
+
+    if (change < 0)
+    {
+        char* writer = this->data;
+        const char* reader = writer;
+
+        while (reader < this->data + this->size + 1)
+        {
+            if (str_compare(str_ctor_size(reader, from.size), from) == 0)
+            {
+                memcpy(writer, to.data, to.size);
+                writer += to.size;
+                reader += from.size;
+            }
+            else
+            {
+                *(writer++) = *(reader++);
+            }
+        }
+        this->size = new_size;
+    }
+    else
+    {
+        //AAAAAAAAAAAAABBBAAAA BBB -> DDDDD
+        //             DDDDDAAAA BBB -> DDDDD
+        Result_String new_string_res = string_ctor_capacity(new_size);
+        CHECK_ERROR(new_string_res.error_code);
+        String s = new_string_res.value;
+
+        memcpy(s.data, this->data, this->size);
+
+        for (char* old = s.data + this->size, *new = s.data + new_size; old >= s.data; old--, new--)
+        {
+            if (str_compare(str_ctor_size(old, from.size), from) == 0)
+            {
+                memcpy(new - change, to.data, to.size);
+                new -= change;
+            }
+            else
+            {
+                *new= *old;
+            }
+        }
+        s.size = new_size;
+        string_dtor(this);
+        *this = s;
+    }
+
+ERROR_CASE;
+    return err;
 }
 
 #endif // CMLIB_STRING_H_

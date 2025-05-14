@@ -31,3 +31,4 @@ Error_code string_printf(String* this, const char* format, ...);
 Error_code string_vprintf(String* this, const char* format, va_list args);
 Result_String string_ctor_printf(const char* format, ...);
 Result_String string_ctor_vprintf(const char* format, va_list args);
+Error_code string_replace_all(String* this, Str from, Str to);
