@@ -10,9 +10,9 @@ String* getScratchBuffer_UNSAFE_();
  *
  * @param [in] capacity
  *
- * @return ErrorCode
+ * @return Error_code
  *
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_init(size_t capacity);
 
@@ -50,7 +50,7 @@ Str scratch_get_str();
  * @return Result_String
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 Result_String scratch_copy_string();
 
@@ -72,9 +72,9 @@ void scratch_clear();
  *
  * @param [in] format
  *
- * @return ErrorCode
+ * @return Error_code
  *
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_printf(const char* format, ...);
 
@@ -84,9 +84,9 @@ Error_code scratch_printf(const char* format, ...);
  * @param [in] format
  * @param [in] args
  *
- * @return ErrorCode
+ * @return Error_code
  *
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_vprintf(const char* format, va_list args);
 
@@ -95,9 +95,9 @@ Error_code scratch_vprintf(const char* format, va_list args);
  *
  * @param [in] c-style string
  *
- * @return ErrorCode
+ * @return Error_code
  *
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_append(const char* string);
 
@@ -106,10 +106,10 @@ Error_code scratch_append(const char* string);
  *
  * @param [in] slice
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_append_str(Str string);
 
@@ -118,10 +118,10 @@ Error_code scratch_append_str(Str string);
  *
  * @param [in] string
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_append_string(const String string);
 
@@ -130,10 +130,10 @@ Error_code scratch_append_string(const String string);
  *
  * @param [in] char c
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 Error_code scratch_append_char(char c);
 

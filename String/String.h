@@ -113,7 +113,7 @@ INLINE void str_print(Str string, FILE* out);
  * @return Result_Str
  *
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx);
 
@@ -137,7 +137,7 @@ INLINE void string_reset_allocator();
  * @return Result_String
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_String string_ctor(const char* string);
 
@@ -149,9 +149,9 @@ INLINE Result_String string_ctor(const char* string);
  * @return Result_String
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
-INLINE Result_String string_ctor_capacity(size_t capacity);
+Result_String string_ctor_capacity(size_t capacity);
 
 /**
  * @brief String constructor from Str
@@ -162,7 +162,7 @@ INLINE Result_String string_ctor_capacity(size_t capacity);
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_String string_ctor_str(Str string);
 
@@ -185,7 +185,7 @@ INLINE void string_dtor(String* this);
  * @return Result_String
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_String string_copy(String string);
 
@@ -199,10 +199,10 @@ INLINE Result_String string_copy(String string);
  * @return Error_code
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Error_code string_printf(String* this, const char* format, ...);
-INLINE Error_code string_vprintf(String* this, const char* format, va_list args);
+Error_code string_vprintf(String* this, const char* format, va_list args);
 
 /**
  * @brief Creates a string like printf
@@ -212,7 +212,7 @@ INLINE Error_code string_vprintf(String* this, const char* format, va_list args)
  * @return Error_code
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_String string_ctor_printf(const char* format, ...);
 INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
@@ -228,9 +228,9 @@ INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
  * @return Error_code
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
-INLINE Error_code string_replace_all(String* this, Str from, Str to);
+Error_code string_replace_all(String* this, Str from, Str to);
 
 /**
  * @brief Reads file's contents to a String
@@ -240,9 +240,9 @@ INLINE Error_code string_replace_all(String* this, Str from, Str to);
  * @return Result_String
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
-INLINE Result_String read_file(const char* path);
+Result_String read_file(const char* path);
 
 /**
  * @brief Slices a String
@@ -257,7 +257,7 @@ INLINE Result_String read_file(const char* path);
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx);
 
@@ -269,11 +269,11 @@ INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx);
  * @param [in, out] this
  * @param [in] string
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Error_code string_append_char(String* this, char ch);
 
@@ -285,11 +285,11 @@ INLINE Error_code string_append_char(String* this, char ch);
  * @param [in, out] this
  * @param [in] string
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Error_code string_append_string(String* this, String string);
 
@@ -301,11 +301,11 @@ INLINE Error_code string_append_string(String* this, String string);
  * @param [in, out] this
  * @param [in] string
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
 INLINE Error_code string_append(String* this, const char* string);
 
@@ -317,13 +317,13 @@ INLINE Error_code string_append(String* this, const char* string);
  * @param [in, out] this
  * @param [in] string
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
  * @see Str
- * @see ErrorCode
+ * @see Error_code
  */
-INLINE Error_code string_append_str(String* this, Str string);
+Error_code string_append_str(String* this, Str string);
 
 /**
  * @brief Clears a stting
@@ -354,12 +354,12 @@ INLINE int string_compare(String lhs, String rhs);
  * @param [in, out] this
  * @param [in] newCapacity
  *
- * @return ErrorCode
+ * @return Error_code
  *
  * @see String
- * @see ErrorCode
+ * @see Error_code
  */
-INLINE Error_code string_realloc(String* this, size_t newCapacity);
+Error_code string_realloc(String* this, size_t newCapacity);
 
 INLINE Str str_ctor(const char* string)
 {
@@ -443,39 +443,6 @@ INLINE Result_String string_ctor(const char* string)
     return string_ctor_str(str_ctor(string));
 }
 
-INLINE Result_String string_ctor_capacity(size_t capacity)
-{
-    ERROR_CHECKING();
-
-    char* data = NULL;
-
-    if (capacity == 0)
-    {
-        err = ERROR_NULLPTR;
-        log_error("0 passed as capacity");
-        ERROR_LEAVE();
-    }
-
-    data = Current_string_allocator.allocate(capacity + 1);
-
-    if (!data)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Failed to create string with capacity %zu: %s", capacity);
-    }
-
-ERROR_CASE
-    return Result_String_ctor(
-        (String)
-        {
-            .allocator = err == EVERYTHING_FINE ? Current_string_allocator : (Allocator){},
-            .data = data,
-            .size = 0,
-            .capacity = data ? capacity : 0,
-        },
-        err
-    );
-}
-
 INLINE Result_String string_ctor_str(Str string)
 {
     if (!string.data) return (Result_String){};
@@ -517,56 +484,6 @@ INLINE int string_compare(String lhs, String rhs)
     return str_compare(str_ctor_string(lhs), str_ctor_string(rhs));
 }
 
-INLINE Error_code string_realloc(String* this, size_t new_capacity)
-{
-    ERROR_CHECKING();
-
-    if (!this)
-    {
-        err = ERROR_NULLPTR;
-        log_error("NULL passed as this");
-        ERROR_LEAVE();
-    }
-
-    if (new_capacity == 0)
-    {
-        err = ERROR_BAD_VALUE;
-        log_error("0 passed as new_capacity");
-        ERROR_LEAVE();
-    }
-
-    char* new_data = NULL;
-
-    if (this->capacity >= new_capacity) return EVERYTHING_FINE;
-
-    Allocator allocator = this->allocator.allocate ? this->allocator : Current_string_allocator;
-    new_data = allocator.allocate(new_capacity + 1);
-
-    if (!new_data)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Failed to realloc string: %s");
-    }
-
-    if (this->data)
-    {
-        memcpy(new_data, this->data, this->size);
-    }
-    new_data[this->size] = '\0';
-
-    allocator.free(this->data);
-
-    *this = (String)
-    {
-        .allocator = allocator,
-        .data = new_data,
-        .size = this->size,
-        .capacity = new_capacity
-    };
-
-ERROR_CASE
-    return err;
-}
-
 INLINE void string_clear(String* this)
 {
     if (this->data) this->data[0] = '\0';
@@ -577,37 +494,6 @@ INLINE Error_code string_append(String* this, const char* string)
 {
     if (!string) return EVERYTHING_FINE;
     return string_append_str(this, str_ctor(string));
-}
-
-INLINE Error_code string_append_str(String* this, Str string)
-{
-    ERROR_CHECKING();
-
-    if (!this)
-    {
-        err = ERROR_NULLPTR;
-        log_error("NULL passed as this");
-        ERROR_LEAVE();
-    }
-
-    if (!string.data) return EVERYTHING_FINE;
-    if (string.size == 0) return EVERYTHING_FINE;
-
-    size_t newSize = this->size + string.size;
-
-    if (newSize > this->capacity)
-    {
-        if ((err = string_realloc(this, newSize)))
-            return err;
-    }
-
-    memcpy(this->data + this->size, string.data, string.size);
-
-    this->size = newSize;
-    this->data[newSize] = '\0';
-
-ERROR_CASE;
-    return err;
 }
 
 INLINE Error_code string_append_string(String* this, String string)
@@ -637,121 +523,12 @@ INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx)
     return str_slice(str_ctor_string(this), start_idx, end_idx);
 }
 
-INLINE Result_String read_file(const char* path)
-{
-    ERROR_CHECKING();
-
-    FILE* file = NULL;
-    String string = {};
-
-    if (!path)
-    {
-        err = ERROR_BAD_FILE;
-        log_error("NULL passed as file path");
-        ERROR_LEAVE();
-    }
-
-    file = fopen(path, "r");
-
-    if (!file)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_BAD_FILE, "Failed to open file %s: %s", path);
-    }
-
-    struct stat st = {};
-    if (fstat(fileno(file), &st) == -1)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_BAD_FILE, "fstat error: %s");
-    }
-
-    size_t fileSize = st.st_size;
-
-    Result_String stringRes = string_ctor_capacity(fileSize + 1);
-    if ((err = stringRes.error_code))
-    {
-        ERROR_LEAVE();
-    }
-
-    string = stringRes.value;
-
-    if (fread(string.data, 1, fileSize, file) != fileSize)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_BAD_FILE, "Failed to read file: %s");
-    }
-    fclose(file);
-
-    string.size = fileSize;
-
-    return (Result_String)
-    {
-        string,
-        EVERYTHING_FINE,
-    };
-
-ERROR_CASE
-    if (file) fclose(file);
-    string_dtor(&string);
-
-    return (Result_String){ {}, err };
-}
-
 INLINE Error_code string_printf(String* this, const char* format, ...)
 {
     va_list args = {};
     va_start(args, format);
 
     return string_vprintf(this, format, args);
-}
-
-INLINE Error_code string_vprintf(String* this, const char* format, va_list args)
-{
-    ERROR_CHECKING();
-
-    if (!format)
-    {
-        err = ERROR_NULLPTR;
-        log_error("NULL passed as format string");
-        ERROR_LEAVE();
-    }
-
-    size_t formatLength = strlen(format);
-
-    if (formatLength == 0)
-    {
-        return EVERYTHING_FINE;
-    }
-
-    size_t capacity = formatLength * 2;
-
-    CHECK_ERROR(string_realloc(this, this->capacity + capacity));
-
-    // Try until it fits
-    while (true)
-    {
-        va_list cpargs = {};
-        va_copy(cpargs, args);
-
-        int written = vsnprintf(this->data + this->size, capacity, format, cpargs);
-
-        if (written < 0)
-        {
-            HANDLE_ERRNO_ERROR(ERROR_STD, "Error vsnprintf: %s");
-        }
-        else if (written <= (int)capacity)
-        {
-            this->size += written;
-            break;
-        }
-
-        capacity = written + 1;
-        CHECK_ERROR(string_realloc(this, this->capacity + capacity));
-    }
-
-    return EVERYTHING_FINE;
-
-ERROR_CASE
-
-    return err;
 }
 
 INLINE Result_String string_ctor_printf(const char* format, ...)
@@ -769,102 +546,6 @@ INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
         .error_code = string_vprintf(&s, format, args),
         .value = s,
     };
-}
-
-INLINE Error_code string_replace_all(String* this, Str from, Str to)
-{
-    ERROR_CHECKING();
-
-    if (!this)
-    {
-        err = ERROR_NULLPTR;
-        log_error("NULL passed as this");
-        ERROR_LEAVE();
-    }
-
-    if (!from.data)
-    {
-        return err;
-    }
-
-    if (to.data == NULL)
-    {
-        to.data = "";
-    }
-
-    ptrdiff_t change = to.size - from.size;
-
-    size_t count_occurences = 0;
-    const char* found = strstr(this->data, from.data);
-    while (found)
-    {
-        count_occurences++;
-        found = strstr(found + 1, from.data);
-    }
-    if (count_occurences == 0)
-    {
-        return err;
-    }
-    size_t new_size = this->size + count_occurences * change;
-
-
-    if (change < 0)
-    {
-        char* writer = this->data;
-        const char* reader = writer;
-
-        while (reader < this->data + this->size + 1)
-        {
-            if (str_compare(str_ctor_size(reader, from.size), from) == 0)
-            {
-                memcpy(writer, to.data, to.size);
-                writer += to.size;
-                reader += from.size;
-            }
-            else
-            {
-                *(writer++) = *(reader++);
-            }
-        }
-        this->size = new_size;
-    }
-    else
-    {
-        //AAAAAAAAAAAAABBBAAAA BBB -> DDDDD
-        //             DDDDDAAAA BBB -> DDDDD
-        String s = {};
-        if (this->capacity >= new_size)
-        {
-            s = *this;
-        }
-        else
-        {
-            Result_String new_string_res = string_ctor_capacity(new_size);
-            CHECK_ERROR(new_string_res.error_code);
-            s = new_string_res.value;
-            memcpy(s.data, this->data, this->size);
-            s.size = this->size;
-            string_dtor(this);
-        }
-
-        for (char* old = s.data + s.size, *new = s.data + new_size; old >= s.data; old--, new--)
-        {
-            if (str_compare(str_ctor_size(old, from.size), from) == 0)
-            {
-                memcpy(new - change, to.data, to.size);
-                new -= change;
-            }
-            else
-            {
-                *new= *old;
-            }
-        }
-        s.size = new_size;
-        *this = s;
-    }
-
-ERROR_CASE;
-    return err;
 }
 
 #endif // CMLIB_STRING_H_

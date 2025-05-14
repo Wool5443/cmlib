@@ -5,67 +5,61 @@
 
 #include "String.h"
 
-INLINE Result_String RealPath(const char* path)
-{
-    ERROR_CHECKING();
+/**
+ * @brief Get real path
+ *
+ * @param [in] path
+ *
+ * @return Result_String
+ *
+ * @see String
+ * @see Error_code
+ */
+Result_String RealPath(const char* path);
 
-    if (!path)
-    {
-        err = ERROR_NULLPTR;
-        log_error("NULL passed as path");
-        ERROR_LEAVE();
-    }
+/**
+ * @brief Get file name
+ *
+ * @param [in] path
+ *
+ * @return Result_String
+ *
+ * @see Str
+ */
+Str GetFileNameStr(const Str path);
 
-    char goodPath[PATH_MAX + 1] = "";
+/**
+ * @brief Get file name
+ *
+ * @param [in] path
+ *
+ * @return Str
+ *
+ * @see Str
+ */
+INLINE Str GetFileName(const char* path);
 
-    if (!realpath(path, goodPath))
-    {
-        HANDLE_ERRNO_ERROR(ERROR_LINUX, "Error realpath for %s: %s", path);
-    }
+/**
+ * @brief Get folder
+ *
+ * @param [in] path
+ *
+ * @return Str
+ *
+ * @see Str
+ */
+INLINE Str GetFolderStr(const Str path);
 
-    struct stat st = {};
-    if (stat(goodPath, &st) == -1)
-    {
-        HANDLE_ERRNO_ERROR(ERROR_LINUX, "Error stat for %s: %s", path);
-    }
-
-    size_t size = strlen(goodPath);
-
-    if ((st.st_mode & S_IFMT) == S_IFDIR)
-    {
-        goodPath[size++] = '/';
-    }
-
-    return string_ctor_str(str_ctor_size(goodPath, size));
-
-ERROR_CASE
-    return Result_String_ctor((String){}, err);
-}
-
-INLINE Str GetFileNameStr(const Str path)
-{
-    if (!path.data)
-    {
-        return (Str){};
-    }
-
-    size_t nameStart = 0;
-
-    for (size_t i = path.size - 1; i > 0; i--)
-    {
-        if (path.data[i] == '/')
-        {
-            nameStart = i + 1;
-            break;
-        }
-    }
-
-    return (Str)
-    {
-        .data = path.data + nameStart,
-        .size = path.size - nameStart,
-    };
-}
+/**
+ * @brief Get folder
+ *
+ * @param [in] path
+ *
+ * @return Str
+ *
+ * @see Str
+ */
+INLINE Str GetFolder(const char* path);
 
 INLINE Str GetFileName(const char* path)
 {
