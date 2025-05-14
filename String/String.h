@@ -832,13 +832,22 @@ INLINE Error_code string_replace_all(String* this, Str from, Str to)
     {
         //AAAAAAAAAAAAABBBAAAA BBB -> DDDDD
         //             DDDDDAAAA BBB -> DDDDD
-        Result_String new_string_res = string_ctor_capacity(new_size);
-        CHECK_ERROR(new_string_res.error_code);
-        String s = new_string_res.value;
+        String s = {};
+        if (this->capacity >= new_size)
+        {
+            s = *this;
+        }
+        else
+        {
+            Result_String new_string_res = string_ctor_capacity(new_size);
+            CHECK_ERROR(new_string_res.error_code);
+            s = new_string_res.value;
+            memcpy(s.data, this->data, this->size);
+            s.size = this->size;
+            string_dtor(this);
+        }
 
-        memcpy(s.data, this->data, this->size);
-
-        for (char* old = s.data + this->size, *new = s.data + new_size; old >= s.data; old--, new--)
+        for (char* old = s.data + s.size, *new = s.data + new_size; old >= s.data; old--, new--)
         {
             if (str_compare(str_ctor_size(old, from.size), from) == 0)
             {
@@ -851,7 +860,6 @@ INLINE Error_code string_replace_all(String* this, Str from, Str to)
             }
         }
         s.size = new_size;
-        string_dtor(this);
         *this = s;
     }
 
