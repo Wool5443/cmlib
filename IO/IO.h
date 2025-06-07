@@ -15,76 +15,86 @@
  * @see String
  * @see Error_code
  */
-Result_String RealPath(const char* path);
+Result_String real_path(const char* path);
 
 /**
  * @brief Get file name
  *
  * @param [in] path
  *
- * @return Result_String
+ * @return Result_Str
  *
  * @see Str
+ * @see Error_code
  */
-Str GetFileNameStr(const Str path);
+Result_Str get_filename_str(const Str path);
 
 /**
  * @brief Get file name
  *
  * @param [in] path
  *
- * @return Str
+ * @return Result_Str
  *
  * @see Str
+ * @see Error_code
  */
-INLINE Str GetFileName(const char* path);
+INLINE Result_Str get_file_name(const char* path);
 
 /**
  * @brief Get folder
  *
  * @param [in] path
  *
- * @return Str
+ * @return Result_Str
  *
  * @see Str
+ * @see Error_code
  */
-INLINE Str GetFolderStr(const Str path);
+INLINE Result_Str get_folder_str(const Str path);
 
 /**
  * @brief Get folder
  *
  * @param [in] path
  *
- * @return Str
+ * @return Result_Str
  *
  * @see Str
+ * @see Error_code
  */
-INLINE Str GetFolder(const char* path);
+INLINE Result_Str get_folder(const char* path);
 
-INLINE Str GetFileName(const char* path)
+INLINE Result_Str get_file_name(const char* path)
 {
-    return GetFileNameStr(str_ctor(path));
+    return get_filename_str(str_ctor(path));
 }
 
-INLINE Str GetFolderStr(const Str path)
+INLINE Result_Str get_folder_str(const Str path)
 {
     if (!path.data)
     {
-        return (Str){};
+        return (Result_Str){};
     }
 
-    Str name = GetFileNameStr(path);
-
-    return (Str)
+    Result_Str name = get_filename_str(path);
+    if (name.error_code)
     {
-        .data = path.data,
-        .size = path.size - name.size,
-    };
+        return name;
+    }
+
+    return Result_Str_ctor(
+        (Str)
+        {
+            .data = path.data,
+            .size = path.size - name.value.size,
+        }, EVERYTHING_FINE
+    );
 }
 
-INLINE Str GetFolder(const char* path)
+INLINE Result_Str get_folder(const char* path)
 {
-    return GetFolderStr(str_ctor(path));
+    return get_folder_str(str_ctor(path));
 }
 
 #endif // CMLIB_IO_UTILS_H_
