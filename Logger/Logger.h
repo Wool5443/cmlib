@@ -32,7 +32,10 @@ void logger_init_file(FILE* file);
 
 void logger_init_console();
 
-INLINE Logger* get_logger();
+INLINE Logger* get_logger()
+{
+    return &cmlibLogger_;
+}
 
 #define LOG_(type, error, ...)                                          \
 do                                                                      \
@@ -68,6 +71,8 @@ do                                                                      \
 #define logger_init_file(...)
 #define logger_init_console(...)
 
+#define get_logger(...)
+
 #define log_info(...)
 #define log_debug(...)
 #define log_error(...)
@@ -92,11 +97,6 @@ do                                                                      \
     log_error(__VA_ARGS__, strerror(ern));                              \
     ERROR_LEAVE();                                                      \
 } while (0)
-
-INLINE Logger* get_logger()
-{
-    return &cmlibLogger_;
-}
 
 INLINE const char* get_log_type_string_(Log_type type)
 {
