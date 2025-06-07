@@ -223,7 +223,6 @@ INLINE void vec_clear(void* vec)
             memcpy(temp, vec, sizeof(*(vec)) * size);                           \
         vec_dtor(vec);                                                          \
         (vec) = temp;                                                           \
-        GET_VEC_HEADER(vec)->size = size;                                       \
     }                                                                           \
     vec_reserve_error;                                                          \
 })
