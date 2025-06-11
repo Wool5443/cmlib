@@ -1,9 +1,9 @@
 #include <stdlib.h>
 
 #include "Vector.h"
-#include "FreeList.h"
+#include "Free_list.h"
 
-static FreeList* free_list;
+static Free_list* free_list;
 
 static void* free_list_allocator_allocate(size_t size)
 {
@@ -22,7 +22,7 @@ int main()
     logger_init_console();
     log_info("Start FreeListAllocator test");
 
-    FreeListMemoryPool* pool = free_list_pool_ctor(6000);
+    Free_list_memory_pool* pool = free_list_pool_ctor(6000);
 
     for (size_t i = 0; i < 500; i++)
     {
@@ -40,7 +40,7 @@ int main()
         }
     }
 
-    Result_FreeList free_list_res = free_list_ctor(200);
+    Result_Free_list free_list_res = free_list_ctor(200);
     CHECK_ERROR_LOG(free_list_res.error_code, "Failed to create free list allocator");
     free_list = &free_list_res.value;
 

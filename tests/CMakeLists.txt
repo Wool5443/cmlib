@@ -1,17 +1,17 @@
-add_executable(testLog Log.c)
-target_link_libraries(testLog PRIVATE cmlib_logger)
+add_executable(test_log Log.c)
+target_link_libraries(test_log PRIVATE cmlib_logger)
 
-add_executable(testVec Vec.c)
-target_link_libraries(testVec PRIVATE cmlib_vector)
+add_executable(test_vec Vec.c)
+target_link_libraries(test_vec PRIVATE cmlib_vector)
 
-add_executable(testArenaAllocator ArenaAllocator.c)
-target_link_libraries(testArenaAllocator PRIVATE cmlib_vector)
+add_executable(test_arena_allocator Arena_allocator.c)
+target_link_libraries(test_arena_allocator PRIVATE cmlib_vector)
 
-add_executable(testFreeListAllocator FreeListAllocator.c)
-target_link_libraries(testFreeListAllocator PRIVATE cmlib_vector)
+add_executable(test_free_list_allocator Free_list_allocator.c)
+target_link_libraries(test_free_list_allocator PRIVATE cmlib_vector)
 
-add_executable(testString String.c)
-target_link_libraries(testString PRIVATE cmlib_string)
+add_executable(test_string String.c)
+target_link_libraries(test_string PRIVATE cmlib_string)
 
-add_executable(testList List.c)
-target_link_libraries(testList PRIVATE cmlib_list)
+add_executable(test_list List.c)
+target_link_libraries(test_list PRIVATE cmlib_list)
