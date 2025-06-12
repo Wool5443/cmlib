@@ -1,3 +1,22 @@
+/**
+ * @file String.h
+ * @author Misha Solodilov (mihsolodilov2015@gmail.com)
+ * @brief Header file for a heap-allocated string implementation and string manipulation utilities.
+ *
+ * This header defines the `String` and `Str` structures, along with functions for managing dynamically allocated
+ * strings. The `String` structure supports heap-allocated, mutable strings, while the `Str` structure provides
+ * a view of a string, often used for efficient string manipulations without ownership.
+ *
+ * The file provides constructors, destructors, comparison, concatenation, and other utilities for working with strings
+ * and string slices. The `Allocator` structure is used to manage memory for `String` objects, and custom memory
+ * allocators can be used via `string_set_allocator`.
+ *
+ * @version 1.0
+ * @date 12.06.2025
+ *
+ * @copyright Copyright (c) 2025
+ */
+
 #ifndef CMLIB_STRING_H_
 #define CMLIB_STRING_H_
 
@@ -14,67 +33,84 @@
 #include "../Logger/Logger.h"
 #include "../Allocator/Allocator.h"
 
+/**
+ * @brief An empty `String` constant.
+ *
+ * This constant represents an empty string (with size 0) using the `String` structure.
+ */
 #define CMLIB_EMPTY_STRING ((String){})
 
 /**
  * @struct String
+ * @brief A heap-allocated string with dynamic size and capacity.
  *
- * @brief A heap-allocated string
+ * The `String` structure represents a heap-allocated string with support for resizing and dynamic memory management.
+ * It includes a pointer to the string data, the size of the string, and the total capacity of the buffer that can
+ * hold the string's data.
  */
 typedef struct String
 {
-    Allocator allocator; ///< allocator
-    char*  data; ///< data
-    size_t size; ///< size
-    size_t capacity; ///< capacity number of symbols it can store not including 0. So real capacity is capacity + 1
+    Allocator allocator; ///< Allocator used for memory management of the string.
+    char*  data;         ///< Pointer to the actual data (characters).
+    size_t size;         ///< Current size of the string (excluding null terminator).
+    size_t capacity;     ///< Total capacity of the string's buffer (excluding null terminator).
 } String;
 
-extern Allocator Current_string_allocator;
+extern Allocator Current_string_allocator; /**< The global allocator used by the String structure. */
 
 /**
  * @struct Str
+ * @brief A view of a string (slice).
  *
- * @brief A view on a string
+ * The `Str` structure provides a view of a string, which is a pointer to a substring of another string.
+ * It does not own the data but allows manipulation of a portion of a larger string.
  */
 typedef struct Str
 {
-    const char* data; ///< data
-    size_t size; ///< size
+    const char* data; ///< Pointer to the data of the string slice.
+    size_t size;      ///< Size of the string slice.
 } Str;
-#define STR_LITERAL(string) ((Str){ .data = string, .size = sizeof(string) - 1 })
 
 DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
 
+#define STR_LITERAL(string) ((Str){ .data = string, .size = sizeof(string) - 1 }) /**< A macro for creating a `Str` from a literal string. */
+
 /**
- * @brief Str constructor
+ * @brief Constructor for a `Str` from a null-terminated string.
  *
- * @param [in] string
+ * This function creates a `Str` object from a null-terminated C string.
  *
- * @return Str
+ * @param string The null-terminated C string.
+ *
+ * @return A `Str` object representing the given string.
  *
  * @see Str
  */
 INLINE Str str_ctor(const char* string);
 
 /**
- * @brief Str constructor knowing string size
+ * @brief Constructor for a `Str` from a string and its size.
  *
- * @param [in] string
- * @param [in] size
+ * This function creates a `Str` object from a given string and its size.
  *
- * @return Str
+ * @param string The pointer to the string data.
+ * @param size The size of the string.
+ *
+ * @return A `Str` object representing the given string and its size.
  *
  * @see Str
  */
 INLINE Str str_ctor_size(const char* string, size_t size);
 
 /**
- * @brief Str constructor from String
+ * @brief Constructor for a `Str` from a `String` object.
  *
- * @param [in] string
+ * This function creates a `Str` view from a `String` object.
  *
- * @return Str
+ * @param string The `String` object to create a `Str` from.
+ *
+ * @return A `Str` object representing the view into the `String`.
  *
  * @see Str
  * @see String
@@ -82,35 +118,41 @@ INLINE Str str_ctor_size(const char* string, size_t size);
 INLINE Str str_ctor_string(String string);
 
 /**
- * @brief Compares 2 strs
+ * @brief Compares two `Str` objects.
  *
- * @param [in] lhs
- * @param [in] rhs
+ * This function compares two `Str` objects lexicographically.
  *
- * @return int
+ * @param lhs The first `Str` object.
+ * @param rhs The second `Str` object.
+ *
+ * @return A negative, zero, or positive integer indicating the result of the comparison.
  *
  * @see Str
  */
 INLINE int str_compare(Str lhs, Str rhs);
 
 /**
- * @brief Prints str slice to out
+ * @brief Prints a `Str` slice to an output stream.
  *
- * @param [in] string
- * @param [out] out
+ * This function prints a `Str` object to the specified output stream.
+ *
+ * @param string The `Str` object to print.
+ * @param [out] out The output stream to print to.
  *
  * @see Str
  */
 INLINE void str_print(Str string, FILE* out);
 
 /**
- * @brief Slice str
+ * @brief Slices a `Str` object.
  *
- * @param [in] string
- * @param [in] start_idx
- * @param [in] end_idx
+ * This function returns a new `Str` object that represents a slice of the original `Str` object.
  *
- * @return Result_Str
+ * @param string The `Str` object to slice.
+ * @param start_idx The start index of the slice (inclusive).
+ * @param end_idx The end index of the slice (exclusive).
+ *
+ * @return A `Result_Str` object representing the sliced string.
  *
  * @see Str
  * @see Error_code
@@ -118,23 +160,29 @@ INLINE void str_print(Str string, FILE* out);
 INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx);
 
 /**
- * @brief Set string allocator
+ * @brief Sets a custom allocator for the `String` structure.
  *
- * @param [in] allocator
+ * This function allows setting a custom memory allocator for the `String` structure.
+ *
+ * @param allocator The custom allocator to use for the `String` objects.
  */
 INLINE void string_set_allocator(Allocator allocator);
 
 /**
- * @brief Reset default string allocator(calloc)
+ * @brief Resets the `String` allocator to the default allocator (using `calloc`).
+ *
+ * This function resets the allocator used for `String` objects to the default `calloc` allocator.
  */
 INLINE void string_reset_allocator();
 
 /**
- * @brief String constructor from c-style string
+ * @brief Constructs a `String` from a null-terminated C string.
  *
- * @param [in] string
+ * This function creates a `String` object from a null-terminated C string.
  *
- * @return Result_String
+ * @param string The null-terminated C string to convert into a `String`.
+ *
+ * @return A `Result_String` containing the created `String` or an error code.
  *
  * @see String
  * @see Error_code
@@ -142,11 +190,13 @@ INLINE void string_reset_allocator();
 INLINE Result_String string_ctor(const char* string);
 
 /**
- * @brief String constructor with sufficient capacity
+ * @brief Constructs a `String` with a specified capacity.
  *
- * @param [in] capacity
+ * This function creates a `String` with the given capacity, allowing space for future growth.
  *
- * @return Result_String
+ * @param capacity The capacity of the string.
+ *
+ * @return A `Result_String` containing the created `String` or an error code.
  *
  * @see String
  * @see Error_code
@@ -154,11 +204,13 @@ INLINE Result_String string_ctor(const char* string);
 Result_String string_ctor_capacity(size_t capacity);
 
 /**
- * @brief String constructor from Str
+ * @brief Constructs a `String` from a `Str` view.
  *
- * @param [in] string
+ * This function creates a `String` from a `Str` view, making a copy of the data.
  *
- * @return Result_String
+ * @param string The `Str` object to convert into a `String`.
+ *
+ * @return A `Result_String` containing the created `String` or an error code.
  *
  * @see String
  * @see Str
@@ -167,36 +219,39 @@ Result_String string_ctor_capacity(size_t capacity);
 INLINE Result_String string_ctor_str(Str string);
 
 /**
- * @brief String destructor
+ * @brief Destructor for a `String` object.
  *
- * Safe to call twice or on a NULL
+ * This function safely deallocates the memory used by the `String` object. It is safe to call multiple times or on a `NULL` pointer.
  *
- * @param [out] string
+ * @param [out] string The `String` object to deallocate.
  *
  * @see String
  */
 INLINE void string_dtor(String* this);
 
 /**
- * @brief Copies a string
+ * @brief Copies a `String`.
  *
- * @param [in] string
+ * This function creates a new `String` object by copying the contents of the provided `String`.
  *
- * @return Result_String
+ * @param string The `String` to copy.
+ *
+ * @return A `Result_String` containing the copied `String` or an error code.
  *
  * @see String
  * @see Error_code
  */
 INLINE Result_String string_copy(String string);
 
-
 /**
- * @brief Prints to string like printf
+ * @brief Prints a formatted string into a `String`.
  *
- * @param [in] this
- * @param [in] format
+ * This function uses `printf`-like formatting and appends the result to the `String`.
  *
- * @return Error_code
+ * @param this The `String` to append to.
+ * @param format The format string.
+ *
+ * @return An error code indicating success or failure.
  *
  * @see String
  * @see Error_code
@@ -205,11 +260,13 @@ INLINE Error_code string_printf(String* this, const char* format, ...);
 Error_code string_vprintf(String* this, const char* format, va_list args);
 
 /**
- * @brief Creates a string like printf
+ * @brief Constructs a `String` from a formatted string.
  *
- * @param [in] format
+ * This function creates a new `String` by formatting the given `format` string using `printf`-like syntax.
  *
- * @return Error_code
+ * @param format The format string.
+ *
+ * @return A `Result_String` containing the created `String` or an error code.
  *
  * @see String
  * @see Error_code
@@ -218,14 +275,16 @@ INLINE Result_String string_ctor_printf(const char* format, ...);
 INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
 
 /**
- * @brief Replaces count occurences of from to to
- * If count == 0, replace all occurences
+ * @brief Replaces occurrences of one substring with another.
  *
- * @param [in] this
- * @param [in] from
- * @param [in] to
+ * This function replaces `count` occurrences of the `from` substring with the `to` substring in the `String`.
+ * If `count` is 0, all occurrences are replaced.
  *
- * @return Error_code
+ * @param this The `String` to modify.
+ * @param from The substring to replace.
+ * @param to The substring to replace with.
+ *
+ * @return An error code indicating success or failure.
  *
  * @see String
  * @see Error_code
@@ -233,11 +292,13 @@ INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
 Error_code string_replace_all(String* this, Str from, Str to);
 
 /**
- * @brief Reads file's contents to a String
+ * @brief Reads the contents of a file into a `String`.
  *
- * @param [in] path
+ * This function reads the contents of the specified file and stores it in a `String`.
  *
- * @return Result_String
+ * @param path The path to the file.
+ *
+ * @return A `Result_String` containing the contents of the file or an error code.
  *
  * @see String
  * @see Error_code
@@ -245,15 +306,15 @@ Error_code string_replace_all(String* this, Str from, Str to);
 Result_String read_file(const char* path);
 
 /**
- * @brief Slices a String
+ * @brief Slices a `String` into a `Str`.
  *
- * Unsafe to append to NULL
+ * This function returns a view (`Str`) of a substring from a `String`. This is unsafe if the `String` is `NULL`.
  *
- * @param [in] this
- * @param [in] startIdx
- * @param [in] endIdx
+ * @param this The `String` to slice.
+ * @param start_idx The start index of the slice (inclusive).
+ * @param end_idx The end index of the slice (exclusive).
  *
- * @return Result_Str
+ * @return A `Result_Str` containing the sliced string or an error code.
  *
  * @see String
  * @see Str
@@ -262,62 +323,59 @@ Result_String read_file(const char* path);
 INLINE Result_Str string_slice(String this, size_t start_idx, size_t end_idx);
 
 /**
- * @brief Appends a char to this
+ * @brief Appends a character to a `String`.
  *
- * Unsafe to append to NULL
+ * This function appends a single character to the end of the `String`.
  *
- * @param [in, out] this
- * @param [in] string
+ * @param [in, out] this The `String` to append to.
+ * @param ch The character to append.
  *
- * @return Error_code
+ * @return An error code indicating success or failure.
  *
  * @see String
- * @see Str
  * @see Error_code
  */
 INLINE Error_code string_append_char(String* this, char ch);
 
 /**
- * @brief Appends a String string to this
+ * @brief Appends a `String` to another `String`.
  *
- * Unsafe to append to NULL
+ * This function appends the contents of one `String` to another.
  *
- * @param [in, out] this
- * @param [in] string
+ * @param [in, out] this The `String` to append to.
+ * @param string The `String` to append.
  *
- * @return Error_code
+ * @return An error code indicating success or failure.
  *
  * @see String
- * @see Str
  * @see Error_code
  */
 INLINE Error_code string_append_string(String* this, String string);
 
 /**
- * @brief Appends a c-style string string to this
+ * @brief Appends a C-style string to a `String`.
  *
- * Unsafe to append to NULL
+ * This function appends a null-terminated C-style string to the `String`.
  *
- * @param [in, out] this
- * @param [in] string
+ * @param [in, out] this The `String` to append to.
+ * @param string The C-style string to append.
  *
- * @return Error_code
+ * @return An error code indicating success or failure.
  *
  * @see String
- * @see Str
  * @see Error_code
  */
 INLINE Error_code string_append(String* this, const char* string);
 
 /**
- * @brief Appends a Str string to this
+ * @brief Appends a `Str` to a `String`.
  *
- * Unsafe to append to NULL
+ * This function appends a `Str` (string slice) to the `String`.
  *
- * @param [in, out] this
- * @param [in] string
+ * @param [in, out] this The `String` to append to.
+ * @param string The `Str` to append.
  *
- * @return Error_code
+ * @return An error code indicating success or failure.
  *
  * @see String
  * @see Str
@@ -326,35 +384,40 @@ INLINE Error_code string_append(String* this, const char* string);
 Error_code string_append_str(String* this, Str string);
 
 /**
- * @brief Clears a stting
+ * @brief Clears a `String`.
  *
- * @param [out] this
+ * This function clears the contents of the `String`, resetting its size to zero.
+ *
+ * @param [out] this The `String` to clear.
  *
  * @see String
  */
 INLINE void string_clear(String* this);
 
 /**
- * @brief Compares 2 strings
+ * @brief Compares two `String` objects.
  *
- * @param [in] lhs
- * @param [in] rhs
+ * This function compares two `String` objects lexicographically.
  *
- * @return int
+ * @param lhs The first `String`.
+ * @param rhs The second `String`.
  *
- * @see Str
+ * @return A negative, zero, or positive integer indicating the result of the comparison.
+ *
+ * @see String
  */
 INLINE int string_compare(String lhs, String rhs);
 
 /**
- * @brief Reallocs a String to new capacity
+ * @brief Reallocates a `String` to a new capacity.
  *
- * Unsafe to realloc NULL
+ * This function reallocates the memory for the `String` to a new capacity. The `String` will be resized
+ * accordingly to accommodate additional data.
  *
- * @param [in, out] this
- * @param [in] newCapacity
+ * @param [in, out] this The `String` to reallocate.
+ * @param newCapacity The new capacity for the `String`.
  *
- * @return Error_code
+ * @return An error code indicating success or failure.
  *
  * @see String
  * @see Error_code
