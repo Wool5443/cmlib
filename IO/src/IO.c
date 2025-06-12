@@ -37,7 +37,7 @@ Result_String real_path(const char* path)
 
     return string_ctor_str(str_ctor_size(good_path, size));
 
-ERROR_CASE
+    ERROR_CASE
     return Result_String_ctor((String){}, err);
 }
 
@@ -73,12 +73,11 @@ Result_Str get_filename_str(const Str path)
     }
 
     return Result_Str_ctor(
-        (Str) {
+        (Str){
             .data = path.data + name_start,
             .size = path.size - name_start,
-        }, err
-    );
+        },
+        err);
 
-ERROR_CASE
-
+    ERROR_CASE
 }

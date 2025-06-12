@@ -1,10 +1,10 @@
+#include "../Logger.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "../Logger.h"
 
 #undef LoggerInitPath
 #undef LoggerInitFile
@@ -54,9 +54,11 @@ void logger_init_console()
 
 static void loggerFinish_()
 {
-    if (!cmlibLogger_.file) return;
+    if (!cmlibLogger_.file)
+        return;
 
-    if (isatty(fileno(cmlibLogger_.file))) return;
+    if (isatty(fileno(cmlibLogger_.file)))
+        return;
 
     fclose(cmlibLogger_.file);
 }

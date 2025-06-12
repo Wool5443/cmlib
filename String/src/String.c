@@ -44,20 +44,21 @@ Result_String string_ctor_capacity(size_t capacity)
 
     if (!data)
     {
-        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Failed to create string with capacity %zu: %s", capacity);
+        HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY,
+                           "Failed to create string with capacity %zu: %s",
+                           capacity);
     }
 
-ERROR_CASE
+    ERROR_CASE
     return Result_String_ctor(
-        (String)
-        {
-            .allocator = err == EVERYTHING_FINE ? Current_string_allocator : (Allocator){},
+        (String){
+            .allocator = err == EVERYTHING_FINE ? Current_string_allocator
+                                                : (Allocator){},
             .data = data,
             .size = 0,
             .capacity = data ? capacity : 0,
         },
-        err
-    );
+        err);
 }
 
 Error_code string_realloc(String* this, size_t new_capacity)
@@ -80,9 +81,11 @@ Error_code string_realloc(String* this, size_t new_capacity)
 
     char* new_data = NULL;
 
-    if (this->capacity >= new_capacity) return EVERYTHING_FINE;
+    if (this->capacity >= new_capacity)
+        return EVERYTHING_FINE;
 
-    Allocator allocator = this->allocator.allocate ? this->allocator : Current_string_allocator;
+    Allocator allocator = this->allocator.allocate ? this->allocator
+                                                   : Current_string_allocator;
     new_data = allocator.allocate(new_capacity + 1);
 
     if (!new_data)
@@ -98,15 +101,12 @@ Error_code string_realloc(String* this, size_t new_capacity)
 
     allocator.free(this->data);
 
-    *this = (String)
-    {
-        .allocator = allocator,
-        .data = new_data,
-        .size = this->size,
-        .capacity = new_capacity
-    };
+    *this = (String){.allocator = allocator,
+                     .data = new_data,
+                     .size = this->size,
+                     .capacity = new_capacity};
 
-ERROR_CASE
+    ERROR_CASE
     return err;
 }
 
@@ -121,8 +121,10 @@ Error_code string_append_str(String* this, Str string)
         ERROR_LEAVE();
     }
 
-    if (!string.data) return EVERYTHING_FINE;
-    if (string.size == 0) return EVERYTHING_FINE;
+    if (!string.data)
+        return EVERYTHING_FINE;
+    if (string.size == 0)
+        return EVERYTHING_FINE;
 
     size_t newSize = this->size + string.size;
 
@@ -137,7 +139,7 @@ Error_code string_append_str(String* this, Str string)
     this->size = newSize;
     this->data[newSize] = '\0';
 
-ERROR_CASE;
+    ERROR_CASE;
     return err;
 }
 
@@ -186,17 +188,17 @@ Result_String read_file(const char* path)
 
     string.size = fileSize;
 
-    return (Result_String)
-    {
+    return (Result_String){
         string,
         EVERYTHING_FINE,
     };
 
-ERROR_CASE
-    if (file) fclose(file);
+    ERROR_CASE
+    if (file)
+        fclose(file);
     string_dtor(&string);
 
-    return (Result_String){ {}, err };
+    return (Result_String){{}, err};
 }
 
 Error_code string_vprintf(String* this, const char* format, va_list args)
@@ -227,7 +229,8 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
         va_list cpargs = {};
         va_copy(cpargs, args);
 
-        int written = vsnprintf(this->data + this->size, capacity, format, cpargs);
+        int written =
+            vsnprintf(this->data + this->size, capacity, format, cpargs);
 
         if (written < 0)
         {
@@ -245,7 +248,7 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
 
     return EVERYTHING_FINE;
 
-ERROR_CASE
+    ERROR_CASE
 
     return err;
 }
@@ -286,7 +289,6 @@ Error_code string_replace_all(String* this, Str from, Str to)
     }
     size_t new_size = this->size + count_occurences * change;
 
-
     if (change < 0)
     {
         char* writer = this->data;
@@ -309,8 +311,8 @@ Error_code string_replace_all(String* this, Str from, Str to)
     }
     else
     {
-        //AAAAAAAAAAAAABBBAAAA BBB -> DDDDD
-        //             DDDDDAAAA BBB -> DDDDD
+        // AAAAAAAAAAAAABBBAAAA BBB -> DDDDD
+        //              DDDDDAAAA BBB -> DDDDD
         String s = {};
         if (this->capacity >= new_size)
         {
@@ -326,7 +328,9 @@ Error_code string_replace_all(String* this, Str from, Str to)
             string_dtor(this);
         }
 
-        for (char* old = s.data + s.size, *new = s.data + new_size; old >= s.data; old--, new--)
+        for (char *old = s.data + s.size, *new = s.data + new_size;
+             old >= s.data;
+             old--, new --)
         {
             if (str_compare(str_ctor_size(old, from.size), from) == 0)
             {
@@ -335,13 +339,13 @@ Error_code string_replace_all(String* this, Str from, Str to)
             }
             else
             {
-                *new= *old;
+                *new = *old;
             }
         }
         s.size = new_size;
         *this = s;
     }
 
-ERROR_CASE;
+    ERROR_CASE;
     return err;
 }

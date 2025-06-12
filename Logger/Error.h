@@ -3,10 +3,11 @@
  * @author Misha Solodilov (mihsolodilov2015@gmail.com)
  * @brief Header file for error handling utilities.
  *
- * This header defines structures and functions used for error reporting and handling in the system. It provides
- * a mechanism to store detailed error information, including the error code, file, line number, function name,
- * and timestamp of when the error occurred. The error handling utilities can be used for efficient error logging
- * and tracking.
+ * This header defines structures and functions used for error reporting and
+ * handling in the system. It provides a mechanism to store detailed error
+ * information, including the error code, file, line number, function name, and
+ * timestamp of when the error occurred. The error handling utilities can be
+ * used for efficient error logging and tracking.
  *
  * @version 1.0
  * @date 12.06.2025
@@ -28,39 +29,41 @@
  * @enum Error_code
  * @brief Enum for defining various error codes.
  *
- * This enum defines the different types of errors that can occur in the system. The error codes are generated
- * dynamically from an external header file `ErrorGen.h` and used to represent specific error conditions.
+ * This enum defines the different types of errors that can occur in the system.
+ * The error codes are generated dynamically from an external header file
+ * `ErrorGen.h` and used to represent specific error conditions.
  */
 typedef enum
 {
-    #define DEF_ERROR(code) \
-    code,
+#define DEF_ERROR(code) code,
 
-    #include "include/ErrorGen.h"
+#include "include/ErrorGen.h"
 
-    #undef DEF_ERROR
+#undef DEF_ERROR
 } Error_code;
 
 /**
  * @struct Error
  * @brief Structure to hold detailed error information.
  *
- * This structure stores information about an error, including the error code, the file and line where the error
- * occurred, the function where the error happened, and the timestamp of when the error was created.
+ * This structure stores information about an error, including the error code,
+ * the file and line where the error occurred, the function where the error
+ * happened, and the timestamp of when the error was created.
  */
 typedef struct
 {
-    Error_code   code;      /**< The error code indicating the type of error. */
-    const char*  file;      /**< The file where the error occurred. */
-    const char*  line;      /**< The line number where the error occurred. */
-    const char*  function;  /**< The function where the error occurred. */
-    time_t       time;      /**< The timestamp when the error occurred. */
+    Error_code code;      /**< The error code indicating the type of error. */
+    const char* file;     /**< The file where the error occurred. */
+    const char* line;     /**< The line number where the error occurred. */
+    const char* function; /**< The function where the error occurred. */
+    time_t time;          /**< The timestamp when the error occurred. */
 } Error;
 
 /**
  * @brief Constructor for the `Error` structure.
  *
- * This function creates and initializes an `Error` structure with the given parameters.
+ * This function creates and initializes an `Error` structure with the given
+ * parameters.
  *
  * @param error_code The error code representing the type of error.
  * @param fileName The name of the file where the error occurred.
@@ -76,7 +79,8 @@ INLINE Error error_ctor(Error_code error_code,
 /**
  * @brief Gets the name of the error code as a string.
  *
- * This function converts an error code to its string representation, which is useful for logging and debugging.
+ * This function converts an error code to its string representation, which is
+ * useful for logging and debugging.
  *
  * @param error_code The error code to convert.
  * @return The string representation of the error code.
@@ -86,11 +90,12 @@ INLINE const char* get_error_name(Error_code error_code);
 /**
  * @brief Prints detailed error information.
  *
- * This function prints the error information, including the error code, file, line, function name, and timestamp,
- * to the specified output stream.
+ * This function prints the error information, including the error code, file,
+ * line, function name, and timestamp, to the specified output stream.
  *
  * @param error The `Error` structure containing the error information.
- * @param file The output stream to print the error to (e.g., `stdout` or `stderr`).
+ * @param file The output stream to print the error to (e.g., `stdout` or
+ * `stderr`).
  */
 INLINE void error_print(Error error, FILE* file);
 
@@ -99,8 +104,7 @@ INLINE Error error_ctor(Error_code error_code,
                         const char* lineNumber,
                         const char* functionName)
 {
-    return (Error)
-    {
+    return (Error){
         .time = time(NULL),
         .code = error_code,
         .file = fileName,
@@ -113,12 +117,13 @@ INLINE const char* get_error_name(Error_code error_code)
 {
     switch (error_code)
     {
-        #define DEF_ERROR(code) \
-        case code: return #code;
+#define DEF_ERROR(code)                                                        \
+    case code:                                                                 \
+        return #code;
 
-        #include "include/ErrorGen.h"
+#include "include/ErrorGen.h"
 
-        #undef DEF_ERROR
+#undef DEF_ERROR
 
         default:
             return "ERROR_BAD_ERROR_CODE";
@@ -130,39 +135,38 @@ INLINE void error_print(Error error, FILE* file)
     assert(file);
 
     char timeString[sizeof("dd-mm-yyyy:hh:mm:ss MSK ")];
-    strftime(timeString, sizeof(timeString), "%d-%m-%Y:%H:%M:%S %Z",
+    strftime(timeString,
+             sizeof(timeString),
+             "%d-%m-%Y:%H:%M:%S %Z",
              localtime(&error.time));
 
     fprintf(file, "%s: ", timeString);
 
-    if (error.code) fprintf(file, "%s ", get_error_name(error.code));
+    if (error.code)
+        fprintf(file, "%s ", get_error_name(error.code));
 
-    fprintf(
-        file,
-        "in %s:%s in %s",
-        error.file,
-        error.line,
-        error.function
-   );
+    fprintf(file, "in %s:%s in %s", error.file, error.line, error.function);
 }
 
 /**
  * @brief Macro to initialize an error checking block.
  *
- * This macro initializes an error variable (`err`) to `EVERYTHING_FINE`, which is used to check if any error
- * occurs in the subsequent code.
+ * This macro initializes an error variable (`err`) to `EVERYTHING_FINE`, which
+ * is used to check if any error occurs in the subsequent code.
  */
 #define ERROR_CHECKING() UNUSED Error_code err = EVERYTHING_FINE
 
 /**
  * @brief Macro to handle error cases and jump to the error handler.
  */
-#define ERROR_CASE ERROR_CASE_:;
+#define ERROR_CASE                                                             \
+    ERROR_CASE_:;
 
 /**
  * @brief Macro to exit the error checking block.
  *
- * This macro is used to exit an error-checking block and jump to the error handling section of the code.
+ * This macro is used to exit an error-checking block and jump to the error
+ * handling section of the code.
  */
 #define ERROR_LEAVE() goto ERROR_CASE_
 
@@ -174,46 +178,47 @@ INLINE void error_print(Error error, FILE* file)
 /**
  * @brief Macro to get the current line number.
  */
-#define GET_LINE()      STRINGIFY_VALUE(__LINE__)
+#define GET_LINE() STRINGIFY_VALUE(__LINE__)
 
 #if defined(__GNUC__) || defined(__clang__)
-    /**
-     * @brief Macro to get the current function name.
-     */
-    #define GET_FUNCTION()  __PRETTY_FUNCTION__
+/**
+ * @brief Macro to get the current function name.
+ */
+#define GET_FUNCTION() __PRETTY_FUNCTION__
 #else
-    /**
-     * @brief Macro to get the current function name (for non-GCC/Clang compilers).
-     */
-    #define GET_FUNCTION()  __func__
+/**
+ * @brief Macro to get the current function name (for non-GCC/Clang compilers).
+ */
+#define GET_FUNCTION() __func__
 #endif
 
 /**
  * @brief Macro to create an error object.
  *
- * This macro creates an `Error` object by capturing the current error code, file, line, and function name.
+ * This macro creates an `Error` object by capturing the current error code,
+ * file, line, and function name.
  *
  * @param error_code The error code representing the type of error.
  * @return A fully initialized `Error` object.
  */
-#define CREATE_ERROR(error_code) \
-error_ctor(error_code, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
+#define CREATE_ERROR(error_code)                                               \
+    error_ctor(error_code, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
 
 /**
  * @brief Macro to check for errors in an expression.
  *
- * This macro evaluates the given expression and, if it returns a non-zero value (indicating an error),
- * it triggers the error handling mechanism.
+ * This macro evaluates the given expression and, if it returns a non-zero value
+ * (indicating an error), it triggers the error handling mechanism.
  *
  * @param expr The expression to evaluate.
  */
-#define CHECK_ERROR(expr)                                               \
-do                                                                      \
-{                                                                       \
-    if ((err = (expr)))                                                 \
-    {                                                                   \
-        ERROR_LEAVE();                                                  \
-    }                                                                   \
-} while (0)
+#define CHECK_ERROR(expr)                                                      \
+    do                                                                         \
+    {                                                                          \
+        if ((err = (expr)))                                                    \
+        {                                                                      \
+            ERROR_LEAVE();                                                     \
+        }                                                                      \
+    } while (0)
 
 #endif // CMLIB_ERROR_H_

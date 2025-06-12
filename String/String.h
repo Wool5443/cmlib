@@ -1,14 +1,17 @@
 /**
  * @file String.h
  * @author Misha Solodilov (mihsolodilov2015@gmail.com)
- * @brief Header file for a heap-allocated string implementation and string manipulation utilities.
+ * @brief Header file for a heap-allocated string implementation and string
+ * manipulation utilities.
  *
- * This header defines the `String` and `Str` structures, along with functions for managing dynamically allocated
- * strings. The `String` structure supports heap-allocated, mutable strings, while the `Str` structure provides
- * a view of a string, often used for efficient string manipulations without ownership.
+ * This header defines the `String` and `Str` structures, along with functions
+ * for managing dynamically allocated strings. The `String` structure supports
+ * heap-allocated, mutable strings, while the `Str` structure provides a view of
+ * a string, often used for efficient string manipulations without ownership.
  *
- * The file provides constructors, destructors, comparison, concatenation, and other utilities for working with strings
- * and string slices. The `Allocator` structure is used to manage memory for `String` objects, and custom memory
+ * The file provides constructors, destructors, comparison, concatenation, and
+ * other utilities for working with strings and string slices. The `Allocator`
+ * structure is used to manage memory for `String` objects, and custom memory
  * allocators can be used via `string_set_allocator`.
  *
  * @version 1.0
@@ -20,23 +23,24 @@
 #ifndef CMLIB_STRING_H_
 #define CMLIB_STRING_H_
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <sys/stat.h>
 
 #if __STDC_VERSION__ < 202311L
-    #include <stdbool.h>
+#include <stdbool.h>
 #endif
 
-#include "../Logger/Logger.h"
 #include "../Allocator/Allocator.h"
+#include "../Logger/Logger.h"
 
 /**
  * @brief An empty `String` constant.
  *
- * This constant represents an empty string (with size 0) using the `String` structure.
+ * This constant represents an empty string (with size 0) using the `String`
+ * structure.
  */
 #define CMLIB_EMPTY_STRING ((String){})
 
@@ -44,26 +48,31 @@
  * @struct String
  * @brief A heap-allocated string with dynamic size and capacity.
  *
- * The `String` structure represents a heap-allocated string with support for resizing and dynamic memory management.
- * It includes a pointer to the string data, the size of the string, and the total capacity of the buffer that can
+ * The `String` structure represents a heap-allocated string with support for
+ * resizing and dynamic memory management. It includes a pointer to the string
+ * data, the size of the string, and the total capacity of the buffer that can
  * hold the string's data.
  */
 typedef struct String
 {
-    Allocator allocator; ///< Allocator used for memory management of the string.
-    char*  data;         ///< Pointer to the actual data (characters).
-    size_t size;         ///< Current size of the string (excluding null terminator).
-    size_t capacity;     ///< Total capacity of the string's buffer (excluding null terminator).
+    Allocator allocator; ///< Allocator used for memory management of the
+                         ///< string.
+    char* data;          ///< Pointer to the actual data (characters).
+    size_t size; ///< Current size of the string (excluding null terminator).
+    size_t capacity; ///< Total capacity of the string's buffer (excluding null
+                     ///< terminator).
 } String;
 
-extern Allocator Current_string_allocator; /**< The global allocator used by the String structure. */
+extern Allocator Current_string_allocator; /**< The global allocator used by the
+                                              String structure. */
 
 /**
  * @struct Str
  * @brief A view of a string (slice).
  *
- * The `Str` structure provides a view of a string, which is a pointer to a substring of another string.
- * It does not own the data but allows manipulation of a portion of a larger string.
+ * The `Str` structure provides a view of a string, which is a pointer to a
+ * substring of another string. It does not own the data but allows manipulation
+ * of a portion of a larger string.
  */
 typedef struct Str
 {
@@ -74,7 +83,11 @@ typedef struct Str
 DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
 
-#define STR_LITERAL(string) ((Str){ .data = string, .size = sizeof(string) - 1 }) /**< A macro for creating a `Str` from a literal string. */
+#define STR_LITERAL(string)                                                    \
+    ((Str){.data = string, .size = sizeof(string) - 1}) /**< A macro for       \
+                                                           creating a `Str`    \
+                                                           from a literal      \
+                                                           string. */
 
 /**
  * @brief Constructor for a `Str` from a null-terminated string.
@@ -125,7 +138,8 @@ INLINE Str str_ctor_string(String string);
  * @param lhs The first `Str` object.
  * @param rhs The second `Str` object.
  *
- * @return A negative, zero, or positive integer indicating the result of the comparison.
+ * @return A negative, zero, or positive integer indicating the result of the
+ * comparison.
  *
  * @see Str
  */
@@ -146,7 +160,8 @@ INLINE void str_print(Str string, FILE* out);
 /**
  * @brief Slices a `Str` object.
  *
- * This function returns a new `Str` object that represents a slice of the original `Str` object.
+ * This function returns a new `Str` object that represents a slice of the
+ * original `Str` object.
  *
  * @param string The `Str` object to slice.
  * @param start_idx The start index of the slice (inclusive).
@@ -162,16 +177,19 @@ INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx);
 /**
  * @brief Sets a custom allocator for the `String` structure.
  *
- * This function allows setting a custom memory allocator for the `String` structure.
+ * This function allows setting a custom memory allocator for the `String`
+ * structure.
  *
  * @param allocator The custom allocator to use for the `String` objects.
  */
 INLINE void string_set_allocator(Allocator allocator);
 
 /**
- * @brief Resets the `String` allocator to the default allocator (using `calloc`).
+ * @brief Resets the `String` allocator to the default allocator (using
+ * `calloc`).
  *
- * This function resets the allocator used for `String` objects to the default `calloc` allocator.
+ * This function resets the allocator used for `String` objects to the default
+ * `calloc` allocator.
  */
 INLINE void string_reset_allocator();
 
@@ -192,7 +210,8 @@ INLINE Result_String string_ctor(const char* string);
 /**
  * @brief Constructs a `String` with a specified capacity.
  *
- * This function creates a `String` with the given capacity, allowing space for future growth.
+ * This function creates a `String` with the given capacity, allowing space for
+ * future growth.
  *
  * @param capacity The capacity of the string.
  *
@@ -206,7 +225,8 @@ Result_String string_ctor_capacity(size_t capacity);
 /**
  * @brief Constructs a `String` from a `Str` view.
  *
- * This function creates a `String` from a `Str` view, making a copy of the data.
+ * This function creates a `String` from a `Str` view, making a copy of the
+ * data.
  *
  * @param string The `Str` object to convert into a `String`.
  *
@@ -221,7 +241,8 @@ INLINE Result_String string_ctor_str(Str string);
 /**
  * @brief Destructor for a `String` object.
  *
- * This function safely deallocates the memory used by the `String` object. It is safe to call multiple times or on a `NULL` pointer.
+ * This function safely deallocates the memory used by the `String` object. It
+ * is safe to call multiple times or on a `NULL` pointer.
  *
  * @param [out] string The `String` object to deallocate.
  *
@@ -232,7 +253,8 @@ INLINE void string_dtor(String* this);
 /**
  * @brief Copies a `String`.
  *
- * This function creates a new `String` object by copying the contents of the provided `String`.
+ * This function creates a new `String` object by copying the contents of the
+ * provided `String`.
  *
  * @param string The `String` to copy.
  *
@@ -246,7 +268,8 @@ INLINE Result_String string_copy(String string);
 /**
  * @brief Prints a formatted string into a `String`.
  *
- * This function uses `printf`-like formatting and appends the result to the `String`.
+ * This function uses `printf`-like formatting and appends the result to the
+ * `String`.
  *
  * @param this The `String` to append to.
  * @param format The format string.
@@ -262,7 +285,8 @@ Error_code string_vprintf(String* this, const char* format, va_list args);
 /**
  * @brief Constructs a `String` from a formatted string.
  *
- * This function creates a new `String` by formatting the given `format` string using `printf`-like syntax.
+ * This function creates a new `String` by formatting the given `format` string
+ * using `printf`-like syntax.
  *
  * @param format The format string.
  *
@@ -277,8 +301,9 @@ INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
 /**
  * @brief Replaces occurrences of one substring with another.
  *
- * This function replaces `count` occurrences of the `from` substring with the `to` substring in the `String`.
- * If `count` is 0, all occurrences are replaced.
+ * This function replaces `count` occurrences of the `from` substring with the
+ * `to` substring in the `String`. If `count` is 0, all occurrences are
+ * replaced.
  *
  * @param this The `String` to modify.
  * @param from The substring to replace.
@@ -294,11 +319,13 @@ Error_code string_replace_all(String* this, Str from, Str to);
 /**
  * @brief Reads the contents of a file into a `String`.
  *
- * This function reads the contents of the specified file and stores it in a `String`.
+ * This function reads the contents of the specified file and stores it in a
+ * `String`.
  *
  * @param path The path to the file.
  *
- * @return A `Result_String` containing the contents of the file or an error code.
+ * @return A `Result_String` containing the contents of the file or an error
+ * code.
  *
  * @see String
  * @see Error_code
@@ -308,7 +335,8 @@ Result_String read_file(const char* path);
 /**
  * @brief Slices a `String` into a `Str`.
  *
- * This function returns a view (`Str`) of a substring from a `String`. This is unsafe if the `String` is `NULL`.
+ * This function returns a view (`Str`) of a substring from a `String`. This is
+ * unsafe if the `String` is `NULL`.
  *
  * @param this The `String` to slice.
  * @param start_idx The start index of the slice (inclusive).
@@ -386,7 +414,8 @@ Error_code string_append_str(String* this, Str string);
 /**
  * @brief Clears a `String`.
  *
- * This function clears the contents of the `String`, resetting its size to zero.
+ * This function clears the contents of the `String`, resetting its size to
+ * zero.
  *
  * @param [out] this The `String` to clear.
  *
@@ -402,7 +431,8 @@ INLINE void string_clear(String* this);
  * @param lhs The first `String`.
  * @param rhs The second `String`.
  *
- * @return A negative, zero, or positive integer indicating the result of the comparison.
+ * @return A negative, zero, or positive integer indicating the result of the
+ * comparison.
  *
  * @see String
  */
@@ -411,8 +441,8 @@ INLINE int string_compare(String lhs, String rhs);
 /**
  * @brief Reallocates a `String` to a new capacity.
  *
- * This function reallocates the memory for the `String` to a new capacity. The `String` will be resized
- * accordingly to accommodate additional data.
+ * This function reallocates the memory for the `String` to a new capacity. The
+ * `String` will be resized accordingly to accommodate additional data.
  *
  * @param [in, out] this The `String` to reallocate.
  * @param newCapacity The new capacity for the `String`.
@@ -431,11 +461,12 @@ INLINE Str str_ctor(const char* string)
 
 INLINE Str str_ctor_size(const char* string, size_t size)
 {
-    if (!string) return (Str){};
-    if (size == 0) return (Str){};
+    if (!string)
+        return (Str){};
+    if (size == 0)
+        return (Str){};
 
-    return (Str)
-    {
+    return (Str){
         .data = string,
         .size = size,
     };
@@ -443,8 +474,7 @@ INLINE Str str_ctor_size(const char* string, size_t size)
 
 INLINE Str str_ctor_string(String string)
 {
-    return (Str)
-    {
+    return (Str){
         .data = string.data,
         .size = string.size,
     };
@@ -477,18 +507,20 @@ INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx)
     ERROR_CHECKING();
 
     if (start_idx >= string.size || end_idx >= string.size
-        || end_idx < start_idx) {
+        || end_idx < start_idx)
+    {
         err = ERROR_BAD_ARGS;
         log_error("Failed to create slice:\n"
                   "startIdx: %zu, endIdx: %zu, size: %zu",
-                  start_idx, end_idx, string.size);
+                  start_idx,
+                  end_idx,
+                  string.size);
         return Result_Str_ctor((Str){}, err);
     }
 
-    return Result_Str_ctor(
-        (Str) { .data = string.data + start_idx, .size = end_idx - start_idx },
-        err
-    );
+    return Result_Str_ctor((Str){.data = string.data + start_idx,
+                                 .size = end_idx - start_idx},
+                           err);
 }
 
 INLINE void string_set_allocator(Allocator allocator)
@@ -508,8 +540,10 @@ INLINE Result_String string_ctor(const char* string)
 
 INLINE Result_String string_ctor_str(Str string)
 {
-    if (!string.data) return (Result_String){};
-    if (string.size == 0) return (Result_String){};
+    if (!string.data)
+        return (Result_String){};
+    if (string.size == 0)
+        return (Result_String){};
 
     Result_String stringRes = string_ctor_capacity(string.size);
 
@@ -549,13 +583,15 @@ INLINE int string_compare(String lhs, String rhs)
 
 INLINE void string_clear(String* this)
 {
-    if (this->data) this->data[0] = '\0';
+    if (this->data)
+        this->data[0] = '\0';
     this->size = 0;
 }
 
 INLINE Error_code string_append(String* this, const char* string)
 {
-    if (!string) return EVERYTHING_FINE;
+    if (!string)
+        return EVERYTHING_FINE;
     return string_append_str(this, str_ctor(string));
 }
 
@@ -605,7 +641,7 @@ INLINE Result_String string_ctor_printf(const char* format, ...)
 INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
 {
     String s = {};
-    return (Result_String) {
+    return (Result_String){
         .error_code = string_vprintf(&s, format, args),
         .value = s,
     };

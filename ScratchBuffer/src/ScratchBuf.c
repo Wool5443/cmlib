@@ -1,16 +1,17 @@
 #include "ScratchBuf.h"
+
 #include "Logger.h"
 
-#define CHECK_SCRATCH_STATE()                                       \
-do                                                                  \
-{                                                                   \
-    if (!scratchString.data)                                        \
-    {                                                               \
-        UNUSED Error_code err = ERROR_UNINITIALIZED;                \
-        log_error("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");  \
-        abort();                                                    \
-    }                                                               \
-} while (0)
+#define CHECK_SCRATCH_STATE()                                                  \
+    do                                                                         \
+    {                                                                          \
+        if (!scratchString.data)                                               \
+        {                                                                      \
+            UNUSED Error_code err = ERROR_UNINITIALIZED;                       \
+            log_error("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");        \
+            abort();                                                           \
+        }                                                                      \
+    } while (0)
 
 static String scratchString = {};
 
@@ -41,7 +42,7 @@ Error_code scratch_init(size_t capacity)
 
     scratchString = strRes.value;
 
-ERROR_CASE;
+    ERROR_CASE;
     return err;
 }
 
@@ -77,7 +78,8 @@ void scratch_pop(size_t count)
 {
     CHECK_SCRATCH_STATE();
 
-    if (count > scratchString.size) return;
+    if (count > scratchString.size)
+        return;
 
     scratchString.size -= count;
 
@@ -116,7 +118,9 @@ Error_code scratch_vprintf(const char* format, va_list args)
         {
             HANDLE_ERRNO_ERROR(ERROR_STD,
                                "Error vsnrprintf(%p, %zu, %s, ...): %s",
-                               buffer, leftCapacity, format);
+                               buffer,
+                               leftCapacity,
+                               format);
         }
         else if (written <= (int)leftCapacity)
         {
@@ -124,12 +128,13 @@ Error_code scratch_vprintf(const char* format, va_list args)
             return EVERYTHING_FINE;
         }
 
-        CHECK_ERROR(string_realloc(&scratchString, scratchString.capacity + written));
+        CHECK_ERROR(
+            string_realloc(&scratchString, scratchString.capacity + written));
     }
 
     return EVERYTHING_FINE;
 
-ERROR_CASE
+    ERROR_CASE
     return err;
 }
 
