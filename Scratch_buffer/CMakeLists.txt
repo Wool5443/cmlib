@@ -1,6 +1,6 @@
 set(LIB_NAME cmlib_scratch_buffer)
 
-set(SOURCES src/ScratchBuf.c)
+set(SOURCES src/Scratch_buf.c)
 
 add_library(${LIB_NAME} STATIC ${SOURCES})
 
