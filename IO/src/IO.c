@@ -80,4 +80,5 @@ Result_Str get_filename_str(const Str path)
         err);
 
     ERROR_CASE
+    return Result_Str_ctor((Str){}, err);
 }
