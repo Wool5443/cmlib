@@ -201,8 +201,8 @@ INLINE void error_print(Error error, FILE* file)
  * @param error_code The error code representing the type of error.
  * @return A fully initialized `Error` object.
  */
-#define CREATE_ERROR(error_code)                                               \
-    error_ctor(error_code, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
+#define CREATE_ERROR(error_code__)                                             \
+    error_ctor(error_code__, GET_FILE_NAME(), GET_LINE(), GET_FUNCTION())
 
 /**
  * @brief Macro to check for errors in an expression.
@@ -212,10 +212,10 @@ INLINE void error_print(Error error, FILE* file)
  *
  * @param expr The expression to evaluate.
  */
-#define CHECK_ERROR(expr)                                                      \
+#define CHECK_ERROR(expr__)                                                    \
     do                                                                         \
     {                                                                          \
-        if ((err = (expr)))                                                    \
+        if ((err = (expr__)))                                                  \
         {                                                                      \
             ERROR_LEAVE();                                                     \
         }                                                                      \

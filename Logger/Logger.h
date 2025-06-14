@@ -94,9 +94,65 @@ void logger_init_console();
  *
  * @return A pointer to the global `Logger` instance.
  */
+INLINE Logger* get_logger();
+
+/**
+ * @brief Retrieves the string representation of a log type.
+ *
+ * This inline function returns a string corresponding to the provided log type,
+ * used for formatting log messages.
+ *
+ * @param type The log type (`LOG_TYPE_INFO`, `LOG_TYPE_DEBUG`,
+ * `LOG_TYPE_ERROR`).
+ * @return A string representing the log type.
+ */
+INLINE const char* get_log_type_string_(Log_type type);
+
+/**
+ * @brief Retrieves the color associated with a log type.
+ *
+ * This inline function returns the appropriate color for the console based on
+ * the log type, for visual distinction.
+ *
+ * @param type The log type (`LOG_TYPE_INFO`, `LOG_TYPE_DEBUG`,
+ * `LOG_TYPE_ERROR`).
+ * @return The `ConsoleColor` representing the color for the log type.
+ */
+INLINE ConsoleColor get_log_type_color_(Log_type type);
+
 INLINE Logger* get_logger()
 {
     return &cmlibLogger_;
+}
+
+INLINE const char* get_log_type_string_(Log_type type)
+{
+    switch (type)
+    {
+        case LOG_TYPE_INFO:
+            return "INFO";
+        case LOG_TYPE_DEBUG:
+            return "DEBUG";
+        case LOG_TYPE_ERROR:
+            return "ERROR";
+        default:
+            return "UNKNOWN LOG TYPE";
+    }
+}
+
+INLINE ConsoleColor get_log_type_color_(Log_type type)
+{
+    switch (type)
+    {
+        case LOG_TYPE_INFO:
+            return CONSOLE_COLOR_CYAN;
+        case LOG_TYPE_DEBUG:
+            return CONSOLE_COLOR_YELLOW;
+        case LOG_TYPE_ERROR:
+            return CONSOLE_COLOR_RED;
+        default:
+            return CONSOLE_COLOR_MAGENTA;
+    }
 }
 
 /**
@@ -111,29 +167,32 @@ INLINE Logger* get_logger()
  * @param error The error associated with the log message.
  * @param ... Additional arguments for the log message.
  */
-#define LOG_(type, error, ...)                                                 \
+#define LOG_(type__, error__, ...)                                             \
     do                                                                         \
     {                                                                          \
-        FILE* logFile = get_logger()->file;                                    \
-        if (!logFile)                                                          \
+        Log_type type = (type__);                                              \
+        Error error = (error__);                                               \
+        FILE* log_file = get_logger()->file;                                   \
+        if (!log_file)                                                         \
+        {                                                                      \
             break;                                                             \
+        }                                                                      \
+        SetConsoleColor(log_file, get_log_type_color_(type));                  \
                                                                                \
-        SetConsoleColor(logFile, get_log_type_color_(type));                   \
+        fprintf(log_file, "[%s] ", get_log_type_string_(type));                \
                                                                                \
-        fprintf(logFile, "[%s] ", get_log_type_string_(type));                 \
-                                                                               \
-        error_print(error, logFile);                                           \
+        error_print(error, log_file);                                          \
                                                                                \
         SWITCH_EMPTY(                                                          \
             ,                                                                  \
-            (fprintf(logFile, "\n"),                                           \
-             fprintf(logFile,                                                  \
+            (fprintf(log_file, "\n"),                                          \
+             fprintf(log_file,                                                 \
                      "" FIRST(__VA_ARGS__) "" VA_OPT_BUT_FIRST(__VA_ARGS__)    \
                          EXPAND_BUT_FIRST(__VA_ARGS__))),                      \
             __VA_ARGS__);                                                      \
                                                                                \
-        fprintf(logFile, "\n\n");                                              \
-        SetConsoleColor(logFile, CONSOLE_COLOR_WHITE);                         \
+        fprintf(log_file, "\n\n");                                             \
+        SetConsoleColor(log_file, CONSOLE_COLOR_WHITE);                        \
     } while (0)
 
 /**
@@ -191,10 +250,10 @@ INLINE Logger* get_logger()
  * @param expr The expression to evaluate.
  * @param ... Additional arguments for the error log.
  */
-#define CHECK_ERROR_LOG(expr, ...)                                             \
+#define CHECK_ERROR_LOG(expr__, ...)                                           \
     do                                                                         \
     {                                                                          \
-        if ((err = (expr)))                                                    \
+        if ((err = (expr__)))                                                  \
         {                                                                      \
             log_error(__VA_ARGS__);                                            \
             ERROR_LEAVE();                                                     \
@@ -210,63 +269,13 @@ INLINE Logger* get_logger()
  * @param error The error code to log.
  * @param ... Additional arguments for the error log.
  */
-#define HANDLE_ERRNO_ERROR(error, ...)                                         \
+#define HANDLE_ERRNO_ERROR(error__, ...)                                       \
     do                                                                         \
     {                                                                          \
         UNUSED int ern = errno;                                                \
-        err = error;                                                           \
+        err = error__;                                                         \
         log_error(__VA_ARGS__, strerror(ern));                                 \
         ERROR_LEAVE();                                                         \
     } while (0)
-
-/**
- * @brief Retrieves the string representation of a log type.
- *
- * This inline function returns a string corresponding to the provided log type,
- * used for formatting log messages.
- *
- * @param type The log type (`LOG_TYPE_INFO`, `LOG_TYPE_DEBUG`,
- * `LOG_TYPE_ERROR`).
- * @return A string representing the log type.
- */
-INLINE const char* get_log_type_string_(Log_type type)
-{
-    switch (type)
-    {
-        case LOG_TYPE_INFO:
-            return "INFO";
-        case LOG_TYPE_DEBUG:
-            return "DEBUG";
-        case LOG_TYPE_ERROR:
-            return "ERROR";
-        default:
-            return "UNKNOWN LOG TYPE";
-    }
-}
-
-/**
- * @brief Retrieves the color associated with a log type.
- *
- * This inline function returns the appropriate color for the console based on
- * the log type, for visual distinction.
- *
- * @param type The log type (`LOG_TYPE_INFO`, `LOG_TYPE_DEBUG`,
- * `LOG_TYPE_ERROR`).
- * @return The `ConsoleColor` representing the color for the log type.
- */
-INLINE ConsoleColor get_log_type_color_(Log_type type)
-{
-    switch (type)
-    {
-        case LOG_TYPE_INFO:
-            return CONSOLE_COLOR_CYAN;
-        case LOG_TYPE_DEBUG:
-            return CONSOLE_COLOR_YELLOW;
-        case LOG_TYPE_ERROR:
-            return CONSOLE_COLOR_RED;
-        default:
-            return CONSOLE_COLOR_MAGENTA;
-    }
-}
 
 #endif // CMLIB_LOGGER_H_

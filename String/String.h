@@ -83,8 +83,8 @@ typedef struct Str
 DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
 
-#define STR_LITERAL(string)                                                    \
-    ((Str){.data = string, .size = sizeof(string) - 1}) /**< A macro for       \
+#define STR_LITERAL(string__)                                                  \
+    ((Str){.data = string__, .size = sizeof(string__) - 1}) /**< A macro for   \
                                                            creating a `Str`    \
                                                            from a literal      \
                                                            string. */

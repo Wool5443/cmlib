@@ -155,6 +155,21 @@ INLINE ListHeader* list_end(ListHeader* node)
     return node;
 }
 
+INLINE Allocator get_list_node_allocator(void* node__)
+{
+    ListHeader* node = node__;
+    if (node)
+    {
+        return node->allocator;
+    }
+    return Current_list_allocator;
+}
+
+INLINE ListHeader* hide_list_node_pointer_(void* node__)
+{
+    return node__;
+}
+
 /**
  * @brief Creates a new list node with a specified value using the current
  * allocator.
@@ -165,7 +180,8 @@ INLINE ListHeader* list_end(ListHeader* node)
  * @param value The value to be assigned to the node.
  * @return Pointer to the newly created node.
  */
-#define list_node_ctor(value) (list_node_ctor_(value, Current_list_allocator))
+#define list_node_ctor(value__)                                                \
+    (list_node_ctor_(value__, Current_list_allocator))
 
 /**
  * @brief Gets the value of a list node.
@@ -176,7 +192,7 @@ INLINE ListHeader* list_end(ListHeader* node)
  * @param node Pointer to the list node.
  * @return Pointer to the value stored in the node.
  */
-#define list_get_value(node) ((void*)((node) + 1))
+#define list_get_value(node__) ((void*)((node__) + 1))
 
 /**
  * @brief Creates and inserts a new node after a given node.
@@ -189,32 +205,33 @@ INLINE ListHeader* list_end(ListHeader* node)
  * @param value The value to be assigned to the new node.
  * @return The newly inserted node.
  */
-#define list_insert_after(node, value)                                         \
+#define list_insert_after(node__, value__)                                     \
     ({                                                                         \
-        ListHeader* node_ = (node);                                            \
-        if (node_)                                                             \
+        Allocator allocator = get_list_node_allocator(node__);                 \
+        ListHeader* node = hide_list_node_pointer_(node__);                    \
+        if (node__)                                                            \
         {                                                                      \
-            ListHeader* new_node = list_node_ctor_(value, node_->allocator);   \
+            ListHeader* new_node = list_node_ctor_(value__, allocator);        \
             if (new_node)                                                      \
             {                                                                  \
                 *new_node = (ListHeader){                                      \
-                    .prev = node_,                                             \
-                    .next = node_->next,                                       \
-                    .allocator = node_->allocator,                             \
+                    .prev = node,                                              \
+                    .next = node->next,                                        \
+                    .allocator = allocator,                                    \
                 };                                                             \
-                if (node_->next)                                               \
+                if (node->next)                                                \
                 {                                                              \
-                    node_->next->prev = new_node;                              \
+                    node->next->prev = new_node;                               \
                 }                                                              \
-                node_->next = new_node;                                        \
-                node_ = new_node;                                              \
+                node->next = new_node;                                         \
+                node = new_node;                                               \
             }                                                                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            node_ = list_node_ctor(value);                                     \
+            node = list_node_ctor(value__);                                    \
         }                                                                      \
-        node_;                                                                 \
+        node;                                                                  \
     })
 
 /**
@@ -228,32 +245,33 @@ INLINE ListHeader* list_end(ListHeader* node)
  * @param value The value to be assigned to the new node.
  * @return The newly inserted node.
  */
-#define list_insert_before(node, value)                                        \
+#define list_insert_before(node__, value__)                                    \
     ({                                                                         \
-        ListHeader* node_ = (node);                                            \
-        if (node_)                                                             \
+        Allocator allocator = get_list_node_allocator(node__);                 \
+        ListHeader* node = hide_list_node_pointer_(node__);                    \
+        if (node__)                                                            \
         {                                                                      \
-            ListHeader* new_node = list_node_ctor_(value, node_->allocator);   \
+            ListHeader* new_node = list_node_ctor_(value__, allocator);        \
             if (new_node)                                                      \
             {                                                                  \
                 *new_node = (ListHeader){                                      \
-                    .prev = node_->prev,                                       \
-                    .next = node_,                                             \
-                    .allocator = node_->allocator,                             \
+                    .prev = node->prev,                                        \
+                    .next = node,                                              \
+                    .allocator = allocator,                                    \
                 };                                                             \
-                if (node_->prev)                                               \
+                if (node->prev)                                                \
                 {                                                              \
-                    node_->prev->next = new_node;                              \
+                    node->prev->next = new_node;                               \
                 }                                                              \
-                node_->prev = new_node;                                        \
-                node_ = new_node;                                              \
+                node->prev = new_node;                                         \
+                node = new_node;                                               \
             }                                                                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            node_ = list_node_ctor(value);                                     \
+            node = list_node_ctor(value__);                                    \
         }                                                                      \
-        node_;                                                                 \
+        node;                                                                  \
     })
 
 /**
@@ -266,19 +284,19 @@ INLINE ListHeader* list_end(ListHeader* node)
  * @param allocator_ The allocator used for memory allocation.
  * @return Pointer to the newly created node.
  */
-#define list_node_ctor_(value, allocator_)                                     \
+//NOLINTBEGIN(bugprone-sizeof-expression)
+#define list_node_ctor_(value__, allocator__)                                  \
     ({                                                                         \
-        auto value_ = (value);                                                 \
-        Allocator allocator = (allocator_);                                    \
         ListHeader* node =                                                     \
-            allocator.allocate(sizeof(ListHeader) + sizeof(value_));           \
+            allocator__.allocate(sizeof(ListHeader) + sizeof(value__));        \
         if (node)                                                              \
         {                                                                      \
             *node = (ListHeader){};                                            \
-            *(typeof(value_)*)(node + 1) = value_;                             \
-            node->allocator = allocator;                                       \
+            *(typeof(value__)*)(node + 1) = value__;                           \
+            node->allocator = allocator__;                                     \
         }                                                                      \
         node;                                                                  \
     })
+//NOLINTEND(bugprone-sizeof-expression)
 
 #endif // CMLIB_LIST_H_

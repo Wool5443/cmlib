@@ -55,7 +55,7 @@ extern Allocator Current_vector_allocator; /**< The global allocator used for
  * @param vec The pointer to the vector.
  * @return A pointer to the vector's header (`VHeader_*`).
  */
-#define GET_VEC_HEADER(vec) (&((VHeader_*)(vec))[-1])
+#define GET_VEC_HEADER(vec__) (&((VHeader_*)(vec__))[-1])
 
 /**
  * @brief Retrieves the allocator used for the vector.
@@ -67,7 +67,7 @@ extern Allocator Current_vector_allocator; /**< The global allocator used for
  * @param vec The pointer to the vector.
  * @return The allocator used by the vector.
  */
-#define GET_VEC_ALLOCATOR(vec)                                                 \
+#define GET_VEC_ALLOCATOR(vec__)                                               \
     ((vec) ? GET_VEC_HEADER(vec)->allocator : Current_vector_allocator)
 
 /**
@@ -78,7 +78,8 @@ extern Allocator Current_vector_allocator; /**< The global allocator used for
  *
  * @param vec The pointer to the vector to free.
  */
-#define VEC_FREE(vec) GET_VEC_ALLOCATOR(vec).free(GET_VEC_HEADER(vec))
+#define VEC_FREE(vec__)                                                        \
+    ((vec__) ? GET_VEC_ALLOCATOR(vec__).free(GET_VEC_HEADER(vec__)) : NULL)
 
 /**
  * @brief Iterator for the vector.
@@ -90,16 +91,16 @@ extern Allocator Current_vector_allocator; /**< The global allocator used for
  * @param iter_name The name of the iterator variable.
  * @param ... Optional arguments to customize the iteration range.
  */
-#define VEC_ITER(vec, iter_name, ...)                                          \
+#define VEC_ITER(vec__, iter_name__, ...)                                      \
     SWITCH_EMPTY(                                                              \
-        for (size_t iter_name = 0, iter_name##_end = vec_size(vec);            \
-             iter_name < iter_name##_end;                                      \
-             iter_name++),                                                     \
-        for (size_t iter_name = FIRST(__VA_ARGS__),                            \
-             iter_name##_end = MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__),      \
-                                   vec_size(vec));                             \
-             iter_name < iter_name##_end;                                      \
-             iter_name++),                                                     \
+        for (size_t iter_name__ = 0, iter_name__##_end = vec_size(vec__);      \
+             iter_name__ < iter_name__##_end;                                  \
+             iter_name__++),                                                   \
+        for (size_t iter_name__ = FIRST(__VA_ARGS__),                          \
+             iter_name__##_end = MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__),    \
+                                     vec_size(vec__));                         \
+             iter_name__ < iter_name__##_end;                                  \
+             iter_name__++),                                                   \
         __VA_ARGS__)
 
 /**
@@ -241,16 +242,16 @@ INLINE void vec_clear(void* vec)
  *
  * @see Error_code
  */
-#define vec_add(vec, value)                                                    \
+#define vec_add(vec__, value__)                                                \
     ({                                                                         \
         Error_code vec_add_error = ERROR_NO_MEMORY;                            \
-        void* temp = vec_realloc_((vec), sizeof(*vec));                        \
+        void* temp = vec_realloc_((vec__), sizeof(*vec__));                    \
         if (temp)                                                              \
         {                                                                      \
             vec_add_error = EVERYTHING_FINE;                                   \
-            (vec) = temp;                                                      \
-            VHeader_* header = GET_VEC_HEADER(vec);                            \
-            (vec)[header->size++] = value;                                     \
+            (vec__) = temp;                                                    \
+            VHeader_* header = GET_VEC_HEADER(vec__);                          \
+            (vec__)[header->size++] = value__;                                 \
         }                                                                      \
         vec_add_error;                                                         \
     })
@@ -264,13 +265,13 @@ INLINE void vec_clear(void* vec)
  * @param vec The pointer to the vector.
  * @return The popped value.
  */
-#define vec_pop(vec)                                                           \
+#define vec_pop(vec__)                                                         \
     ({                                                                         \
-        __typeof__(*vec) ret = {};                                             \
+        typeof(*vec__) ret = {};                                               \
         if (vec)                                                               \
         {                                                                      \
-            VHeader_* header = GET_VEC_HEADER(vec);                            \
-            ret = (vec)[--header->size];                                       \
+            VHeader_* header = GET_VEC_HEADER(vec__);                          \
+            ret = (vec__)[--header->size];                                     \
         }                                                                      \
         ret;                                                                   \
     })
@@ -287,20 +288,24 @@ INLINE void vec_clear(void* vec)
  *
  * @see Error_code
  */
-#define vec_reserve(vec, newCapacity)                                          \
+#define vec_reserve(vec__, new_capacity__)                                     \
     ({                                                                         \
+        size_t new_capacity = (new_capacity__);                                \
         Error_code vec_reserve_error = ERROR_NO_MEMORY;                        \
-        void* temp =                                                           \
-            vec_ctor_(GET_VEC_ALLOCATOR(vec), sizeof(*(vec)), newCapacity);    \
+        void* temp = vec_ctor_(GET_VEC_ALLOCATOR(vec__),                       \
+                               sizeof(*(vec__)),                               \
+                               new_capacity);                                  \
         if (temp)                                                              \
         {                                                                      \
             vec_reserve_error = EVERYTHING_FINE;                               \
-            size_t size = MIN(vec_size(vec), (size_t)newCapacity);             \
-            if ((vec) && size)                                                 \
-                memcpy(temp, vec, sizeof(*(vec)) * size);                      \
-            vec_dtor(vec);                                                     \
-            (vec) = temp;                                                      \
-            GET_VEC_HEADER(vec)->size = size;                                  \
+            size_t size = MIN(vec_size(vec__), new_capacity);                  \
+            if ((vec__) && size)                                               \
+            {                                                                  \
+                memcpy(temp, vec__, sizeof(*(vec__)) * size);                  \
+            }                                                                  \
+            vec_dtor(vec__);                                                   \
+            (vec__) = temp;                                                    \
+            GET_VEC_HEADER(vec__)->size = size;                                \
         }                                                                      \
         vec_reserve_error;                                                     \
     })
