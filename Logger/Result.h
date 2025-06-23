@@ -41,7 +41,7 @@
     INLINE Result_##type Result_##type##_ctor(type value,                      \
                                               Error_code error_code)           \
     {                                                                          \
-        return (Result_##type){.value = value, .error_code = error_code};      \
+        return (Result_##type) {.value = value, .error_code = error_code};     \
     }
 
 /**

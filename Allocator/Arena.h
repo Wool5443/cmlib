@@ -106,7 +106,7 @@ INLINE Result_Arena arena_ctor(size_t capacity)
     }
 
     return Result_Arena_ctor(
-        (Arena){
+        (Arena) {
             buf,
             buf,
             buf + capacity,
@@ -115,7 +115,7 @@ INLINE Result_Arena arena_ctor(size_t capacity)
 
     ERROR_CASE
 
-    return Result_Arena_ctor((Arena){}, err);
+    return Result_Arena_ctor((Arena) {}, err);
 }
 
 INLINE void* arena_allocate(Arena* arena, size_t size)

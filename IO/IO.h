@@ -123,7 +123,7 @@ INLINE Result_Str get_folder_str(const Str path)
 {
     if (!path.data)
     {
-        return (Result_Str){};
+        return (Result_Str) {};
     }
 
     Result_Str name = get_filename_str(path);
@@ -133,7 +133,7 @@ INLINE Result_Str get_folder_str(const Str path)
     }
 
     return Result_Str_ctor(
-        (Str){
+        (Str) {
             .data = path.data,
             .size = path.size - name.value.size,
         },
