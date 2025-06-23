@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "Vector.h"
 #include "Arena.h"
+#include "Vector.h"
 
 static Arena arena;
 
@@ -50,7 +50,8 @@ int main()
 
     Current_vector_allocator = CALLOC_ALLOCATOR;
 
-    for (void* p = arena_allocate(&arena, 56); p; p = arena_allocate(&arena, 34))
+    for (void* p = arena_allocate(&arena, 56); p;
+         p = arena_allocate(&arena, 34))
     {
         CHECK_ERROR_LOG(vec_add(allocations, p));
     }
@@ -67,7 +68,7 @@ int main()
 
     log_info("ArenaAllocator test succeed!");
 
-ERROR_CASE
+    ERROR_CASE
     vec_dtor(vec);
     vec_dtor(allocations);
     arena_dtor(&arena);

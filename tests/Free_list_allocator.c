@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "Vector.h"
 #include "Free_list.h"
+#include "Vector.h"
 
 static Free_list* free_list;
 
@@ -41,7 +41,8 @@ int main()
     }
 
     Result_Free_list free_list_res = free_list_ctor(200);
-    CHECK_ERROR_LOG(free_list_res.error_code, "Failed to create free list allocator");
+    CHECK_ERROR_LOG(free_list_res.error_code,
+                    "Failed to create free list allocator");
     free_list = &free_list_res.value;
 
     for (size_t i = 0; i < 2000; i++)
@@ -76,7 +77,7 @@ int main()
     }
 
     uint64_t s = 0;
-    uint64_t expected_s = (uint64_t )max_i * (max_i - 1) / 2;
+    uint64_t expected_s = (uint64_t)max_i * (max_i - 1) / 2;
     VEC_ITER(numbers, i)
     {
         s += numbers[i];
@@ -85,13 +86,16 @@ int main()
     if (s != expected_s)
     {
         err = ERROR_BAD_VALUE;
-        CHECK_ERROR_LOG(ERROR_BAD_VALUE, "Bad sum %lu, %lu expected", s, expected_s);
+        CHECK_ERROR_LOG(ERROR_BAD_VALUE,
+                        "Bad sum %lu, %lu expected",
+                        s,
+                        expected_s);
     }
     log_info("Got good sum! %lu", s);
 
     log_info("FreeListAllocator test succeed!");
 
-ERROR_CASE
+    ERROR_CASE
     free_list_dtor(free_list);
     free_list_pool_dtor(pool);
 

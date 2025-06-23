@@ -214,7 +214,7 @@ INLINE ListHeader* hide_list_node_pointer_(void* node__)
             ListHeader* new_node = list_node_ctor_(value__, allocator);        \
             if (new_node)                                                      \
             {                                                                  \
-                *new_node = (ListHeader){                                      \
+                *new_node = (ListHeader) {                                     \
                     .prev = node,                                              \
                     .next = node->next,                                        \
                     .allocator = allocator,                                    \
@@ -254,7 +254,7 @@ INLINE ListHeader* hide_list_node_pointer_(void* node__)
             ListHeader* new_node = list_node_ctor_(value__, allocator);        \
             if (new_node)                                                      \
             {                                                                  \
-                *new_node = (ListHeader){                                      \
+                *new_node = (ListHeader) {                                     \
                     .prev = node->prev,                                        \
                     .next = node,                                              \
                     .allocator = allocator,                                    \
@@ -284,19 +284,19 @@ INLINE ListHeader* hide_list_node_pointer_(void* node__)
  * @param allocator_ The allocator used for memory allocation.
  * @return Pointer to the newly created node.
  */
-//NOLINTBEGIN(bugprone-sizeof-expression)
+// NOLINTBEGIN(bugprone-sizeof-expression)
 #define list_node_ctor_(value__, allocator__)                                  \
     ({                                                                         \
         ListHeader* node =                                                     \
             allocator__.allocate(sizeof(ListHeader) + sizeof(value__));        \
         if (node)                                                              \
         {                                                                      \
-            *node = (ListHeader){};                                            \
+            *node = (ListHeader) {};                                           \
             *(typeof(value__)*)(node + 1) = value__;                           \
             node->allocator = allocator__;                                     \
         }                                                                      \
         node;                                                                  \
     })
-//NOLINTEND(bugprone-sizeof-expression)
+// NOLINTEND(bugprone-sizeof-expression)
 
 #endif // CMLIB_LIST_H_
