@@ -187,14 +187,14 @@ INLINE Result_Free_list free_list_ctor(size_t pool_size)
 
     if (!pool)
     {
-        return (Result_Free_list){
+        return (Result_Free_list) {
             .error_code = ERROR_NO_MEMORY,
         };
     }
 
-    return (Result_Free_list){
+    return (Result_Free_list) {
         .value =
-            (Free_list){
+            (Free_list) {
                 .pool = pool,
             },
     };
@@ -216,7 +216,7 @@ INLINE void free_list_dtor(Free_list* allocator)
         curr_pool = next_pool;
     }
 
-    *allocator = (Free_list){};
+    *allocator = (Free_list) {};
 }
 
 INLINE void* free_list_allocate(Free_list* allocator, size_t size)
@@ -291,14 +291,14 @@ INLINE Free_list_memory_pool* free_list_pool_ctor(size_t size)
     block->size = size;
     block->next = NULL;
 
-    *block = (Free_list_free_block_header){
+    *block = (Free_list_free_block_header) {
         .size = size,
         .next = NULL,
     };
 
     void* pool_start = pool + 1;
 
-    *pool = (Free_list_memory_pool){
+    *pool = (Free_list_memory_pool) {
         .next_pool = NULL,
         .next_block = block,
         .pool_end = (char*)pool_start + size - sizeof(void*),
@@ -352,7 +352,7 @@ INLINE void* free_list_pool_allocate(Free_list_memory_pool* pool, size_t size)
     {
         auto new_free =
             (Free_list_free_block_header*)((char*)(block + 1) + size);
-        *new_free = (Free_list_free_block_header){
+        *new_free = (Free_list_free_block_header) {
             .next = curr_block->next,
             .size = curr_block->size - size
                     - sizeof(Free_list_occupied_block_header),

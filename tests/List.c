@@ -1,25 +1,11 @@
 #include "List.h"
 
-void* cool_alloc(size_t size)
-{
-    // void* p = malloc(size);
-    // log_debug("Allocated[%p] of %zu bytes", p, size);
-    return NULL;
-}
-
-void cool_free(void* p)
-{
-    // log_debug("Deallocated[%p]", p);
-    // free(p);
-}
-
 int main()
 {
     ERROR_CHECKING();
 
     logger_init_console();
 
-    list_set_allocator((Allocator) {cool_alloc, cool_free});
     ListNode* list = list_ctor();
 
     int val = 1;

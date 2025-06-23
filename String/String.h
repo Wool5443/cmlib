@@ -42,7 +42,7 @@
  * This constant represents an empty string (with size 0) using the `String`
  * structure.
  */
-#define CMLIB_EMPTY_STRING ((String){})
+#define CMLIB_EMPTY_STRING ((String) {})
 
 /**
  * @struct String
@@ -84,10 +84,10 @@ DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
 
 #define STR_LITERAL(string__)                                                  \
-    ((Str){.data = string__, .size = sizeof(string__) - 1}) /**< A macro for   \
-                                                           creating a `Str`    \
-                                                           from a literal      \
-                                                           string. */
+    ((Str) {.data = string__, .size = sizeof(string__) - 1}) /**< A macro for  \
+                                                            creating a `Str`   \
+                                                            from a literal     \
+                                                            string. */
 
 /**
  * @brief Constructor for a `Str` from a null-terminated string.
@@ -462,11 +462,11 @@ INLINE Str str_ctor(const char* string)
 INLINE Str str_ctor_size(const char* string, size_t size)
 {
     if (!string)
-        return (Str){};
+        return (Str) {};
     if (size == 0)
-        return (Str){};
+        return (Str) {};
 
-    return (Str){
+    return (Str) {
         .data = string,
         .size = size,
     };
@@ -474,7 +474,7 @@ INLINE Str str_ctor_size(const char* string, size_t size)
 
 INLINE Str str_ctor_string(String string)
 {
-    return (Str){
+    return (Str) {
         .data = string.data,
         .size = string.size,
     };
@@ -515,11 +515,11 @@ INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx)
                   start_idx,
                   end_idx,
                   string.size);
-        return Result_Str_ctor((Str){}, err);
+        return Result_Str_ctor((Str) {}, err);
     }
 
-    return Result_Str_ctor((Str){.data = string.data + start_idx,
-                                 .size = end_idx - start_idx},
+    return Result_Str_ctor((Str) {.data = string.data + start_idx,
+                                  .size = end_idx - start_idx},
                            err);
 }
 
@@ -541,9 +541,9 @@ INLINE Result_String string_ctor(const char* string)
 INLINE Result_String string_ctor_str(Str string)
 {
     if (!string.data)
-        return (Result_String){};
+        return (Result_String) {};
     if (string.size == 0)
-        return (Result_String){};
+        return (Result_String) {};
 
     Result_String stringRes = string_ctor_capacity(string.size);
 
@@ -568,7 +568,7 @@ INLINE void string_dtor(String* this)
     {
         this->allocator.free(this->data);
     }
-    *this = (String){};
+    *this = (String) {};
 }
 
 INLINE Result_String string_copy(String string)
@@ -641,7 +641,7 @@ INLINE Result_String string_ctor_printf(const char* format, ...)
 INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
 {
     String s = {};
-    return (Result_String){
+    return (Result_String) {
         .error_code = string_vprintf(&s, format, args),
         .value = s,
     };

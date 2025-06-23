@@ -6,7 +6,9 @@ void* myalloc(size_t)
     return buf;
 }
 
-void myfree(void*) {}
+void myfree(void*)
+{
+}
 
 int main(void)
 {
@@ -39,6 +41,6 @@ int main(void)
     }
     printf("Got: %d\nShould be: %d\n", sum, 60);
 
-ERROR_CASE
+    ERROR_CASE
     vec_dtor(vec);
 }

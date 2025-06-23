@@ -5,7 +5,7 @@
 #define CHECK_SCRATCH_STATE()                                                  \
     do                                                                         \
     {                                                                          \
-        if (!scratchString.data)                                               \
+        if (!scratch_string.data)                                              \
         {                                                                      \
             UNUSED Error_code err = ERROR_UNINITIALIZED;                       \
             log_error("PLEASE, INITIALIZE SCRATCH BUFFER FIRST!!!!\n");        \
@@ -13,11 +13,11 @@
         }                                                                      \
     } while (0)
 
-static String scratchString = {};
+static String scratch_string = {};
 
-String* GetScratchBuffer_UNSAFE_()
+String* get_scratch_buffer_unsafe_()
 {
-    return &scratchString;
+    return &scratch_string;
 }
 
 Error_code scratch_init(size_t capacity)
@@ -31,16 +31,16 @@ Error_code scratch_init(size_t capacity)
         ERROR_LEAVE();
     }
 
-    Result_String strRes = string_ctor_capacity(capacity);
+    Result_String str_res = string_ctor_capacity(capacity);
 
-    err = strRes.error_code;
+    err = str_res.error_code;
     if (err)
     {
         log_error();
         return err;
     }
 
-    scratchString = strRes.value;
+    scratch_string = str_res.value;
 
     ERROR_CASE;
     return err;
@@ -48,49 +48,49 @@ Error_code scratch_init(size_t capacity)
 
 void scratch_dtor()
 {
-    string_dtor(&scratchString);
+    string_dtor(&scratch_string);
 }
 
 size_t scratch_get_size()
 {
     CHECK_SCRATCH_STATE();
-    return scratchString.size;
+    return scratch_string.size;
 }
 
 char* scratch_get()
 {
     CHECK_SCRATCH_STATE();
-    return scratchString.data;
+    return scratch_string.data;
 }
 
 Str scratch_get_str()
 {
     CHECK_SCRATCH_STATE();
-    return str_ctor_string(scratchString);
+    return str_ctor_string(scratch_string);
 }
 
 Result_String scratch_copy_string()
 {
-    return string_copy(scratchString);
+    return string_copy(scratch_string);
 }
 
 void scratch_pop(size_t count)
 {
     CHECK_SCRATCH_STATE();
 
-    if (count > scratchString.size)
+    if (count > scratch_string.size)
         return;
 
-    scratchString.size -= count;
+    scratch_string.size -= count;
 
-    memset(scratchString.data + scratchString.size - count, '\0', count);
+    memset(scratch_string.data + scratch_string.size - count, '\0', count);
 }
 
 void scratch_clear()
 {
     CHECK_SCRATCH_STATE();
 
-    string_clear(&scratchString);
+    string_clear(&scratch_string);
 }
 
 Error_code scratch_vprintf(const char* format, va_list args)
@@ -104,8 +104,8 @@ Error_code scratch_vprintf(const char* format, va_list args)
         return ERROR_NULLPTR;
     }
 
-    char* buffer = scratchString.data + scratchString.size;
-    size_t leftCapacity = scratchString.capacity - scratchString.size;
+    char* buffer = scratch_string.data + scratch_string.size;
+    size_t leftCapacity = scratch_string.capacity - scratch_string.size;
 
     while (true)
     {
@@ -124,12 +124,12 @@ Error_code scratch_vprintf(const char* format, va_list args)
         }
         else if (written <= (int)leftCapacity)
         {
-            scratchString.size += written;
+            scratch_string.size += written;
             return EVERYTHING_FINE;
         }
 
         CHECK_ERROR(
-            string_realloc(&scratchString, scratchString.capacity + written));
+            string_realloc(&scratch_string, scratch_string.capacity + written));
     }
 
     return EVERYTHING_FINE;
@@ -149,24 +149,24 @@ Error_code scratch_printf(const char* format, ...)
 Error_code scratch_append(const char* string)
 {
     CHECK_SCRATCH_STATE();
-    return string_append(&scratchString, string);
+    return string_append(&scratch_string, string);
 }
 
 Error_code scratch_append_str(Str string)
 {
     CHECK_SCRATCH_STATE();
 
-    return string_append_str(&scratchString, string);
+    return string_append_str(&scratch_string, string);
 }
 
 Error_code scratch_append_string(const String string)
 {
     CHECK_SCRATCH_STATE();
-    return string_append_string(&scratchString, string);
+    return string_append_string(&scratch_string, string);
 }
 
 Error_code scratch_append_char(char c)
 {
     CHECK_SCRATCH_STATE();
-    return string_append_char(&scratchString, c);
+    return string_append_char(&scratch_string, c);
 }

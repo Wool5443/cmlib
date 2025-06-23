@@ -104,7 +104,7 @@ INLINE Error error_ctor(Error_code error_code,
                         const char* lineNumber,
                         const char* functionName)
 {
-    return (Error){
+    return (Error) {
         .time = time(NULL),
         .code = error_code,
         .file = fileName,

@@ -38,7 +38,7 @@ Result_String real_path(const char* path)
     return string_ctor_str(str_ctor_size(good_path, size));
 
     ERROR_CASE
-    return Result_String_ctor((String){}, err);
+    return Result_String_ctor((String) {}, err);
 }
 
 Result_Str get_filename_str(const Str path)
@@ -47,7 +47,7 @@ Result_Str get_filename_str(const Str path)
 
     if (!path.data)
     {
-        return Result_Str_ctor((Str){}, err);
+        return Result_Str_ctor((Str) {}, err);
     }
 
     struct stat st = {};
@@ -58,7 +58,7 @@ Result_Str get_filename_str(const Str path)
 
     if ((st.st_mode & S_IFMT) == S_IFDIR)
     {
-        return Result_Str_ctor((Str){}, err);
+        return Result_Str_ctor((Str) {}, err);
     }
 
     size_t name_start = 0;
@@ -73,12 +73,12 @@ Result_Str get_filename_str(const Str path)
     }
 
     return Result_Str_ctor(
-        (Str){
+        (Str) {
             .data = path.data + name_start,
             .size = path.size - name_start,
         },
         err);
 
     ERROR_CASE
-    return Result_Str_ctor((Str){}, err);
+    return Result_Str_ctor((Str) {}, err);
 }

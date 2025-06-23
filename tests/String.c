@@ -13,13 +13,17 @@ int main()
     // str_print(str_ctor_string(s2), stdout);
 
     string_dtor(&s);
-    s = string_ctor_printf("Hello, I want to replace HAHAHAHAHA with HAHA here\n").value;
+    s = string_ctor_printf("Hello, I want to replace HAHAHAHAHA with HAHA "
+                           "here\n")
+            .value;
     str_print(str_ctor_string(s), stdout);
     string_replace_all(&s, STR_LITERAL("HAHAHAHAHA"), STR_LITERAL("HAHA"));
     str_print(str_ctor_string(s), stdout);
 
     string_dtor(&s2);
-    s2 = string_ctor_printf("Hello, I want to replace BE with HAHAHHAHAHAH here\n").value;
+    s2 = string_ctor_printf("Hello, I want to replace BE with HAHAHHAHAHAH "
+                            "here\n")
+             .value;
     str_print(str_ctor_string(s2), stdout);
     string_replace_all(&s2, STR_LITERAL("BE"), STR_LITERAL("HAHAHHAHAHAH"));
     str_print(str_ctor_string(s2), stdout);

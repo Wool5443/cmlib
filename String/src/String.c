@@ -51,9 +51,9 @@ Result_String string_ctor_capacity(size_t capacity)
 
     ERROR_CASE
     return Result_String_ctor(
-        (String){
+        (String) {
             .allocator = err == EVERYTHING_FINE ? Current_string_allocator
-                                                : (Allocator){},
+                                                : (Allocator) {},
             .data = data,
             .size = 0,
             .capacity = data ? capacity : 0,
@@ -101,10 +101,10 @@ Error_code string_realloc(String* this, size_t new_capacity)
 
     allocator.free(this->data);
 
-    *this = (String){.allocator = allocator,
-                     .data = new_data,
-                     .size = this->size,
-                     .capacity = new_capacity};
+    *this = (String) {.allocator = allocator,
+                      .data = new_data,
+                      .size = this->size,
+                      .capacity = new_capacity};
 
     ERROR_CASE
     return err;
@@ -188,7 +188,7 @@ Result_String read_file(const char* path)
 
     string.size = fileSize;
 
-    return (Result_String){
+    return (Result_String) {
         string,
         EVERYTHING_FINE,
     };
@@ -198,7 +198,7 @@ Result_String read_file(const char* path)
         fclose(file);
     string_dtor(&string);
 
-    return (Result_String){{}, err};
+    return (Result_String) {{}, err};
 }
 
 Error_code string_vprintf(String* this, const char* format, va_list args)

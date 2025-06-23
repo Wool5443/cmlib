@@ -68,7 +68,7 @@ extern Allocator Current_vector_allocator; /**< The global allocator used for
  * @return The allocator used by the vector.
  */
 #define GET_VEC_ALLOCATOR(vec__)                                               \
-    ((vec) ? GET_VEC_HEADER(vec)->allocator : Current_vector_allocator)
+    ((vec__) ? GET_VEC_HEADER(vec__)->allocator : Current_vector_allocator)
 
 /**
  * @brief Frees the memory allocated for the vector.

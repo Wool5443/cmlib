@@ -24,19 +24,20 @@ void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 
     capacity = capacity ? capacity : DEFAULT_CAPACITY;
 
-    VHeader_* header = allocator.allocate(capacity * elem_size + sizeof(VHeader_));
+    VHeader_* header =
+        allocator.allocate(capacity * elem_size + sizeof(VHeader_));
     if (!header)
     {
         HANDLE_ERRNO_ERROR(ERROR_NO_MEMORY, "Error allocating vector: %s");
     }
 
     header->allocator = allocator;
-    header->capacity  = capacity;
-    *header = (VHeader_){ allocator, 0, capacity };
+    header->capacity = capacity;
+    *header = (VHeader_) {allocator, 0, capacity};
 
     return &header[1];
 
- ERROR_CASE
+    ERROR_CASE
     return NULL;
 }
 
@@ -53,11 +54,13 @@ void* vec_realloc_(void* vec, size_t elem_size)
     size_t new_capacity = header.capacity * 2;
 
     void* newVec = vec_ctor_(header.allocator, elem_size, new_capacity);
-    if (!newVec) return NULL;
+    if (!newVec)
+        return NULL;
 
     memcpy(newVec, vec, elem_size * header.size);
 
-    *GET_VEC_HEADER(newVec) = (VHeader_){ header.allocator, header.size, new_capacity };
+    *GET_VEC_HEADER(newVec) =
+        (VHeader_) {header.allocator, header.size, new_capacity};
     VEC_FREE(vec);
 
     return newVec;
