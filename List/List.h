@@ -23,24 +23,21 @@
 #ifndef CMLIB_LIST_H_
 #define CMLIB_LIST_H_
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "../Allocator/Allocator.h"
 #include "../Logger/Logger.h"
 
 /**
  * @brief Structure to represent the header of a list node.
  *
- * Each node in the list contains a `ListHeader` that holds pointers to the
+ * Each node in the list contains a `ListNode` that holds pointers to the
  * previous and next nodes in the list. It also contains an allocator to manage
  * memory for the node.
  */
-typedef struct ListHeader ListHeader;
-struct ListHeader
+typedef struct ListNode ListNode;
+struct ListNode
 {
-    ListHeader* prev;    /**< Pointer to the previous node in the list */
-    ListHeader* next;    /**< Pointer to the next node in the list */
+    ListNode* prev;      /**< Pointer to the previous node in the list */
+    ListNode* next;      /**< Pointer to the next node in the list */
     Allocator allocator; /**< The allocator used to manage memory for this node
                           */
 };
@@ -67,13 +64,22 @@ INLINE void list_set_allocator(Allocator allocator);
 INLINE void list_reset_allocator();
 
 /**
+ * @brief Creates a list.
+ *
+ * Allocates an empty utility node using current list allocator for a list.
+ *
+ * @return
+ */
+INLINE ListNode* list_ctor();
+
+/**
  * @brief Destroys a list node.
  *
  * This function deallocates the memory for the specified list node.
  *
  * @param node Pointer to the node to be destroyed.
  */
-INLINE void list_dtor(ListHeader* node);
+INLINE void list_dtor(ListNode* node);
 
 /**
  * @brief Retrieves the first node in the list.
@@ -81,10 +87,10 @@ INLINE void list_dtor(ListHeader* node);
  * This function returns the starting node of the list, which is the node that
  * does not have any previous node.
  *
- * @param node Pointer to the node in the list.
+ * @param list Pointer to the list.
  * @return Pointer to the first node in the list.
  */
-INLINE ListHeader* list_start(ListHeader* node);
+INLINE ListNode* list_begin(ListNode* list);
 
 /**
  * @brief Retrieves the last node in the list.
@@ -92,10 +98,24 @@ INLINE ListHeader* list_start(ListHeader* node);
  * This function returns the ending node of the list, which is the node that
  * does not have any next node.
  *
- * @param node Pointer to the node in the list.
+ * @param list Pointer to the list.
  * @return Pointer to the last node in the list.
  */
-INLINE ListHeader* list_end(ListHeader* node);
+INLINE ListNode* list_end(ListNode* list);
+
+#define LIST_ITER(list__, iter_name__, ...)                                    \
+    assert(list__ && "Iterating over NULL list");                              \
+    for (ListNode* iter_name__ = list_begin(list__),                           \
+                   *iter_name__##_end = list_end(list__);                      \
+         iter_name__ != iter_name__##_end;                                     \
+         iter_name__ = iter_name__->next)
+
+#define LIST_REVERSE_ITER(list__, iter_name__, ...)                            \
+    assert(list__ && "Iterating over NULL list");                              \
+    for (ListNode* iter_name__ = list_end(list__)->prev,                       \
+                   *iter_name__##_end = list_end(list__);                      \
+         iter_name__ != iter_name__##_end;                                     \
+         iter_name__ = iter_name__->prev)
 
 INLINE void list_set_allocator(Allocator allocator)
 {
@@ -107,92 +127,76 @@ INLINE void list_reset_allocator()
     Current_list_allocator = MALLOC_ALLOCATOR;
 }
 
-INLINE void list_dtor(ListHeader* node)
+INLINE ListNode* list_ctor()
 {
-    if (!node)
+    ListNode* list = Current_list_allocator.allocate(sizeof(ListNode));
+    if (list)
+    {
+        *list = (ListNode) {
+            .allocator = Current_list_allocator,
+            .next = list,
+            .prev = list,
+        };
+    }
+    else
+    {
+        int err = ERROR_NO_MEMORY;
+        log_error("Could not create list");
+    }
+    return list;
+}
+
+INLINE void list_dtor(ListNode* list)
+{
+    if (!list)
     {
         return;
     }
 
-    ListHeader* current = list_end(node);
-    ListHeader* to_delete = current;
+    ListNode* to_delete = list->next;
+    ListNode* current = to_delete;
 
-    while (current)
+    while (current != list)
     {
-        current = current->prev;
+        current = current->next;
         to_delete->allocator.free(to_delete);
         to_delete = current;
     }
+    to_delete->allocator.free(current);
 }
 
-INLINE ListHeader* list_start(ListHeader* node)
+INLINE ListNode* list_begin(ListNode* list)
 {
-    if (!node)
+    if (!list)
     {
+        int err = ERROR_NULLPTR;
+        log_error("NULL passed as list");
         return NULL;
     }
-
-    while (node->prev)
-    {
-        node = node->prev;
-    }
-
-    return node;
+    return list->next;
 }
 
-INLINE ListHeader* list_end(ListHeader* node)
+INLINE ListNode* list_end(ListNode* list)
 {
-    if (!node)
+    if (!list)
     {
+        int err = ERROR_NULLPTR;
+        log_error("NULL passed as list");
         return NULL;
     }
-
-    while (node->next)
-    {
-        node = node->next;
-    }
-
-    return node;
+    return list;
 }
-
-INLINE Allocator get_list_node_allocator(void* node__)
-{
-    ListHeader* node = node__;
-    if (node)
-    {
-        return node->allocator;
-    }
-    return Current_list_allocator;
-}
-
-INLINE ListHeader* hide_list_node_pointer_(void* node__)
-{
-    return node__;
-}
-
-/**
- * @brief Creates a new list node with a specified value using the current
- * allocator.
- *
- * This macro simplifies node creation using the current global allocator
- * (`Current_list_allocator`).
- *
- * @param value The value to be assigned to the node.
- * @return Pointer to the newly created node.
- */
-#define list_node_ctor(value__)                                                \
-    (list_node_ctor_(value__, Current_list_allocator))
 
 /**
  * @brief Gets the value of a list node.
  *
  * This macro extracts the value of a list node, which is stored immediately
- * after the `ListHeader`.
+ * after the `ListNode`.
  *
  * @param node Pointer to the list node.
  * @return Pointer to the value stored in the node.
  */
-#define list_get_value(node__) ((void*)((node__) + 1))
+#define list_node_get_value(node__) ((node__) ? (void*)((node__) + 1) : NULL)
 
 /**
  * @brief Creates and inserts a new node after a given node.
@@ -207,31 +211,33 @@ INLINE ListHeader* hide_list_node_pointer_(void* node__)
  */
 #define list_insert_after(node__, value__)                                     \
     ({                                                                         \
-        Allocator allocator = get_list_node_allocator(node__);                 \
-        ListHeader* node = hide_list_node_pointer_(node__);                    \
-        if (node__)                                                            \
+        ListNode* node_insert_after_ = (node__);                               \
+        if (node_insert_after_)                                                \
         {                                                                      \
-            ListHeader* new_node = list_node_ctor_(value__, allocator);        \
-            if (new_node)                                                      \
+            Allocator allocator_insert_after_ = node_insert_after_->allocator; \
+            ListNode* new_node_insert_after_ =                                 \
+                list_node_ctor_(value__, allocator_insert_after_);             \
+            if (new_node_insert_after_)                                        \
             {                                                                  \
-                *new_node = (ListHeader){                                      \
-                    .prev = node,                                              \
-                    .next = node->next,                                        \
-                    .allocator = allocator,                                    \
+                *new_node_insert_after_ = (ListNode) {                         \
+                    .prev = node_insert_after_,                                \
+                    .next = node_insert_after_->next,                          \
+                    .allocator = allocator_insert_after_,                      \
                 };                                                             \
-                if (node->next)                                                \
+                if (node_insert_after_->next)                                  \
                 {                                                              \
-                    node->next->prev = new_node;                               \
+                    node_insert_after_->next->prev = new_node_insert_after_;   \
                 }                                                              \
-                node->next = new_node;                                         \
-                node = new_node;                                               \
+                node_insert_after_->next = new_node_insert_after_;             \
+                node_insert_after_ = new_node_insert_after_;                   \
             }                                                                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            node = list_node_ctor(value__);                                    \
+            int err = ERROR_NULLPTR;                                           \
+            log_error("Attempted to insert after NULL node");                  \
         }                                                                      \
-        node;                                                                  \
+        node_insert_after_;                                                    \
     })
 
 /**
@@ -247,56 +253,49 @@ INLINE ListHeader* hide_list_node_pointer_(void* node__)
  */
 #define list_insert_before(node__, value__)                                    \
     ({                                                                         \
-        Allocator allocator = get_list_node_allocator(node__);                 \
-        ListHeader* node = hide_list_node_pointer_(node__);                    \
-        if (node__)                                                            \
+        ListNode* node_insert_before_ = (node__);                              \
+        if (node_insert_before_)                                               \
         {                                                                      \
-            ListHeader* new_node = list_node_ctor_(value__, allocator);        \
-            if (new_node)                                                      \
-            {                                                                  \
-                *new_node = (ListHeader){                                      \
-                    .prev = node->prev,                                        \
-                    .next = node,                                              \
-                    .allocator = allocator,                                    \
-                };                                                             \
-                if (node->prev)                                                \
-                {                                                              \
-                    node->prev->next = new_node;                               \
-                }                                                              \
-                node->prev = new_node;                                         \
-                node = new_node;                                               \
-            }                                                                  \
+            node_insert_before_ = list_insert_after(node_insert_before_->prev, \
+                                                    value__);                  \
         }                                                                      \
         else                                                                   \
         {                                                                      \
-            node = list_node_ctor(value__);                                    \
+            int err = ERROR_NULLPTR;                                           \
+            log_error("Attempted to insert before NULL node");                 \
         }                                                                      \
-        node;                                                                  \
+        node_insert_before_;                                                   \
     })
 
 /**
  * @brief Creates a new list node with a specified value and allocator.
  *
  * This macro allocates memory for a new list node, assigns the provided value
- * to the node, and initializes the `ListHeader` portion of the node.
+ * to the node, and initializes the `ListNode` portion of the node.
  *
  * @param value The value to be assigned to the node.
  * @param allocator_ The allocator used for memory allocation.
  * @return Pointer to the newly created node.
  */
-//NOLINTBEGIN(bugprone-sizeof-expression)
+// NOLINTBEGIN(bugprone-sizeof-expression)
 #define list_node_ctor_(value__, allocator__)                                  \
     ({                                                                         \
-        ListHeader* node =                                                     \
-            allocator__.allocate(sizeof(ListHeader) + sizeof(value__));        \
-        if (node)                                                              \
+        Allocator allocator_node_ctor_ = allocator__;                          \
+        ListNode* node_node_ctor_ =                                            \
+            allocator_node_ctor_.allocate(sizeof(ListNode) + sizeof(value__)); \
+        if (node_node_ctor_)                                                   \
         {                                                                      \
-            *node = (ListHeader){};                                            \
-            *(typeof(value__)*)(node + 1) = value__;                           \
-            node->allocator = allocator__;                                     \
+            *node_node_ctor_ = (ListNode) {.allocator = allocator_node_ctor_}; \
+            *(typeof(value__)*)(node_node_ctor_ + 1) = value__;                \
+            node_node_ctor_->allocator = allocator_node_ctor_;                 \
         }                                                                      \
-        node;                                                                  \
+        else                                                                   \
+        {                                                                      \
+            int err = ERROR_NO_MEMORY;                                         \
+            log_error("Could not allocate a node");                            \
+        }                                                                      \
+        node_node_ctor_;                                                       \
     })
-//NOLINTEND(bugprone-sizeof-expression)
+// NOLINTEND(bugprone-sizeof-expression)
 
 #endif // CMLIB_LIST_H_
