@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../Allocator/Allocator.h"
-#include "../Logger/Logger.h" // IWYU pragma: keep
+#include "Allocator.h"
+#include "Logger.h" // IWYU pragma: keep
 
 constexpr size_t DEFAULT_CAPACITY = 8; /**< Default capacity of the vector */
 

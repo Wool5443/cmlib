@@ -23,8 +23,8 @@
 #ifndef CMLIB_LIST_H_
 #define CMLIB_LIST_H_
 
-#include "../Allocator/Allocator.h"
-#include "../Logger/Logger.h"
+#include "Allocator.h"
+#include "Logger.h"
 
 /**
  * @brief Structure to represent the header of a list node.

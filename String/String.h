@@ -33,8 +33,8 @@
 #include <stdbool.h>
 #endif
 
-#include "../Allocator/Allocator.h"
-#include "../Logger/Logger.h"
+#include "Allocator.h"
+#include "Logger.h"
 
 /**
  * @brief An empty `String` constant.

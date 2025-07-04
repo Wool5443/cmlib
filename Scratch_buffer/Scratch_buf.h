@@ -20,7 +20,7 @@
 #ifndef CMLIB_SCRATCH_BUF_H_
 #define CMLIB_SCRATCH_BUF_H_
 
-#include "../String/String.h"
+#include "String.h"
 
 /**
  * @brief Retrieve the raw ScratchBuffer.
