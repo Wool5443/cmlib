@@ -31,13 +31,13 @@
  *
  * This enum defines the different types of errors that can occur in the system.
  * The error codes are generated dynamically from an external header file
- * `ErrorGen.h` and used to represent specific error conditions.
+ * `Error_gen.h` and used to represent specific error conditions.
  */
 typedef enum
 {
 #define DEF_ERROR(code) code,
 
-#include "include/ErrorGen.h"
+#include "include/Error_gen.h"
 
 #undef DEF_ERROR
 } Error_code;
@@ -66,15 +66,15 @@ typedef struct
  * parameters.
  *
  * @param error_code The error code representing the type of error.
- * @param fileName The name of the file where the error occurred.
- * @param lineNumber The line number where the error occurred.
- * @param functionName The name of the function where the error occurred.
+ * @param file_name The name of the file where the error occurred.
+ * @param line_number The line number where the error occurred.
+ * @param function_name The name of the function where the error occurred.
  * @return A fully initialized `Error` structure.
  */
 INLINE Error error_ctor(Error_code error_code,
-                        const char* fileName,
-                        const char* lineNumber,
-                        const char* functionName);
+                        const char* file_name,
+                        const char* line_number,
+                        const char* function_name);
 
 /**
  * @brief Gets the name of the error code as a string.
@@ -100,16 +100,16 @@ INLINE const char* get_error_name(Error_code error_code);
 INLINE void error_print(Error error, FILE* file);
 
 INLINE Error error_ctor(Error_code error_code,
-                        const char* fileName,
-                        const char* lineNumber,
-                        const char* functionName)
+                        const char* file_name,
+                        const char* line_number,
+                        const char* function_name)
 {
     return (Error) {
         .time = time(NULL),
         .code = error_code,
-        .file = fileName,
-        .line = lineNumber,
-        .function = functionName,
+        .file = file_name,
+        .line = line_number,
+        .function = function_name,
     };
 }
 
@@ -121,7 +121,7 @@ INLINE const char* get_error_name(Error_code error_code)
     case code:                                                                 \
         return #code;
 
-#include "include/ErrorGen.h"
+#include "include/Error_gen.h"
 
 #undef DEF_ERROR
 
@@ -134,16 +134,18 @@ INLINE void error_print(Error error, FILE* file)
 {
     assert(file);
 
-    char timeString[sizeof("dd-mm-yyyy:hh:mm:ss MSK ")];
-    strftime(timeString,
-             sizeof(timeString),
+    char time_string[sizeof("dd-mm-yyyy:hh:mm:ss MSK ")];
+    strftime(time_string,
+             sizeof(time_string),
              "%d-%m-%Y:%H:%M:%S %Z",
              localtime(&error.time));
 
-    fprintf(file, "%s: ", timeString);
+    fprintf(file, "%s: ", time_string);
 
     if (error.code)
+    {
         fprintf(file, "%s ", get_error_name(error.code));
+    }
 
     fprintf(file, "in %s:%s in %s", error.file, error.line, error.function);
 }

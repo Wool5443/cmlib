@@ -20,7 +20,7 @@ int main()
     ERROR_CHECKING();
 
     logger_init_console();
-    log_info("Start FreeListAllocator test");
+    log_info("Start Free_list_allocator test");
 
     Free_list_memory_pool* pool = free_list_pool_ctor(6000);
 
@@ -93,7 +93,7 @@ int main()
     }
     log_info("Got good sum! %lu", s);
 
-    log_info("FreeListAllocator test succeed!");
+    log_info("Free_list_allocator test succeed!");
 
     ERROR_CASE
     free_list_dtor(free_list);

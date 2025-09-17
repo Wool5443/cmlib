@@ -105,24 +105,24 @@ Error_code scratch_vprintf(const char* format, va_list args)
     }
 
     char* buffer = scratch_string.data + scratch_string.size;
-    size_t leftCapacity = scratch_string.capacity - scratch_string.size;
+    size_t left_capacity = scratch_string.capacity - scratch_string.size;
 
     while (true)
     {
         va_list cpyargs = {};
         va_copy(cpyargs, args);
 
-        int written = vsnprintf(buffer, leftCapacity, format, cpyargs);
+        int written = vsnprintf(buffer, left_capacity, format, cpyargs);
 
         if (written < 0)
         {
             HANDLE_ERRNO_ERROR(ERROR_STD,
                                "Error vsnrprintf(%p, %zu, %s, ...): %s",
                                buffer,
-                               leftCapacity,
+                               left_capacity,
                                format);
         }
-        else if (written <= (int)leftCapacity)
+        else if (written <= (int)left_capacity)
         {
             scratch_string.size += written;
             return EVERYTHING_FINE;

@@ -12,9 +12,7 @@
  * on standard `malloc` and `calloc` functions, respectively.
  *
  * The allocator can be customized by defining different allocation and
- * deallocation strategies using function pointers. This abstraction helps in
- * making the memory management more modular and adaptable to different use
- * cases.
+ * deallocation strategies using function pointers.
  *
  * The `Allocator` structure also provides utility functions for memory
  * alignment, which ensure that allocated memory adheres to alignment

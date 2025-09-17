@@ -9,7 +9,7 @@ size_t vec_size(void* vec);
 size_t vec_capacity(void* vec);
 void vec_clear(void* vec);
 
-void* vec_realloc_(void* vec, size_t elemSize);
+void* vec_realloc_(void* vec, size_t elem_size);
 
 void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 {
@@ -44,24 +44,28 @@ void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity)
 void* vec_realloc_(void* vec, size_t elem_size)
 {
     if (!vec)
+    {
         return vec_ctor_(Current_vector_allocator, elem_size, DEFAULT_CAPACITY);
+    }
 
     VHeader_ header = *GET_VEC_HEADER(vec);
 
     if (header.size < header.capacity)
+    {
         return vec;
+    }
 
     size_t new_capacity = header.capacity * 2;
 
-    void* newVec = vec_ctor_(header.allocator, elem_size, new_capacity);
-    if (!newVec)
+    void* new_vec = vec_ctor_(header.allocator, elem_size, new_capacity);
+    if (!new_vec)
         return NULL;
 
-    memcpy(newVec, vec, elem_size * header.size);
+    memcpy(new_vec, vec, elem_size * header.size);
 
-    *GET_VEC_HEADER(newVec) =
+    *GET_VEC_HEADER(new_vec) =
         (VHeader_) {header.allocator, header.size, new_capacity};
     VEC_FREE(vec);
 
-    return newVec;
+    return new_vec;
 }

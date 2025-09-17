@@ -282,8 +282,8 @@ INLINE void vec_clear(void* vec)
  * This macro reallocates the vector to the specified new capacity, retaining
  * its current elements. If the vector is `NULL`, it is safely reallocated.
  *
- * @param vec The pointer to the vector.
- * @param newCapacity The new capacity for the vector.
+ * @param vec__ The pointer to the vector.
+ * @param new_capacity__ The new capacity for the vector.
  * @return An error code indicating success or failure.
  *
  * @see Error_code

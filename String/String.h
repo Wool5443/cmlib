@@ -445,14 +445,14 @@ INLINE int string_compare(String lhs, String rhs);
  * `String` will be resized accordingly to accommodate additional data.
  *
  * @param [in, out] this The `String` to reallocate.
- * @param newCapacity The new capacity for the `String`.
+ * @param new_capacity The new capacity for the `String`.
  *
  * @return An error code indicating success or failure.
  *
  * @see String
  * @see Error_code
  */
-Error_code string_realloc(String* this, size_t newCapacity);
+Error_code string_realloc(String* this, size_t new_capacity);
 
 INLINE Str str_ctor(const char* string)
 {
@@ -511,7 +511,7 @@ INLINE Result_Str str_slice(Str string, size_t start_idx, size_t end_idx)
     {
         err = ERROR_BAD_ARGS;
         log_error("Failed to create slice:\n"
-                  "startIdx: %zu, endIdx: %zu, size: %zu",
+                  "start_idx: %zu, end_idx: %zu, size: %zu",
                   start_idx,
                   end_idx,
                   string.size);
@@ -541,20 +541,26 @@ INLINE Result_String string_ctor(const char* string)
 INLINE Result_String string_ctor_str(Str string)
 {
     if (!string.data)
+    {
         return (Result_String) {};
+    }
     if (string.size == 0)
+    {
         return (Result_String) {};
+    }
 
-    Result_String stringRes = string_ctor_capacity(string.size);
+    Result_String string_res = string_ctor_capacity(string.size);
 
-    if (stringRes.error_code)
-        return stringRes;
+    if (string_res.error_code)
+    {
+        return string_res;
+    }
 
-    memcpy(stringRes.value.data, string.data, string.size);
+    memcpy(string_res.value.data, string.data, string.size);
 
-    stringRes.value.size = string.size;
+    string_res.value.size = string.size;
 
-    return stringRes;
+    return string_res;
 }
 
 INLINE void string_dtor(String* this)

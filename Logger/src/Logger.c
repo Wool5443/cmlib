@@ -6,20 +6,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#undef LoggerInitPath
-#undef LoggerInitFile
-#undef LoggerInitConsole
-#undef LoggerFinish
+static void logger_finish_();
 
-#undef LogInfo
-#undef LogDebug
-#undef LogError
-
-#undef HANDLE_ERRNO_ERROR
-
-static void loggerFinish_();
-
-Logger cmlibLogger_ = {};
+Logger cmlib_logger_ = {};
 
 void logger_init_file(FILE* file)
 {
@@ -27,7 +16,7 @@ void logger_init_file(FILE* file)
 
     setbuf(file, NULL);
 
-    cmlibLogger_.file = file;
+    cmlib_logger_.file = file;
 }
 
 void logger_init_path(const char* path)
@@ -41,9 +30,9 @@ void logger_init_path(const char* path)
 
     logger_init_file(file);
 
-    if (atexit(loggerFinish_) != 0)
+    if (atexit(logger_finish_) != 0)
     {
-        fprintf(stderr, "Failed to atexit(loggerFinish_): %s", strerror(errno));
+        fprintf(stderr, "Failed to atexit(logger_finish_): %s", strerror(errno));
     }
 }
 
@@ -52,17 +41,21 @@ void logger_init_console()
     logger_init_file(stderr);
 }
 
-static void loggerFinish_()
+static void logger_finish_()
 {
-    if (!cmlibLogger_.file)
+    if (!cmlib_logger_.file)
+    {
         return;
+    }
 
-    if (isatty(fileno(cmlibLogger_.file)))
+    if (isatty(fileno(cmlib_logger_.file)))
+    {
         return;
+    }
 
-    fclose(cmlibLogger_.file);
+    fclose(cmlib_logger_.file);
 }
 
 Logger* get_logger();
 const char* get_log_type_string_(Log_type type);
-ConsoleColor get_log_type_color_(Log_type type);
+Console_color get_log_type_color_(Log_type type);

@@ -22,7 +22,7 @@ int string_compare(const String lhs, const String rhs);
 Error_code string_append(String* this, const char* string);
 Error_code string_append_string(String* this, const String string);
 Error_code string_append_char(String* this, char ch);
-Result_Str string_slice(const String this, size_t startIdx, size_t endIdx);
+Result_Str string_slice(const String this, size_t start_idx, size_t end_idx);
 Error_code string_printf(String* this, const char* format, ...);
 Result_String string_ctor_printf(const char* format, ...);
 Result_String string_ctor_vprintf(const char* format, va_list args);
@@ -126,18 +126,18 @@ Error_code string_append_str(String* this, Str string)
     if (string.size == 0)
         return EVERYTHING_FINE;
 
-    size_t newSize = this->size + string.size;
+    size_t new_size = this->size + string.size;
 
-    if (newSize > this->capacity)
+    if (new_size > this->capacity)
     {
-        if ((err = string_realloc(this, newSize)))
+        if ((err = string_realloc(this, new_size)))
             return err;
     }
 
     memcpy(this->data + this->size, string.data, string.size);
 
-    this->size = newSize;
-    this->data[newSize] = '\0';
+    this->size = new_size;
+    this->data[new_size] = '\0';
 
     ERROR_CASE;
     return err;
@@ -170,23 +170,23 @@ Result_String read_file(const char* path)
         HANDLE_ERRNO_ERROR(ERROR_BAD_FILE, "fstat error: %s");
     }
 
-    size_t fileSize = st.st_size;
+    size_t file_size = st.st_size;
 
-    Result_String stringRes = string_ctor_capacity(fileSize + 1);
-    if ((err = stringRes.error_code))
+    Result_String string_res = string_ctor_capacity(file_size + 1);
+    if ((err = string_res.error_code))
     {
         ERROR_LEAVE();
     }
 
-    string = stringRes.value;
+    string = string_res.value;
 
-    if (fread(string.data, 1, fileSize, file) != fileSize)
+    if (fread(string.data, 1, file_size, file) != file_size)
     {
         HANDLE_ERRNO_ERROR(ERROR_BAD_FILE, "Failed to read file: %s");
     }
     fclose(file);
 
-    string.size = fileSize;
+    string.size = file_size;
 
     return (Result_String) {
         string,
@@ -212,14 +212,14 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
         ERROR_LEAVE();
     }
 
-    size_t formatLength = strlen(format);
+    size_t format_length = strlen(format);
 
-    if (formatLength == 0)
+    if (format_length == 0)
     {
         return EVERYTHING_FINE;
     }
 
-    size_t capacity = formatLength * 2;
+    size_t capacity = format_length * 2;
 
     CHECK_ERROR(string_realloc(this, this->capacity + capacity));
 

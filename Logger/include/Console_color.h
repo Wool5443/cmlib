@@ -7,7 +7,7 @@
 
 #include "../../common.h"
 
-/** @enum ConsoleColor
+/** @enum Console_color
  * @brief enum of possible console colors
  */
 typedef enum
@@ -20,7 +20,7 @@ typedef enum
     CONSOLE_COLOR_MAGENTA,
     CONSOLE_COLOR_CYAN,
     CONSOLE_COLOR_WHITE,
-} ConsoleColor;
+} Console_color;
 
 /**
  * @brief Set the console color
@@ -28,11 +28,13 @@ typedef enum
  * @param [in] file stdout or stderr
  * @param [in] color
  */
-INLINE void SetConsoleColor(FILE* file, ConsoleColor color)
+INLINE void set_console_color(FILE* file, Console_color color)
 {
     assert(file);
     if (isatty(fileno(file)))
+    {
         fprintf(file, "\033[0;%dm", (int)color);
+    }
 }
 
 #endif // CMLIB_LOGGER_CONSOLE_COLOR_H_

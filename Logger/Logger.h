@@ -26,7 +26,7 @@
 
 #include "Error.h"
 #include "Result.h"
-#include "include/ConsoleColor.h"
+#include "include/Console_color.h"
 
 /**
  * @enum Log_type
@@ -59,7 +59,7 @@ typedef struct
 
 #ifndef DISABLE_LOGGING
 
-extern Logger cmlibLogger_; /**< The global logger instance */
+extern Logger cmlib_logger_; /**< The global logger instance */
 
 /**
  * @brief Initializes the logger to log to a file specified by the given path.
@@ -116,13 +116,13 @@ INLINE const char* get_log_type_string_(Log_type type);
  *
  * @param type The log type (`LOG_TYPE_INFO`, `LOG_TYPE_DEBUG`,
  * `LOG_TYPE_ERROR`).
- * @return The `ConsoleColor` representing the color for the log type.
+ * @return The `Console_color` representing the color for the log type.
  */
-INLINE ConsoleColor get_log_type_color_(Log_type type);
+INLINE Console_color get_log_type_color_(Log_type type);
 
 INLINE Logger* get_logger()
 {
-    return &cmlibLogger_;
+    return &cmlib_logger_;
 }
 
 INLINE const char* get_log_type_string_(Log_type type)
@@ -140,7 +140,7 @@ INLINE const char* get_log_type_string_(Log_type type)
     }
 }
 
-INLINE ConsoleColor get_log_type_color_(Log_type type)
+INLINE Console_color get_log_type_color_(Log_type type)
 {
     switch (type)
     {
@@ -177,7 +177,7 @@ INLINE ConsoleColor get_log_type_color_(Log_type type)
         {                                                                      \
             break;                                                             \
         }                                                                      \
-        SetConsoleColor(log_file, get_log_type_color_(type));                  \
+        set_console_color(log_file, get_log_type_color_(type));                \
                                                                                \
         fprintf(log_file, "[%s] ", get_log_type_string_(type));                \
                                                                                \
@@ -192,7 +192,7 @@ INLINE ConsoleColor get_log_type_color_(Log_type type)
             __VA_ARGS__);                                                      \
                                                                                \
         fprintf(log_file, "\n\n");                                             \
-        SetConsoleColor(log_file, CONSOLE_COLOR_WHITE);                        \
+        set_console_color(log_file, CONSOLE_COLOR_WHITE);                      \
     } while (0)
 
 /**

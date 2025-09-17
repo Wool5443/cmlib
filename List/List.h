@@ -29,15 +29,15 @@
 /**
  * @brief Structure to represent the header of a list node.
  *
- * Each node in the list contains a `ListNode` that holds pointers to the
+ * Each node in the list contains a `List_node` that holds pointers to the
  * previous and next nodes in the list. It also contains an allocator to manage
  * memory for the node.
  */
-typedef struct ListNode ListNode;
-struct ListNode
+typedef struct List_node List_node;
+struct List_node
 {
-    ListNode* prev;      /**< Pointer to the previous node in the list */
-    ListNode* next;      /**< Pointer to the next node in the list */
+    List_node* prev;     /**< Pointer to the previous node in the list */
+    List_node* next;     /**< Pointer to the next node in the list */
     Allocator allocator; /**< The allocator used to manage memory for this node
                           */
 };
@@ -70,7 +70,7 @@ INLINE void list_reset_allocator();
  *
  * @return
  */
-INLINE ListNode* list_ctor();
+INLINE List_node* list_ctor();
 
 /**
  * @brief Destroys a list node.
@@ -79,7 +79,7 @@ INLINE ListNode* list_ctor();
  *
  * @param node Pointer to the node to be destroyed.
  */
-INLINE void list_dtor(ListNode* node);
+INLINE void list_dtor(List_node* node);
 
 /**
  * @brief Retrieves the first node in the list.
@@ -90,7 +90,7 @@ INLINE void list_dtor(ListNode* node);
  * @param list Pointer to the list.
  * @return Pointer to the first node in the list.
  */
-INLINE ListNode* list_begin(ListNode* list);
+INLINE List_node* list_begin(List_node* list);
 
 /**
  * @brief Retrieves the last node in the list.
@@ -101,19 +101,19 @@ INLINE ListNode* list_begin(ListNode* list);
  * @param list Pointer to the list.
  * @return Pointer to the last node in the list.
  */
-INLINE ListNode* list_end(ListNode* list);
+INLINE List_node* list_end(List_node* list);
 
 #define LIST_ITER(list__, iter_name__, ...)                                    \
     assert(list__ && "Iterating over NULL list");                              \
-    for (ListNode* iter_name__ = list_begin(list__),                           \
-                   *iter_name__##_end = list_end(list__);                      \
+    for (List_node* iter_name__ = list_begin(list__),                          \
+                    *iter_name__##_end = list_end(list__);                     \
          iter_name__ != iter_name__##_end;                                     \
          iter_name__ = iter_name__->next)
 
 #define LIST_REVERSE_ITER(list__, iter_name__, ...)                            \
     assert(list__ && "Iterating over NULL list");                              \
-    for (ListNode* iter_name__ = list_end(list__)->prev,                       \
-                   *iter_name__##_end = list_end(list__);                      \
+    for (List_node* iter_name__ = list_end(list__)->prev,                      \
+                    *iter_name__##_end = list_end(list__);                     \
          iter_name__ != iter_name__##_end;                                     \
          iter_name__ = iter_name__->prev)
 
@@ -127,12 +127,12 @@ INLINE void list_reset_allocator()
     Current_list_allocator = MALLOC_ALLOCATOR;
 }
 
-INLINE ListNode* list_ctor()
+INLINE List_node* list_ctor()
 {
-    ListNode* list = Current_list_allocator.allocate(sizeof(ListNode));
+    List_node* list = Current_list_allocator.allocate(sizeof(List_node));
     if (list)
     {
-        *list = (ListNode) {
+        *list = (List_node) {
             .allocator = Current_list_allocator,
             .next = list,
             .prev = list,
@@ -146,15 +146,15 @@ INLINE ListNode* list_ctor()
     return list;
 }
 
-INLINE void list_dtor(ListNode* list)
+INLINE void list_dtor(List_node* list)
 {
     if (!list)
     {
         return;
     }
 
-    ListNode* to_delete = list->next;
-    ListNode* current = to_delete;
+    List_node* to_delete = list->next;
+    List_node* current = to_delete;
 
     while (current != list)
     {
@@ -165,7 +165,7 @@ INLINE void list_dtor(ListNode* list)
     to_delete->allocator.free(current);
 }
 
-INLINE ListNode* list_begin(ListNode* list)
+INLINE List_node* list_begin(List_node* list)
 {
     if (!list)
     {
@@ -176,7 +176,7 @@ INLINE ListNode* list_begin(ListNode* list)
     return list->next;
 }
 
-INLINE ListNode* list_end(ListNode* list)
+INLINE List_node* list_end(List_node* list)
 {
     if (!list)
     {
@@ -191,7 +191,7 @@ INLINE ListNode* list_end(ListNode* list)
  * @brief Gets the value of a list node.
  *
  * This macro extracts the value of a list node, which is stored immediately
- * after the `ListNode`.
+ * after the `List_node`.
  *
  * @param node Pointer to the list node.
  * @return Pointer to the value stored in the node.
@@ -211,15 +211,15 @@ INLINE ListNode* list_end(ListNode* list)
  */
 #define list_insert_after(node__, value__)                                     \
     ({                                                                         \
-        ListNode* node_insert_after_ = (node__);                               \
+        List_node* node_insert_after_ = (node__);                              \
         if (node_insert_after_)                                                \
         {                                                                      \
             Allocator allocator_insert_after_ = node_insert_after_->allocator; \
-            ListNode* new_node_insert_after_ =                                 \
+            List_node* new_node_insert_after_ =                                \
                 list_node_ctor_(value__, allocator_insert_after_);             \
             if (new_node_insert_after_)                                        \
             {                                                                  \
-                *new_node_insert_after_ = (ListNode) {                         \
+                *new_node_insert_after_ = (List_node) {                        \
                     .prev = node_insert_after_,                                \
                     .next = node_insert_after_->next,                          \
                     .allocator = allocator_insert_after_,                      \
@@ -253,7 +253,7 @@ INLINE ListNode* list_end(ListNode* list)
  */
 #define list_insert_before(node__, value__)                                    \
     ({                                                                         \
-        ListNode* node_insert_before_ = (node__);                              \
+        List_node* node_insert_before_ = (node__);                             \
         if (node_insert_before_)                                               \
         {                                                                      \
             node_insert_before_ = list_insert_after(node_insert_before_->prev, \
@@ -271,7 +271,7 @@ INLINE ListNode* list_end(ListNode* list)
  * @brief Creates a new list node with a specified value and allocator.
  *
  * This macro allocates memory for a new list node, assigns the provided value
- * to the node, and initializes the `ListNode` portion of the node.
+ * to the node, and initializes the `List_node` portion of the node.
  *
  * @param value The value to be assigned to the node.
  * @param allocator_ The allocator used for memory allocation.
@@ -281,11 +281,12 @@ INLINE ListNode* list_end(ListNode* list)
 #define list_node_ctor_(value__, allocator__)                                  \
     ({                                                                         \
         Allocator allocator_node_ctor_ = allocator__;                          \
-        ListNode* node_node_ctor_ =                                            \
-            allocator_node_ctor_.allocate(sizeof(ListNode) + sizeof(value__)); \
+        List_node* node_node_ctor_ = allocator_node_ctor_.allocate(            \
+            sizeof(List_node) + sizeof(value__));                              \
         if (node_node_ctor_)                                                   \
         {                                                                      \
-            *node_node_ctor_ = (ListNode) {.allocator = allocator_node_ctor_}; \
+            *node_node_ctor_ =                                                 \
+                (List_node) {.allocator = allocator_node_ctor_};               \
             *(typeof(value__)*)(node_node_ctor_ + 1) = value__;                \
             node_node_ctor_->allocator = allocator_node_ctor_;                 \
         }                                                                      \
