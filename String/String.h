@@ -279,8 +279,10 @@ INLINE Result_String string_copy(String string);
  * @see String
  * @see Error_code
  */
-INLINE Error_code string_printf(String* this, const char* format, ...);
-Error_code string_vprintf(String* this, const char* format, va_list args);
+INLINE Error_code string_printf(String* this, const char* format, ...)
+    __attribute__((format(__printf__, 2, 3)));
+Error_code string_vprintf(String* this, const char* format, va_list args)
+    __attribute__((format(__printf__, 2, 0)));
 
 /**
  * @brief Constructs a `String` from a formatted string.
@@ -295,8 +297,10 @@ Error_code string_vprintf(String* this, const char* format, va_list args);
  * @see String
  * @see Error_code
  */
-INLINE Result_String string_ctor_printf(const char* format, ...);
-INLINE Result_String string_ctor_vprintf(const char* format, va_list args);
+INLINE Result_String string_ctor_printf(const char* format, ...)
+    __attribute__((format(__printf__, 1, 2)));
+INLINE Result_String string_ctor_vprintf(const char* format, va_list args)
+    __attribute__((format(__printf__, 1, 0)));
 
 /**
  * @brief Replaces occurrences of one substring with another.

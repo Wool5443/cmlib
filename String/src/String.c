@@ -82,7 +82,9 @@ Error_code string_realloc(String* this, size_t new_capacity)
     char* new_data = NULL;
 
     if (this->capacity >= new_capacity)
+    {
         return EVERYTHING_FINE;
+    }
 
     Allocator allocator = this->allocator.allocate ? this->allocator
                                                    : Current_string_allocator;
@@ -205,6 +207,8 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
 {
     ERROR_CHECKING();
 
+    assert(this);
+
     if (!format)
     {
         err = ERROR_NULLPTR;
@@ -219,9 +223,10 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
         return EVERYTHING_FINE;
     }
 
-    size_t capacity = format_length * 2;
+    size_t old_capacity = this->capacity;
+    size_t additional_capacity = format_length * 2;
 
-    CHECK_ERROR(string_realloc(this, this->capacity + capacity));
+    CHECK_ERROR(string_realloc(this, old_capacity + additional_capacity));
 
     // Try until it fits
     while (true)
@@ -229,21 +234,23 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
         va_list cpargs = {};
         va_copy(cpargs, args);
 
+        char* append_ptr = this->data + this->size;
+
         int written =
-            vsnprintf(this->data + this->size, capacity, format, cpargs);
+            vsnprintf(append_ptr, additional_capacity, format, cpargs);
 
         if (written < 0)
         {
             HANDLE_ERRNO_ERROR(ERROR_STD, "Error vsnprintf: %s");
         }
-        else if (written <= (int)capacity)
+        else if ((size_t)written < additional_capacity)
         {
             this->size += written;
             break;
         }
 
-        capacity = written + 1;
-        CHECK_ERROR(string_realloc(this, this->capacity + capacity));
+        additional_capacity = written + 1;
+        CHECK_ERROR(string_realloc(this, old_capacity + additional_capacity));
     }
 
     return EVERYTHING_FINE;
