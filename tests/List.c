@@ -9,7 +9,7 @@ int main()
     List_node* list = list_ctor();
 
     int val = 1;
-     list_insert_after(list, val);
+    list_insert_after(list, val);
 
     val = 2;
     list_insert_after(list, val);
