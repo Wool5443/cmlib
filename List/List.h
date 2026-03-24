@@ -103,6 +103,13 @@ INLINE List_node* list_begin(List_node* list);
  */
 INLINE List_node* list_end(List_node* list);
 
+/**
+ * @brief Removes the node from the list.
+ *
+ * @param node Pointer to the node.
+ */
+INLINE void list_erase(List_node* node);
+
 #define LIST_ITER(list__, iter_name__, ...)                                    \
     assert(list__ && "Iterating over NULL list");                              \
     for (List_node* iter_name__ = list_begin(list__),                          \
@@ -185,6 +192,21 @@ INLINE List_node* list_end(List_node* list)
         return NULL;
     }
     return list;
+}
+
+INLINE void list_erase(List_node* node)
+{
+    if (!node)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("NULL passed as node");
+        return;
+    }
+
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+
+    node->allocator.free(node);
 }
 
 /**

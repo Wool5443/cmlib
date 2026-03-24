@@ -26,6 +26,10 @@ int main()
         printf("%d\n", val);
     }
 
+    printf("\n");
+
+    list_erase(list->prev->prev);
+
     LIST_REVERSE_ITER(list, current)
     {
         int val = *(int*)list_node_get_value(current);
