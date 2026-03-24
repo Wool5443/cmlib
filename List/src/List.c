@@ -9,3 +9,6 @@ void list_reset_allocator();
 List_node* list_begin(List_node* node);
 List_node* list_end(List_node* node);
 void list_erase(List_node* node);
+List_node* list_extract(List_node* node);
+List_node* list_insert_node_after(List_node* node, List_node* insert_node);
+List_node* list_insert_node_before(List_node* node, List_node* insert_node);

@@ -104,11 +104,45 @@ INLINE List_node* list_begin(List_node* list);
 INLINE List_node* list_end(List_node* list);
 
 /**
- * @brief Removes the node from the list.
+ * @brief Removes the node from a list.
  *
  * @param node Pointer to the node.
  */
 INLINE void list_erase(List_node* node);
+
+/**
+ * @brief Extracts the node from a list.
+ *
+ * Extracts the node from a list so it will be possible to reuse the node later.
+ *
+ * @param node Pointer to the node.
+ * @return Pointer to extracted node.
+ */
+INLINE List_node* list_extract(List_node* node);
+
+/**
+ * @brief Inserts the insert_node after the given node.
+ *
+ * This functions inserts the given node after the specified `node`.
+
+ * @param node The node after which the new node should be inserted.
+ * @param insert_node The node to insert.
+ * @return The newly inserted node.
+ */
+INLINE List_node* list_insert_node_after(List_node* node,
+                                         List_node* insert_node);
+
+/**
+ * @brief Inserts the insert_node before the given node.
+ *
+ * This functions inserts the given node before the specified `node`.
+
+ * @param node The node before which the new node should be inserted.
+ * @param insert_node The node to insert.
+ * @return The newly inserted node.
+ */
+INLINE List_node* list_insert_node_before(List_node* node,
+                                          List_node* insert_node);
 
 #define LIST_ITER(list__, iter_name__, ...)                                    \
     assert(list__ && "Iterating over NULL list");                              \
@@ -196,17 +230,59 @@ INLINE List_node* list_end(List_node* list)
 
 INLINE void list_erase(List_node* node)
 {
+    if (list_extract(node))
+    {
+        node->allocator.free(node);
+    }
+}
+
+INLINE List_node* list_extract(List_node* node)
+{
     if (!node)
     {
         int err = ERROR_NULLPTR;
         log_error("NULL passed as node");
-        return;
+        return NULL;
     }
 
     node->prev->next = node->next;
     node->next->prev = node->prev;
 
-    node->allocator.free(node);
+    node->prev = NULL;
+    node->next = NULL;
+
+    return node;
+}
+
+INLINE List_node* list_insert_node_after(List_node* node,
+                                         List_node* insert_node)
+{
+    if (!node)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Attempted to insert after NULL node");
+        return NULL;
+    }
+
+    if (!insert_node)
+    {
+        int err = ERROR_NULLPTR;
+        log_error("Attempted to insert a NULL node");
+        return NULL;
+    }
+
+    insert_node->prev = node;
+    insert_node->next = node->next;
+    node->next->prev = insert_node;
+    node->next = insert_node;
+
+    return insert_node;
+}
+
+INLINE List_node* list_insert_node_before(List_node* node,
+                                          List_node* insert_node)
+{
+    return list_insert_node_after(node->prev, insert_node);
 }
 
 /**
@@ -224,8 +300,7 @@ INLINE void list_erase(List_node* node)
  * @brief Creates and inserts a new node after a given node.
  *
  * This macro inserts a new node after the specified `node` and assigns the
- * provided value to it. If the node is `NULL`, a new node is created and
- * returned.
+ * provided value to it.
  *
  * @param node The node after which the new node should be inserted.
  * @param value The value to be assigned to the new node.
@@ -234,40 +309,29 @@ INLINE void list_erase(List_node* node)
 #define list_insert_after(node__, value__)                                     \
     ({                                                                         \
         List_node* node_insert_after_ = (node__);                              \
+        List_node* new_node_insert_after_ = NULL;                              \
         if (node_insert_after_)                                                \
         {                                                                      \
             Allocator allocator_insert_after_ = node_insert_after_->allocator; \
-            List_node* new_node_insert_after_ =                                \
-                list_node_ctor_(value__, allocator_insert_after_);             \
-            if (new_node_insert_after_)                                        \
-            {                                                                  \
-                *new_node_insert_after_ = (List_node) {                        \
-                    .prev = node_insert_after_,                                \
-                    .next = node_insert_after_->next,                          \
-                    .allocator = allocator_insert_after_,                      \
-                };                                                             \
-                if (node_insert_after_->next)                                  \
-                {                                                              \
-                    node_insert_after_->next->prev = new_node_insert_after_;   \
-                }                                                              \
-                node_insert_after_->next = new_node_insert_after_;             \
-                node_insert_after_ = new_node_insert_after_;                   \
-            }                                                                  \
+            new_node_insert_after_ = list_node_ctor_(value__,                  \
+                                                     allocator_insert_after_); \
+            new_node_insert_after_ =                                           \
+                list_insert_node_after(node_insert_after_,                     \
+                                       new_node_insert_after_);                \
         }                                                                      \
         else                                                                   \
         {                                                                      \
             int err = ERROR_NULLPTR;                                           \
             log_error("Attempted to insert after NULL node");                  \
         }                                                                      \
-        node_insert_after_;                                                    \
+        new_node_insert_after_;                                                \
     })
 
 /**
  * @brief Creates and inserts a new node before a given node.
  *
  * This macro inserts a new node before the specified `node` and assigns the
- * provided value to it. If the node is `NULL`, a new node is created and
- * returned.
+ * provided value to it.
  *
  * @param node The node before which the new node should be inserted.
  * @param value The value to be assigned to the new node.

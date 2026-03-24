@@ -29,6 +29,8 @@ int main()
     printf("\n");
 
     list_erase(list->prev->prev);
+    List_node* extracted = list_extract(list_begin(list));
+    list_insert_node_after(list->next, extracted);
 
     LIST_REVERSE_ITER(list, current)
     {
