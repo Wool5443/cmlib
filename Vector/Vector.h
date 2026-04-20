@@ -1,19 +1,9 @@
 /**
  * @file Vector.h
- * @author Misha Solodilov (mihsolodilov2015@gmail.com)
- * @brief Header file for a vector implementation.
+ * @brief Type-generic dynamic array macros.
  *
- * This header defines the `VHeader_` structure, along with functions and macros
- * for dynamically managing vectors. A vector is a dynamic array that
- * automatically grows in size when more elements are added. The vector
- * functions handle dynamic memory allocation, resizing, and deallocation
- * efficiently. The `Allocator` structure is used to manage memory for vectors,
- * and custom allocators can be set using `vec_set_allocator`.
- *
- * @version 1.0
- * @date 12.06.2025
- *
- * @copyright Copyright (c) 2025
+ * Vectors are represented by element pointers; metadata lives in a hidden
+ * header directly before element storage.
  */
 
 #ifndef CMLIB_VECTOR_H_
@@ -23,291 +13,196 @@
 #include <string.h>
 
 #include "Allocator.h"
-#include "Logger.h" // IWYU pragma: keep
+#include "Error.h" // IWYU pragma: keep
 
-constexpr size_t DEFAULT_CAPACITY = 8; /**< Default capacity of the vector */
+static constexpr size_t CMLIB_VEC_DEFAULT_CAPACITY = 8;
 
 /**
- * @struct VHeader_
- * @brief A header structure for vector management.
- *
- * This structure stores the metadata for a vector, including its allocator,
- * current size, and capacity. It is used internally to manage the vector's
- * dynamic memory allocation and resizing.
+ * @brief Internal vector metadata stored before element array.
  */
 typedef struct VHeader_
 {
-    Allocator allocator; ///< The allocator used for vector memory management.
-    size_t size;     ///< The current size of the vector (number of elements).
-    size_t capacity; ///< The total capacity of the vector (number of elements
-                     ///< it can store).
-} VHeader_;
+    MemoryResource* memory_resource; /**< Resource used for vector storage. */
+    size_t size;                     /**< Current element count. */
+    size_t capacity;                 /**< Allocated element capacity. */
+} cmlib_details_VHeader_;
 
-extern Allocator Current_vector_allocator; /**< The global allocator used for
-                                              vectors */
+INLINE cmlib_details_VHeader_* cmlib_details_get_vec_header(void* vec);
+void* cmlib_details_vec_realloc(void* vec, size_t elem_size);
 
 /**
- * @brief Retrieves the header of the vector.
- *
- * This macro calculates the address of the vector header by using pointer
- * arithmetic. The header is located just before the actual vector data.
- *
- * @param vec The pointer to the vector.
- * @return A pointer to the vector's header (`VHeader_*`).
+ * @brief Creates a vector using a memory resource.
+ * @param memory_resource Pointer to memory resource.
+ * @param capacity Initial capacity.
+ * @return Element storage pointer, or NULL on failure.
  */
-#define GET_VEC_HEADER(vec__) (&((VHeader_*)(vec__))[-1])
+void* cmlib_details_vec_ctor(void* memory_resource,
+    size_t elem_size,
+    size_t capacity);
+#define vec_ctor(memory_resource, type)                                        \
+    (cmlib_details_vec_ctor(memory_resource,                                   \
+        sizeof(type),                                                          \
+        CMLIB_VEC_DEFAULT_CAPACITY))
 
 /**
- * @brief Retrieves the allocator used for the vector.
- *
- * This macro retrieves the allocator used to allocate memory for the vector. If
- * the vector is `NULL`, it uses the default allocator
- * `Current_vector_allocator`.
- *
- * @param vec The pointer to the vector.
- * @return The allocator used by the vector.
- */
-#define GET_VEC_ALLOCATOR(vec__)                                               \
-    ((vec__) ? GET_VEC_HEADER(vec__)->allocator : Current_vector_allocator)
-
-/**
- * @brief Frees the memory allocated for the vector.
- *
- * This macro frees the memory allocated for the vector, including its header
- * and data.
- *
- * @param vec The pointer to the vector to free.
- */
-#define VEC_FREE(vec__)                                                        \
-    ((vec__) ? GET_VEC_ALLOCATOR(vec__).free(GET_VEC_HEADER(vec__)) : NULL)
-
-/**
- * @brief Iterator for the vector.
- *
- * This macro provides a way to iterate over a vector. It can be customized with
- * a start index and an end index.
- *
- * @param vec The vector to iterate over.
- * @param iter_name The name of the iterator variable.
- * @param ... Optional arguments to customize the iteration range.
- */
-#define VEC_ITER(vec__, iter_name__, ...)                                      \
-    SWITCH_EMPTY(                                                              \
-        for (size_t iter_name__ = 0, iter_name__##_end = vec_size(vec__);      \
-             iter_name__ < iter_name__##_end;                                  \
-             iter_name__++),                                                   \
-        for (size_t iter_name__ = FIRST(__VA_ARGS__),                          \
-             iter_name__##_end = MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__),    \
-                                     vec_size(vec__));                         \
-             iter_name__ < iter_name__##_end;                                  \
-             iter_name__++),                                                   \
-        __VA_ARGS__)
-
-/**
- * @brief Sets the allocator for the vector.
- *
- * This function allows the user to set a custom allocator for the vector.
- *
- * @param allocator The custom allocator to use for vectors.
- */
-INLINE void vec_set_allocator(Allocator allocator);
-
-/**
- * @brief Resets the vector allocator to the default allocator (`malloc`).
- *
- * This function resets the allocator to the default allocator (`malloc`), which
- * is used for vector memory allocations.
- */
-INLINE void vec_reset_allocator();
-
-/**
- * @brief Destroys a vector.
- *
- * This function deallocates the memory used by the vector, including the header
- * and data.
- *
- * @param vec The pointer to the vector to destroy.
+ * @brief Destroys vector. Safe to call on NULL.
+ * @param vec Vector to destroy
  */
 INLINE void vec_dtor(void* vec);
 
 /**
- * @brief Retrieves the size of the vector.
- *
- * This function returns the current size (number of elements) of the vector.
- *
- * @param vec The pointer to the vector.
- * @return The size of the vector.
+ * @brief Returns vector size.
+ * @param vec Vector pointer, or NULL.
+ * @return Element count.
  */
 INLINE size_t vec_size(void* vec);
 
 /**
- * @brief Retrieves the capacity of the vector.
- *
- * This function returns the current capacity (total number of elements the
- * vector can hold).
- *
- * @param vec The pointer to the vector.
- * @return The capacity of the vector.
+ * @brief Returns vector capacity.
+ * @param vec Vector pointer, or NULL.
+ * @return Element capacity.
  */
 INLINE size_t vec_capacity(void* vec);
 
 /**
- * @brief Clears the vector.
- *
- * This function resets the vector size to zero, effectively clearing all
- * elements in the vector.
- *
- * @param vec The pointer to the vector to clear.
+ * @brief Deletes all elements in vector without freeing capacity.
+ * @param vec Vector pointer, or NULL.
  */
 INLINE void vec_clear(void* vec);
 
 /**
- * @brief Creates a new vector.
- *
- * This function allocates memory for a new vector with the specified element
- * size and initial capacity.
- *
- * @param allocator The allocator to use for memory management.
- * @param elem_size The size of each element in the vector.
- * @param capacity The initial capacity of the vector.
- * @return A pointer to the created vector.
+ * @brief Appends value to vector, growing if needed.
+ * @param vec
+ * @param value
+ * @return `EVERYTHING_FINE` on success, `ERROR_NO_MEMORY` on allocation
+ * failure.
  */
-void* vec_ctor_(Allocator allocator, size_t elem_size, size_t capacity);
+#define vec_add(vec, value)                                                    \
+    ({                                                                         \
+        Error_code vec_add_error = ERROR_NO_MEMORY;                            \
+        void* temp = cmlib_details_vec_realloc((vec), sizeof(*vec));           \
+        if (temp)                                                              \
+        {                                                                      \
+            vec_add_error = EVERYTHING_FINE;                                   \
+            (vec) = temp;                                                      \
+            auto header = cmlib_details_get_vec_header(vec);                   \
+            (vec)[header->size++] = (value);                                   \
+        }                                                                      \
+        vec_add_error;                                                         \
+    })
 
 /**
- * @brief Reallocates the vector if it is full.
- *
- * This function reallocates the vector to a larger size if it is full, allowing
- * more elements to be added. If the vector is `NULL`, it is safely reallocated.
- *
- * @param vec The pointer to the vector.
- * @param elem_size The size of each element in the vector.
- * @return A pointer to the reallocated vector, or `NULL` if allocation fails.
+ * @brief Removes and returns last element.
+ * @pre vector not empty.
+ * @return Zero-initialized value when `cmlib_vec == NULL`.
  */
-void* vec_realloc_(void* vec, size_t elem_size);
+#define vec_pop(vec)                                                           \
+    ({                                                                         \
+        typeof(*vec) ret = {};                                                 \
+        if (vec)                                                               \
+        {                                                                      \
+            auto header = cmlib_details_get_vec_header(vec);                   \
+            ret = (vec)[--header->size];                                       \
+        }                                                                      \
+        ret;                                                                   \
+    })
 
-INLINE void vec_set_allocator(Allocator allocator)
-{
-    Current_vector_allocator = allocator;
-}
+/**
+ * @brief Rebuilds vector with exact capacity.
+ * @param vec Lvalue pointer variable to vector.
+ * @param new_capacity Target capacity.
+ * @return `EVERYTHING_FINE` on success, `ERROR_NO_MEMORY` on allocation
+ * failure.
+ * Preserves up to `min(old_size, new_capacity)` elements and truncates size on
+ * shrink.
+ */
+#define vec_reserve(vec, new_capacity)                                         \
+    ({                                                                         \
+        size_t vec_reserve_new_capacity = (new_capacity);                      \
+        Error_code vec_reserve_error = ERROR_NO_MEMORY;                        \
+        MemoryResource* vec_reserve_resource =                                 \
+            cmlib_details_get_vec_header(vec)->memory_resource;                \
+        void* temp = cmlib_details_vec_ctor(vec_reserve_resource,              \
+            sizeof(*vec),                                                      \
+            vec_reserve_new_capacity);                                         \
+        if (temp)                                                              \
+        {                                                                      \
+            vec_reserve_error = EVERYTHING_FINE;                               \
+            size_t size = MIN(vec_size(vec), vec_reserve_new_capacity);        \
+            if ((vec) && size)                                                 \
+            {                                                                  \
+                memcpy(temp, vec, sizeof(*(vec)) * size);                      \
+            }                                                                  \
+            vec_dtor(vec);                                                     \
+            (vec) = temp;                                                      \
+            cmlib_details_get_vec_header(vec)->size = size;                    \
+        }                                                                      \
+        vec_reserve_error;                                                     \
+    })
 
-INLINE void vec_reset_allocator()
-{
-    Current_vector_allocator = MALLOC_ALLOCATOR;
-}
+/**
+ * @brief Iterates index variable over vector range.
+ *
+ * Forms:
+ * - `VEC_ITER(vec, i)` iterates `[0, vec_size(vec))`
+ * - `VEC_ITER(vec, i, begin, end)` iterates `[begin, min(end, vec_size(vec)))`
+ */
+#define VEC_ITER(vec, iter_name, ...)                                          \
+    SWITCH_EMPTY(for (size_t iter_name = 0, iter_name##_end = vec_size(vec);   \
+                     iter_name < iter_name##_end;                              \
+                     iter_name++),                                             \
+        for (size_t iter_name = FIRST(__VA_ARGS__),                            \
+            iter_name##_end = MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__),       \
+                vec_size(vec));                                                \
+            iter_name < iter_name##_end;                                       \
+            iter_name++),                                                      \
+        __VA_ARGS__)
 
 INLINE void vec_dtor(void* vec)
 {
     if (vec)
-        VEC_FREE(vec);
+    {
+        cmlib_details_VHeader_* header = cmlib_details_get_vec_header(vec);
+        header->memory_resource->deallocate(header->memory_resource, header);
+    }
 }
 
 INLINE size_t vec_size(void* vec)
 {
     if (!vec)
+    {
         return 0;
+    }
 
-    VHeader_* header = GET_VEC_HEADER(vec);
+    cmlib_details_VHeader_* header = cmlib_details_get_vec_header(vec);
     return header->size;
 }
 
 INLINE size_t vec_capacity(void* vec)
 {
     if (!vec)
+    {
         return 0;
+    }
 
-    VHeader_* header = GET_VEC_HEADER(vec);
+    cmlib_details_VHeader_* header = cmlib_details_get_vec_header(vec);
     return header->capacity;
 }
 
 INLINE void vec_clear(void* vec)
 {
     if (!vec)
+    {
         return;
+    }
 
-    VHeader_* header = GET_VEC_HEADER(vec);
+    cmlib_details_VHeader_* header = cmlib_details_get_vec_header(vec);
     header->size = 0;
 }
 
-/**
- * @brief Adds a value at the end of the vector.
- *
- * This macro appends a value to the vector. If the vector is full, it is
- * reallocated to accommodate the new element. If the vector is `NULL`, it is
- * reallocated safely.
- *
- * @param vec The pointer to the vector.
- * @param value The value to append to the vector.
- * @return An error code indicating success or failure.
- *
- * @see Error_code
- */
-#define vec_add(vec__, value__)                                                \
-    ({                                                                         \
-        Error_code vec_add_error = ERROR_NO_MEMORY;                            \
-        void* temp = vec_realloc_((vec__), sizeof(*vec__));                    \
-        if (temp)                                                              \
-        {                                                                      \
-            vec_add_error = EVERYTHING_FINE;                                   \
-            (vec__) = temp;                                                    \
-            VHeader_* header = GET_VEC_HEADER(vec__);                          \
-            (vec__)[header->size++] = value__;                                 \
-        }                                                                      \
-        vec_add_error;                                                         \
-    })
-
-/**
- * @brief Pops a value from the end of the vector.
- *
- * This macro removes and returns the last element of the vector. If the vector
- * is empty, it returns an empty value.
- *
- * @param vec The pointer to the vector.
- * @return The popped value.
- */
-#define vec_pop(vec__)                                                         \
-    ({                                                                         \
-        typeof(*vec__) ret = {};                                               \
-        if (vec)                                                               \
-        {                                                                      \
-            VHeader_* header = GET_VEC_HEADER(vec__);                          \
-            ret = (vec__)[--header->size];                                     \
-        }                                                                      \
-        ret;                                                                   \
-    })
-
-/**
- * @brief Expands the vector's capacity.
- *
- * This macro reallocates the vector to the specified new capacity, retaining
- * its current elements. If the vector is `NULL`, it is safely reallocated.
- *
- * @param vec__ The pointer to the vector.
- * @param new_capacity__ The new capacity for the vector.
- * @return An error code indicating success or failure.
- *
- * @see Error_code
- */
-#define vec_reserve(vec__, new_capacity__)                                     \
-    ({                                                                         \
-        size_t new_capacity = (new_capacity__);                                \
-        Error_code vec_reserve_error = ERROR_NO_MEMORY;                        \
-        void* temp = vec_ctor_(GET_VEC_ALLOCATOR(vec__),                       \
-                               sizeof(*(vec__)),                               \
-                               new_capacity);                                  \
-        if (temp)                                                              \
-        {                                                                      \
-            vec_reserve_error = EVERYTHING_FINE;                               \
-            size_t size = MIN(vec_size(vec__), new_capacity);                  \
-            if ((vec__) && size)                                               \
-            {                                                                  \
-                memcpy(temp, vec__, sizeof(*(vec__)) * size);                  \
-            }                                                                  \
-            vec_dtor(vec__);                                                   \
-            (vec__) = temp;                                                    \
-            GET_VEC_HEADER(vec__)->size = size;                                \
-        }                                                                      \
-        vec_reserve_error;                                                     \
-    })
+INLINE cmlib_details_VHeader_* cmlib_details_get_vec_header(void* vec)
+{
+    return &((cmlib_details_VHeader_*)vec)[-1];
+}
 
 #endif // CMLIB_VECTOR_H_

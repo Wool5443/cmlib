@@ -1,164 +1,94 @@
 /**
  * @file Allocator.h
- * @author Misha Solodilov (mihsolodilov2015@gmail.com)
- * @brief Header file for memory allocation functions and the Allocator
- * structure.
- *
- * This header defines the `Allocator` structure and associated functions for
- * memory allocation and deallocation. The `Allocator` structure encapsulates
- * the memory allocation and freeing functions, allowing for flexible management
- * of memory allocation strategies. Various predefined allocators are also
- * provided, such as `MALLOC_ALLOCATOR` and `CALLOC_ALLOCATOR`, which are based
- * on standard `malloc` and `calloc` functions, respectively.
- *
- * The allocator can be customized by defining different allocation and
- * deallocation strategies using function pointers.
- *
- * The `Allocator` structure also provides utility functions for memory
- * alignment, which ensure that allocated memory adheres to alignment
- * requirements for various platforms or performance optimization.
- *
- * @version 1.0
- * @date 12.06.2025
- *
- * @copyright Copyright (c) 2025
+ * @brief Polymorphic memory resource and alignment helpers.
  */
 
 #ifndef CMLIB_ALLOCATOR_H_
 #define CMLIB_ALLOCATOR_H_
 
+#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "../common.h"
 
-/**
- * @brief Predefined allocator using `malloc` and `free`.
- *
- * This allocator uses the standard `malloc` for memory allocation and `free`
- * for memory deallocation.
- */
-#define MALLOC_ALLOCATOR                                                       \
-    (Allocator)                                                                \
-    {                                                                          \
-        malloc, free                                                           \
-    }
+typedef struct MemoryResource MemoryResource;
 
 /**
- * @brief Predefined allocator using `cmlib_calloc_proxy` and `free`.
- *
- * This allocator uses a custom memory allocation function
- * (`cmlib_calloc_proxy`) and standard `free` for deallocation. The proxy is
- * designed to handle memory allocation with zero-initialization.
+ * @brief Allocates memory from a memory resource.
+ * @param mem_resource Resource object.
+ * @param size Requested byte count.
+ * @param alignment Required pointer alignment.
+ * @return Allocated pointer, or NULL on failure.
  */
-#define CALLOC_ALLOCATOR                                                       \
-    (Allocator)                                                                \
-    {                                                                          \
-        cmlib_calloc_proxy, free                                               \
-    }
+typedef void* (*memory_resource_allocate_func)(MemoryResource* mem_resource,
+    size_t size,
+    size_t alignment);
 
 /**
- * @brief Predefined empty allocator.
- *
- * This allocator has both the `allocate` and `free` functions set to `NULL`,
- * indicating no allocation strategy.
+ * @brief Deallocates memory through a memory resource.
+ * @param mem_resource Resource object.
+ * @param ptr Pointer previously returned by the resource, or NULL.
  */
-#define EMPTY_ALLOCATOR                                                        \
-    (Allocator)                                                                \
-    {                                                                          \
-        NULL, NULL                                                             \
-    }
+typedef void (
+    *memory_resource_deallocate_func)(MemoryResource* mem_resource, void* ptr);
 
 /**
- * @brief Function pointer type for memory allocation.
- *
- * This function type represents the signature of a memory allocation function.
+ * @brief Base object embedded as the first field in every concrete resource.
  */
-typedef void* (*allocate_function)(size_t);
-
-/**
- * @brief Function pointer type for memory deallocation.
- *
- * This function type represents the signature of a memory deallocation
- * function.
- */
-typedef void (*free_function)(void*);
-
-/**
- * @brief Structure to represent a memory allocator.
- *
- * The `Allocator` structure holds function pointers to memory allocation and
- * deallocation functions, allowing for flexible management of memory
- * operations. Different allocators can be defined by setting these function
- * pointers.
- */
-typedef struct Allocator
+struct MemoryResource
 {
-    allocate_function allocate; /**< Pointer to the memory allocation function
-                                 */
-    free_function free; /**< Pointer to the memory deallocation function */
-} Allocator;
+    memory_resource_allocate_func allocate;
+    memory_resource_deallocate_func deallocate;
+};
+
+#define CMLIB_ALIGN(cmlib_macroarg_value, cmlib_macroarg_alignment)            \
+    (((cmlib_macroarg_value) + (cmlib_macroarg_alignment) - 1)                 \
+        & ~((cmlib_macroarg_alignment) - 1))
 
 /**
- * @brief Proxy function for memory allocation with zero-initialization.
- *
- * This function is used as a proxy for `calloc` and handles memory allocation
- * with zero initialization. It is used in the `CALLOC_ALLOCATOR` predefined
- * allocator.
- *
- * @param size The size of memory to allocate.
- * @return Pointer to the allocated and zero-initialized memory block.
+ * @brief Aligns a size to the requested alignment.
+ * @param size Input byte count.
+ * @param alignment Required alignment.
+ * @return Aligned size, at least one alignment unit for zero input.
  */
-INLINE void* cmlib_calloc_proxy(size_t size);
-
-/**
- * @brief Aligns a size to the platform's memory alignment.
- *
- * This function adjusts the given size to the nearest aligned size. Alignment
- * is typically needed for performance reasons or to meet hardware-specific
- * constraints.
- *
- * @param size The size to be aligned.
- * @return The aligned size.
- */
-INLINE size_t align_size(size_t size);
-
-/**
- * @brief Aligns a pointer to the platform's memory alignment.
- *
- * This function adjusts the given pointer to the nearest aligned memory
- * address. Alignment is needed for performance optimization or to meet
- * hardware-specific constraints.
- *
- * @param ptr The pointer to be aligned.
- * @return The aligned pointer.
- */
-INLINE void* align_ptr(void* ptr);
-
-INLINE void* cmlib_calloc_proxy(size_t size)
-{
-    return calloc(1, size);
-}
-
-INLINE size_t align_size(size_t size)
+INLINE size_t align_size(size_t size, size_t alignment)
 {
     if (size == 0)
     {
         size = 1;
     }
 
-    size_t align = sizeof(void*);
-    size = (size + align - 1) & ~(align - 1);
+    size = CMLIB_ALIGN(size, alignment);
     return size;
 }
 
-INLINE void* align_ptr(void* ptr)
+/**
+ * @brief Aligns a pointer upward to the requested alignment.
+ * @param ptr Pointer to align.
+ * @param alignment Required alignment.
+ * @return Aligned pointer.
+ */
+INLINE void* align_ptr(void* ptr, size_t alignment)
 {
-    size_t align = sizeof(void*);
     auto p = (uintptr_t)ptr;
-    p = (p + align - 1) & ~(align - 1);
+    p = CMLIB_ALIGN(p, alignment);
     return (void*)p;
 }
+
+#undef CMLIB_ALIGN
+
+/**
+ * @brief Returns a stable resource backed by `malloc` and `free`.
+ * @return Pointer to process-lifetime malloc resource.
+ */
+MemoryResource* get_malloc_resource(void);
+
+/**
+ * @brief Returns a stable resource backed by `calloc` and `free`.
+ * @return Pointer to process-lifetime calloc resource.
+ */
+MemoryResource* get_calloc_resource(void);
 
 #endif // CMLIB_ALLOCATOR_H_

@@ -1,3 +1,10 @@
+/**
+ * @file Error_gen.h
+ * @brief Central list of project error codes.
+ *
+ * Consumed via `DEF_ERROR(code)` macro redefinition in `Error.h`.
+ */
+
 // DEF_ERROR(code)
 
 DEF_ERROR(EVERYTHING_FINE)

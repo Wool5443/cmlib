@@ -1,388 +1,202 @@
 /**
  * @file List.h
- * @author Misha Solodilov (mihsolodilov2015@gmail.com)
- * @brief Header file for doubly linked list utilities.
+ * @brief Circular doubly linked list with inline payload nodes.
  *
- * This header defines the data structures and functions required to implement
- * and manage a doubly linked list. The list is implemented using nodes that
- * store data and pointers to the previous and next nodes. The allocator is
- * abstracted using the `Allocator` structure to provide flexibility in the
- * memory allocation strategy.
- *
- * The file provides functions for inserting nodes, getting node values, setting
- * the allocator, and resetting the allocator to its default state. The list
- * implementation is designed to support flexible memory allocation and
- * efficient insertion and deletion operations.
- *
- * @version 1.0
- * @date 12.06.2025
- *
- * @copyright Copyright (c) 2025
+ * A `List` owns its sentinel node and memory resource. `ListNode` values store
+ * only links; node storage is released through the owning list.
  */
 
 #ifndef CMLIB_LIST_H_
 #define CMLIB_LIST_H_
 
+#include <assert.h>
+#include <stdalign.h>
+
 #include "Allocator.h"
-#include "Logger.h"
 
 /**
- * @brief Structure to represent the header of a list node.
- *
- * Each node in the list contains a `List_node` that holds pointers to the
- * previous and next nodes in the list. It also contains an allocator to manage
- * memory for the node.
+ * @brief Link header embedded in the list sentinel and value nodes.
  */
-typedef struct List_node List_node;
-struct List_node
+typedef struct ListNode ListNode;
+struct ListNode
 {
-    List_node* prev;     /**< Pointer to the previous node in the list */
-    List_node* next;     /**< Pointer to the next node in the list */
-    Allocator allocator; /**< The allocator used to manage memory for this node
-                          */
+    ListNode* prev; /**< Previous node. */
+    ListNode* next; /**< Next node. */
 };
 
-extern Allocator Current_list_allocator; /**< The current allocator used by the
-                                            list */
-
 /**
- * @brief Sets the allocator to be used for list node allocations.
+ * @brief List container owning the sentinel node and memory resource.
  *
- * This function allows the user to specify a custom allocator for all future
- * list node allocations.
- *
- * @param allocator The allocator to be set for the list.
+ * The resource is stored only here, not in individual nodes.
  */
-INLINE void list_set_allocator(Allocator allocator);
-
-/**
- * @brief Resets the list allocator to the default allocator (malloc).
- *
- * This function resets the allocator to the default `malloc` allocator for
- * memory allocation.
- */
-INLINE void list_reset_allocator();
-
-/**
- * @brief Creates a list.
- *
- * Allocates an empty utility node using current list allocator for a list.
- *
- * @return
- */
-INLINE List_node* list_ctor();
-
-/**
- * @brief Destroys a list node.
- *
- * This function deallocates the memory for the specified list node.
- *
- * @param node Pointer to the node to be destroyed.
- */
-INLINE void list_dtor(List_node* node);
-
-/**
- * @brief Retrieves the first node in the list.
- *
- * This function returns the starting node of the list, which is the node that
- * does not have any previous node.
- *
- * @param list Pointer to the list.
- * @return Pointer to the first node in the list.
- */
-INLINE List_node* list_begin(List_node* list);
-
-/**
- * @brief Retrieves the last node in the list.
- *
- * This function returns the ending node of the list, which is the node that
- * does not have any next node.
- *
- * @param list Pointer to the list.
- * @return Pointer to the last node in the list.
- */
-INLINE List_node* list_end(List_node* list);
-
-/**
- * @brief Removes the node from a list.
- *
- * @param node Pointer to the node.
- */
-INLINE void list_erase(List_node* node);
-
-/**
- * @brief Extracts the node from a list.
- *
- * Extracts the node from a list so it will be possible to reuse the node later.
- *
- * @param node Pointer to the node.
- * @return Pointer to extracted node.
- */
-INLINE List_node* list_extract(List_node* node);
-
-/**
- * @brief Inserts the insert_node after the given node.
- *
- * This functions inserts the given node after the specified `node`.
-
- * @param node The node after which the new node should be inserted.
- * @param insert_node The node to insert.
- * @return The newly inserted node.
- */
-INLINE List_node* list_insert_node_after(List_node* node,
-                                         List_node* insert_node);
-
-/**
- * @brief Inserts the insert_node before the given node.
- *
- * This functions inserts the given node before the specified `node`.
-
- * @param node The node before which the new node should be inserted.
- * @param insert_node The node to insert.
- * @return The newly inserted node.
- */
-INLINE List_node* list_insert_node_before(List_node* node,
-                                          List_node* insert_node);
-
-#define LIST_ITER(list__, iter_name__, ...)                                    \
-    assert(list__ && "Iterating over NULL list");                              \
-    for (List_node* iter_name__ = list_begin(list__),                          \
-                    *iter_name__##_end = list_end(list__);                     \
-         iter_name__ != iter_name__##_end;                                     \
-         iter_name__ = iter_name__->next)
-
-#define LIST_REVERSE_ITER(list__, iter_name__, ...)                            \
-    assert(list__ && "Iterating over NULL list");                              \
-    for (List_node* iter_name__ = list_end(list__)->prev,                      \
-                    *iter_name__##_end = list_end(list__);                     \
-         iter_name__ != iter_name__##_end;                                     \
-         iter_name__ = iter_name__->prev)
-
-INLINE void list_set_allocator(Allocator allocator)
+typedef struct List
 {
-    Current_list_allocator = allocator;
-}
-
-INLINE void list_reset_allocator()
-{
-    Current_list_allocator = MALLOC_ALLOCATOR;
-}
-
-INLINE List_node* list_ctor()
-{
-    List_node* list = Current_list_allocator.allocate(sizeof(List_node));
-    if (list)
-    {
-        *list = (List_node) {
-            .allocator = Current_list_allocator,
-            .next = list,
-            .prev = list,
-        };
-    }
-    else
-    {
-        int err = ERROR_NO_MEMORY;
-        log_error("Could not create list");
-    }
-    return list;
-}
-
-INLINE void list_dtor(List_node* list)
-{
-    if (!list)
-    {
-        return;
-    }
-
-    List_node* to_delete = list->next;
-    List_node* current = to_delete;
-
-    while (current != list)
-    {
-        current = current->next;
-        to_delete->allocator.free(to_delete);
-        to_delete = current;
-    }
-    to_delete->allocator.free(current);
-}
-
-INLINE List_node* list_begin(List_node* list)
-{
-    if (!list)
-    {
-        int err = ERROR_NULLPTR;
-        log_error("NULL passed as list");
-        return NULL;
-    }
-    return list->next;
-}
-
-INLINE List_node* list_end(List_node* list)
-{
-    if (!list)
-    {
-        int err = ERROR_NULLPTR;
-        log_error("NULL passed as list");
-        return NULL;
-    }
-    return list;
-}
-
-INLINE void list_erase(List_node* node)
-{
-    if (list_extract(node))
-    {
-        node->allocator.free(node);
-    }
-}
-
-INLINE List_node* list_extract(List_node* node)
-{
-    if (!node)
-    {
-        int err = ERROR_NULLPTR;
-        log_error("NULL passed as node");
-        return NULL;
-    }
-
-    node->prev->next = node->next;
-    node->next->prev = node->prev;
-
-    node->prev = NULL;
-    node->next = NULL;
-
-    return node;
-}
-
-INLINE List_node* list_insert_node_after(List_node* node,
-                                         List_node* insert_node)
-{
-    if (!node)
-    {
-        int err = ERROR_NULLPTR;
-        log_error("Attempted to insert after NULL node");
-        return NULL;
-    }
-
-    if (!insert_node)
-    {
-        int err = ERROR_NULLPTR;
-        log_error("Attempted to insert a NULL node");
-        return NULL;
-    }
-
-    insert_node->prev = node;
-    insert_node->next = node->next;
-    node->next->prev = insert_node;
-    node->next = insert_node;
-
-    return insert_node;
-}
-
-INLINE List_node* list_insert_node_before(List_node* node,
-                                          List_node* insert_node)
-{
-    return list_insert_node_after(node->prev, insert_node);
-}
+    ListNode base;                   /**< Sentinel node. */
+    MemoryResource* memory_resource; /**< Resource used for list and nodes. */
+} List;
 
 /**
- * @brief Gets the value of a list node.
- *
- * This macro extracts the value of a list node, which is stored immediately
- * after the `List_node`.
- *
- * @param node Pointer to the list node.
- * @return Pointer to the value stored in the node.
+ * @brief Creates an empty list.
+ * @param memory_resource Resource pointer; must be non-NULL.
+ * @return List pointer, or NULL on failure.
  */
-#define list_node_get_value(node__) ((node__) ? (void*)((node__) + 1) : NULL)
+List* list_ctor(void* memory_resource);
 
 /**
- * @brief Creates and inserts a new node after a given node.
- *
- * This macro inserts a new node after the specified `node` and assigns the
- * provided value to it.
- *
- * @param node The node after which the new node should be inserted.
- * @param value The value to be assigned to the new node.
- * @return The newly inserted node.
+ * @brief Destroys entire list.
+ * @param list List pointer returned by `list_ctor`; NULL is accepted.
  */
-#define list_insert_after(node__, value__)                                     \
-    ({                                                                         \
-        List_node* node_insert_after_ = (node__);                              \
-        List_node* new_node_insert_after_ = NULL;                              \
-        if (node_insert_after_)                                                \
-        {                                                                      \
-            Allocator allocator_insert_after_ = node_insert_after_->allocator; \
-            new_node_insert_after_ = list_node_ctor_(value__,                  \
-                                                     allocator_insert_after_); \
-            new_node_insert_after_ =                                           \
-                list_insert_node_after(node_insert_after_,                     \
-                                       new_node_insert_after_);                \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            int err = ERROR_NULLPTR;                                           \
-            log_error("Attempted to insert after NULL node");                  \
-        }                                                                      \
-        new_node_insert_after_;                                                \
-    })
+void list_dtor(List* list);
 
 /**
- * @brief Creates and inserts a new node before a given node.
- *
- * This macro inserts a new node before the specified `node` and assigns the
- * provided value to it.
- *
- * @param node The node before which the new node should be inserted.
- * @param value The value to be assigned to the new node.
- * @return The newly inserted node.
+ * @brief Returns first data node or sentinel for an empty list.
+ * @param list List pointer.
+ * @return First data node, sentinel, or NULL for NULL input.
  */
-#define list_insert_before(node__, value__)                                    \
-    ({                                                                         \
-        List_node* node_insert_before_ = (node__);                             \
-        if (node_insert_before_)                                               \
-        {                                                                      \
-            node_insert_before_ = list_insert_after(node_insert_before_->prev, \
-                                                    value__);                  \
-        }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            int err = ERROR_NULLPTR;                                           \
-            log_error("Attempted to insert before NULL node");                 \
-        }                                                                      \
-        node_insert_before_;                                                   \
-    })
+ListNode* list_begin(List* list);
 
 /**
- * @brief Creates a new list node with a specified value and allocator.
+ * @brief Returns list sentinel.
+ * @param list List pointer.
+ * @return Sentinel pointer, or NULL for NULL input.
+ */
+ListNode* list_end(List* list);
+
+/**
+ * @brief Extracts and frees a linked node.
+ * @param list Owning list.
+ * @param node Node pointer; NULL is accepted.
+ */
+void list_erase(List* list, ListNode* node);
+
+/**
+ * @brief Unlinks node from its list without freeing it.
+ * @param list Owning list.
+ * @param node Linked node.
+ * @return Extracted node, or NULL for invalid input.
+ */
+ListNode* list_extract(List* list, ListNode* node);
+
+/**
+ * @brief Inserts an existing node immediately after another node.
+ * @param list Owning list.
+ * @param node Existing list node.
+ * @param insert_node Detached node to insert.
+ * @return Inserted node, or NULL on invalid input.
  *
- * This macro allocates memory for a new list node, assigns the provided value
- * to the node, and initializes the `List_node` portion of the node.
+ * Detached nodes may be exchanged between lists only when both lists use the
+ * same `MemoryResource`.
+ */
+ListNode*
+list_insert_node_after(List* list, ListNode* node, ListNode* insert_node);
+
+/**
+ * @brief Inserts an existing node immediately before another node.
+ * @param list Owning list.
+ * @param node Existing list node.
+ * @param insert_node Detached node to insert.
+ * @return Inserted node, or NULL on invalid input.
  *
- * @param value The value to be assigned to the node.
- * @param allocator_ The allocator used for memory allocation.
- * @return Pointer to the newly created node.
+ * Detached nodes may be exchanged between lists only when both lists use the
+ * same `MemoryResource`.
+ */
+ListNode*
+list_insert_node_before(List* list, ListNode* node, ListNode* insert_node);
+
+/**
+ * @brief Allocates a detached node header plus payload storage.
+ * @param list Owning list; must be non-NULL.
+ * @param payload_size Payload byte count.
+ * @param payload_alignment Payload alignment.
+ * @return Detached node, or NULL on failure.
+ */
+ListNode* cmlib_details_list_node_ctor(List* list,
+    size_t payload_size,
+    size_t payload_alignment);
+
+/**
+ * @brief Iterates forward over data nodes.
+ */
+#define LIST_ITER(list, iter_name, ...)                                        \
+    assert(list && "Iterating over NULL list");                                \
+    for (ListNode* iter_name = list_begin(list),                               \
+                   *iter_name##_end = list_end(list);                          \
+        iter_name != iter_name##_end;                                          \
+        iter_name = iter_name->next)
+
+/**
+ * @brief Iterates backward over data nodes.
+ */
+#define LIST_REVERSE_ITER(list, iter_name, ...)                                \
+    assert(list && "Iterating over NULL list");                                \
+    for (ListNode* iter_name = list_end(list)->prev,                           \
+                   *iter_name##_end = list_end(list);                          \
+        iter_name != iter_name##_end;                                          \
+        iter_name = iter_name->prev)
+
+/**
+ * @brief Returns pointer to payload after node header.
+ */
+#define list_node_get_value(node, type)                                        \
+    ((type*)((node) ? (void*)((node) + 1) : NULL))
+
+/**
+ * @brief Allocates a detached node with inline payload copy.
+ * @param list List pointer; must be non-NULL.
+ * @param value Payload expression.
+ * @return Detached node, or NULL on failure.
  */
 // NOLINTBEGIN(bugprone-sizeof-expression)
-#define list_node_ctor_(value__, allocator__)                                  \
+#define list_node_ctor_(list, value)                                           \
     ({                                                                         \
-        Allocator allocator_node_ctor_ = allocator__;                          \
-        List_node* node_node_ctor_ = allocator_node_ctor_.allocate(            \
-            sizeof(List_node) + sizeof(value__));                              \
-        if (node_node_ctor_)                                                   \
+        ListNode* list_node_ = cmlib_details_list_node_ctor(list,              \
+            sizeof(value),                                                     \
+            alignof(typeof(value)));                                           \
+        if (list_node_)                                                        \
         {                                                                      \
-            *node_node_ctor_ =                                                 \
-                (List_node) {.allocator = allocator_node_ctor_};               \
-            *(typeof(value__)*)(node_node_ctor_ + 1) = value__;                \
-            node_node_ctor_->allocator = allocator_node_ctor_;                 \
+            *(typeof(value)*)(list_node_ + 1) = value;                         \
         }                                                                      \
-        else                                                                   \
-        {                                                                      \
-            int err = ERROR_NO_MEMORY;                                         \
-            log_error("Could not allocate a node");                            \
-        }                                                                      \
-        node_node_ctor_;                                                       \
+        list_node_;                                                            \
     })
 // NOLINTEND(bugprone-sizeof-expression)
+
+/**
+ * @brief Allocates payload node and inserts it after a node.
+ * @param list Owning list.
+ * @param node Existing list node.
+ * @param value Payload expression.
+ * @return Inserted node, or NULL on failure.
+ */
+#define list_insert_after(list, node, value)                                   \
+    ({                                                                         \
+        List* list_insert_list_ = (list);                                      \
+        ListNode* list_insert_node_ = (node);                                  \
+        ListNode* list_new_node_ = list_insert_list_ && list_insert_node_      \
+            ? list_node_ctor_(list_insert_list_, value)                        \
+            : NULL;                                                            \
+        list_insert_node_after(list_insert_list_,                              \
+            list_insert_node_,                                                 \
+            list_new_node_);                                                   \
+    })
+
+/**
+ * @brief Allocates payload node and inserts it before a node.
+ * @param list Owning list.
+ * @param node Existing list node.
+ * @param value Payload expression.
+ * @return Inserted node, or NULL on failure.
+ */
+#define list_insert_before(list, node, value)                                  \
+    ({                                                                         \
+        List* list_before_list_ = (list);                                      \
+        ListNode* list_before_node_ = (node);                                  \
+        ListNode* list_new_before_node_ = list_before_list_                    \
+                && list_before_node_                                           \
+            ? list_node_ctor_(list_before_list_, value)                        \
+            : NULL;                                                            \
+        list_insert_node_before(list_before_list_,                             \
+            list_before_node_,                                                 \
+            list_new_before_node_);                                            \
+    })
 
 #endif // CMLIB_LIST_H_

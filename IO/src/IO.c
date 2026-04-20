@@ -1,17 +1,20 @@
 #include "IO.h"
 
-Result_Str get_file_name(const char* path);
-Result_Str get_folder_str(const Str path);
-Result_Str get_folder(const char* path);
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-Result_String real_path(const char* path)
+#include "details/CountingMalloc.h"
+
+Error_code real_path(String* out, const char* path)
 {
     ERROR_CHECKING();
 
-    if (!path)
+    if (!out || !out->memory_resource || !path)
     {
         err = ERROR_NULLPTR;
-        log_error("NULL passed as path");
         ERROR_LEAVE();
     }
 
@@ -19,13 +22,15 @@ Result_String real_path(const char* path)
 
     if (!realpath(path, good_path))
     {
-        HANDLE_ERRNO_ERROR(ERROR_LINUX, "Error realpath for %s: %s", path);
+        err = ERROR_LINUX;
+        ERROR_LEAVE();
     }
 
     struct stat st = {};
     if (stat(good_path, &st) == -1)
     {
-        HANDLE_ERRNO_ERROR(ERROR_LINUX, "Error stat for %s: %s", path);
+        err = ERROR_LINUX;
+        ERROR_LEAVE();
     }
 
     size_t size = strlen(good_path);
@@ -35,35 +40,113 @@ Result_String real_path(const char* path)
         good_path[size++] = '/';
     }
 
-    return string_ctor_str(str_ctor_size(good_path, size));
+    string_clear(out);
+    CHECK_ERROR(string_append_str(out, str_ctor_size(good_path, size)));
+    return EVERYTHING_FINE;
 
     ERROR_CASE
-    return Result_String_ctor((String) {}, err);
+    return err;
+}
+
+Error_code read_file(String* out, const char* path)
+{
+    ERROR_CHECKING();
+
+    FILE* file = NULL;
+
+    if (!out || !out->memory_resource || !path)
+    {
+        err = ERROR_BAD_FILE;
+        ERROR_LEAVE();
+    }
+
+    file = fopen(path, "r");
+
+    if (!file)
+    {
+        err = ERROR_BAD_FILE;
+        ERROR_LEAVE();
+    }
+
+    struct stat st = {};
+    if (fstat(fileno(file), &st) == -1)
+    {
+        err = ERROR_BAD_FILE;
+        ERROR_LEAVE();
+    }
+
+    size_t file_size = st.st_size;
+
+    if ((err = string_realloc(out, file_size + 1)))
+    {
+        ERROR_LEAVE();
+    }
+
+    if (fread(out->data, 1, file_size, file) != file_size)
+    {
+        err = ERROR_BAD_FILE;
+        ERROR_LEAVE();
+    }
+    fclose(file);
+
+    out->size = file_size;
+    out->data[out->size] = '\0';
+
+    return EVERYTHING_FINE;
+
+    ERROR_CASE
+    if (file)
+    {
+        fclose(file);
+    }
+
+    return err;
 }
 
 Result_Str get_filename_str(const Str path)
 {
     ERROR_CHECKING();
 
+    constexpr size_t MAX_PATH_STACK_SIZE = 1023;
+    static char path_buf[MAX_PATH_STACK_SIZE + 1] = {};
+    char* null_terminated_path = path_buf;
+
+    Result_Str res = {};
+
     if (!path.data)
     {
-        return Result_Str_ctor((Str) {}, err);
+        err = ERROR_NULLPTR;
+        ERROR_LEAVE();
     }
 
-    struct stat st = {};
-    if (stat(path.data, &st) == -1)
+    if (path.size > MAX_PATH_STACK_SIZE)
     {
-        HANDLE_ERRNO_ERROR(ERROR_LINUX, "Error stat for %s: %s", path.data);
+        null_terminated_path = (char*)cmlib_details_calloc(path.size + 1, 1);
+        if (!null_terminated_path)
+        {
+            err = ERROR_STD;
+            ERROR_LEAVE();
+        }
+    }
+    memcpy(null_terminated_path, path.data, path.size);
+    null_terminated_path[path.size] = '\0';
+
+    struct stat st = {};
+    if (stat(null_terminated_path, &st) == -1)
+    {
+        err = ERROR_LINUX;
+        ERROR_LEAVE();
     }
 
     if ((st.st_mode & S_IFMT) == S_IFDIR)
     {
-        return Result_Str_ctor((Str) {}, err);
+        err = ERROR_BAD_FOLDER;
+        ERROR_LEAVE();
     }
 
     size_t name_start = 0;
 
-    for (size_t i = path.size - 1; i > 0; i--)
+    for (size_t i = path.size - 1; i-- > 0;)
     {
         if (path.data[i] == '/')
         {
@@ -72,13 +155,50 @@ Result_Str get_filename_str(const Str path)
         }
     }
 
-    return Result_Str_ctor(
-        (Str) {
-            .data = path.data + name_start,
-            .size = path.size - name_start,
-        },
-        err);
+    res.value = (Str) {
+        .data = path.data + name_start,
+        .size = path.size - name_start,
+    };
 
     ERROR_CASE
-    return Result_Str_ctor((Str) {}, err);
+
+    if (null_terminated_path != path_buf)
+    {
+        free(null_terminated_path);
+    }
+
+    res.error_code = err;
+
+    return res;
+}
+
+Result_Str get_filename(const char* path)
+{
+    return get_filename_str(str_ctor(path));
+}
+
+Result_Str get_folder_str(const Str path)
+{
+    if (!path.data)
+    {
+        return (Result_Str) {};
+    }
+
+    Result_Str name = get_filename_str(path);
+    if (name.error_code)
+    {
+        return name;
+    }
+
+    return Result_Str_ctor(
+        (Str) {
+            .data = path.data,
+            .size = path.size - name.value.size,
+        },
+        EVERYTHING_FINE);
+}
+
+Result_Str get_folder(const char* path)
+{
+    return get_folder_str(str_ctor(path));
 }

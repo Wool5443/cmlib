@@ -26,13 +26,16 @@ void logger_init_path(const char* path)
     if (!file)
     {
         fprintf(stderr, "Logger could not initialize\n%s was a bad file", path);
+        return;
     }
 
     logger_init_file(file);
 
     if (atexit(logger_finish_) != 0)
     {
-        fprintf(stderr, "Failed to atexit(logger_finish_): %s", strerror(errno));
+        fprintf(stderr,
+            "Failed to atexit(logger_finish_): %s",
+            strerror(errno));
     }
 }
 

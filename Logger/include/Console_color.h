@@ -7,9 +7,7 @@
 
 #include "../../common.h"
 
-/** @enum Console_color
- * @brief enum of possible console colors
- */
+/** @brief ANSI base colors supported by logger output. */
 typedef enum
 {
     CONSOLE_COLOR_BLACK = 30,
@@ -23,10 +21,13 @@ typedef enum
 } Console_color;
 
 /**
- * @brief Set the console color
+ * @brief Emits ANSI color sequence to a terminal stream.
  *
- * @param [in] file stdout or stderr
- * @param [in] color
+ * @param file Target stream, must be non-NULL.
+ * @param color Color code to emit.
+ *
+ * Writes to @p file only when `isatty(fileno(file))` is true. For non-terminal
+ * streams this function is a no-op.
  */
 INLINE void set_console_color(FILE* file, Console_color color)
 {
