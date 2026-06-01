@@ -15,7 +15,7 @@ free_list_resource_allocate(void* resource, size_t size, size_t alignment)
     }
 
     FreeListResource* free_list_resource = (FreeListResource*)resource;
-    return free_list_allocate(&free_list_resource->free_list, size, alignment);
+    return free_list_allocate(free_list_resource->free_list, size, alignment);
 }
 
 static void free_list_resource_deallocate(void* resource, void* ptr)
@@ -26,24 +26,29 @@ static void free_list_resource_deallocate(void* resource, void* ptr)
     }
 
     FreeListResource* free_list_resource = (FreeListResource*)resource;
-    free_list_deallocate(&free_list_resource->free_list, ptr);
+    free_list_deallocate(free_list_resource->free_list, ptr);
 }
 
 Result_FreeListResource free_list_resource_ctor(size_t pool_size)
 {
-    Result_FreeList free_list = free_list_ctor(pool_size);
-    if (free_list.error_code)
+    FreeList* free_list = free_list_ctor(pool_size);
+    if (!free_list)
     {
         return Result_FreeListResource_ctor((FreeListResource) {},
-            free_list.error_code);
+            ERROR_NULLPTR);
     }
 
-    return Result_FreeListResource_ctor(free_list_to_resource(&free_list.value),
+    return Result_FreeListResource_ctor(free_list_to_resource(free_list),
         EVERYTHING_FINE);
 }
 
 FreeListResource free_list_to_resource(FreeList* free_list)
 {
+    if (!free_list)
+    {
+        return (FreeListResource) {};
+    }
+
     FreeListResource resource = {
         .base = (MemoryResource) {
             .allocate = free_list_resource_allocate,
@@ -51,11 +56,7 @@ FreeListResource free_list_to_resource(FreeList* free_list)
         },
     };
 
-    if (free_list)
-    {
-        resource.free_list = *free_list;
-        *free_list = (FreeList) {};
-    }
+    resource.free_list = free_list;
 
     return resource;
 }
@@ -67,6 +68,5 @@ void free_list_resource_dtor(FreeListResource* resource)
         return;
     }
 
-    free_list_dtor(&resource->free_list);
-    *resource = (FreeListResource) {};
+    free_list_dtor(resource->free_list);
 }

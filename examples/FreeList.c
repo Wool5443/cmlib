@@ -1,24 +1,22 @@
 #include "FreeList.h"
-#include "FreeListResource.h"
 
 #include <stdio.h>
 
+#include "FreeListResource.h"
+
 int main(void)
 {
-    Result_FreeList free_list_res = free_list_ctor(256);
-    if (free_list_res.error_code != EVERYTHING_FINE)
+    FreeList* free_list = free_list_ctor(256);
+    if (!free_list)
     {
         return 1;
     }
 
-    FreeList free_list = free_list_res.value;
-
-    int* first =
-        free_list_allocate(&free_list, sizeof(*first), alignof(*first));
-    int* second = free_list_allocate_type(&free_list, int);
+    int* first = free_list_allocate(free_list, sizeof(*first), alignof(*first));
+    int* second = free_list_allocate_type(free_list, int);
     if (!first || !second)
     {
-        free_list_dtor(&free_list);
+        free_list_dtor(free_list);
         return 1;
     }
 
@@ -26,20 +24,20 @@ int main(void)
     *second = 20;
     printf("%d + %d = %d\n", *first, *second, *first + *second);
 
-    free_list_deallocate(&free_list, second);
-    free_list_deallocate(&free_list, first);
+    free_list_deallocate(free_list, second);
+    free_list_deallocate(free_list, first);
 
     FILE* dump_file = fopen("exampledump", "w");
     if (!dump_file)
     {
-        free_list_dtor(&free_list);
+        free_list_dtor(free_list);
         return 1;
     }
 
-    free_list_dump_dot(&free_list, dump_file);
+    free_list_dump_dot(free_list, dump_file);
     fclose(dump_file);
 
-    FreeListResource resource = free_list_to_resource(&free_list);
+    FreeListResource resource = free_list_to_resource(free_list);
     int* third =
         resource.base.allocate(&resource.base, sizeof(*third), alignof(*third));
     if (!third)

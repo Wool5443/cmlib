@@ -12,54 +12,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Result.h"
-
 /**
- * @brief Header stored at the start of each free block.
+ * @class FreeList
+ * @brief Free-list allocator state.
  */
-typedef struct FreeListFreeBlockHeader FreeListFreeBlockHeader;
-struct FreeListFreeBlockHeader
-{
-    size_t size; /**< @brief Total free block size in bytes. */
-    FreeListFreeBlockHeader* next; /**< @brief Next free block. */
-};
-
-/**
- * @brief Header stored before each allocated payload.
- */
-typedef struct FreeListOccupiedBlockHeader
-{
-    uint32_t size;    /**< @brief Total occupied block size in bytes. */
-    uint32_t padding; /**< @brief Bytes from block start to this header. */
-} FreeListOccupiedBlockHeader;
-
-/**
- * @brief One memory pool owned by a free-list allocator.
- */
-typedef struct FreeListMemoryPool FreeListMemoryPool;
-struct FreeListMemoryPool
-{
-    FreeListMemoryPool* next_pool;       /**< @brief Next owned pool. */
-    FreeListFreeBlockHeader* next_block; /**< @brief First free block. */
-    void* pool_end;                      /**< @brief One-past-end pointer. */
-};
-
-/**
- * @brief Standalone reusable free-list allocator.
- */
-typedef struct FreeList
-{
-    FreeListMemoryPool* pool; /**< @brief First owned memory pool. */
-} FreeList;
-
-DECLARE_RESULT_HEADER(FreeList);
+typedef struct FreeList FreeList;
 
 /**
  * @brief Creates a free-list allocator with one initial pool.
  * @param pool_size Requested initial pool capacity in bytes.
  * @return Initialized allocator, or `ERROR_NO_MEMORY`.
  */
-Result_FreeList free_list_ctor(size_t pool_size);
+FreeList* free_list_ctor(size_t pool_size);
 
 /**
  * @brief Frees all pools and clears allocator state.

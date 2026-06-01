@@ -164,7 +164,7 @@ Result_Str get_filename_str(const Str path)
 
     if (null_terminated_path != path_buf)
     {
-        free(null_terminated_path);
+        cmlib_details_free(null_terminated_path);
     }
 
     res.error_code = err;

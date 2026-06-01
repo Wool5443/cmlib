@@ -3,13 +3,38 @@
 #include <stdint.h>
 
 #include "Allocator.h"
+#include "Error.h"
 #include "details/CountingMalloc.h"
 
-DECLARE_RESULT_SOURCE(FreeList);
+typedef struct FreeListFreeBlockHeader FreeListFreeBlockHeader;
+struct FreeListFreeBlockHeader
+{
+    size_t size;
+    FreeListFreeBlockHeader* next;
+};
+
+typedef struct FreeListOccupiedBlockHeader
+{
+    uint32_t size;
+    uint32_t padding;
+} FreeListOccupiedBlockHeader;
+
+typedef struct FreeListMemoryPool FreeListMemoryPool;
+struct FreeListMemoryPool
+{
+    FreeListMemoryPool* next_pool;
+    FreeListFreeBlockHeader* next_block;
+    void* pool_end;
+};
+
+struct FreeList
+{
+    FreeListMemoryPool* pool;
+};
 
 static constexpr size_t POOL_METADATA_SIZE = sizeof(FreeListMemoryPool);
 
-static FreeListMemoryPool* free_list_pool_ctor(size_t size);
+static FreeListMemoryPool* free_list_pool_ctor(size_t size, bool first_pool);
 static void free_list_pool_dtor(FreeListMemoryPool* pool);
 static void* free_list_pool_allocate(FreeListMemoryPool* pool,
     size_t size,
@@ -19,21 +44,25 @@ static bool free_list_pool_deallocate(FreeListMemoryPool* pool, void* ptr);
 static size_t free_list_pool_size(const FreeListMemoryPool* pool);
 static size_t free_list_required_block_size(size_t size, size_t alignment);
 
-Result_FreeList free_list_ctor(size_t pool_size)
+FreeList* free_list_ctor(size_t pool_size)
 {
     if (pool_size == 0)
     {
-        return Result_FreeList_ctor((FreeList) {}, ERROR_BAD_VALUE);
+        return NULL;
     }
 
-    FreeListMemoryPool* pool = free_list_pool_ctor(pool_size);
+    FreeListMemoryPool* pool = free_list_pool_ctor(pool_size, true);
 
     if (!pool)
     {
-        return Result_FreeList_ctor((FreeList) {}, ERROR_NO_MEMORY);
+        return NULL;
     }
 
-    return Result_FreeList_ctor((FreeList) {.pool = pool}, EVERYTHING_FINE);
+    FreeList* free_list = (FreeList*)pool - 1;
+
+    free_list->pool = pool;
+
+    return free_list;
 }
 
 void free_list_dtor(FreeList* free_list)
@@ -43,7 +72,7 @@ void free_list_dtor(FreeList* free_list)
         return;
     }
 
-    FreeListMemoryPool* cur_pool = free_list->pool;
+    FreeListMemoryPool* cur_pool = free_list->pool->next_pool;
     while (cur_pool)
     {
         FreeListMemoryPool* next_pool = cur_pool->next_pool;
@@ -51,7 +80,7 @@ void free_list_dtor(FreeList* free_list)
         cur_pool = next_pool;
     }
 
-    *free_list = (FreeList) {};
+    cmlib_details_free(free_list);
 }
 
 void* free_list_allocate(FreeList* free_list, size_t size, size_t alignment)
@@ -90,7 +119,7 @@ void* free_list_allocate(FreeList* free_list, size_t size, size_t alignment)
 
     size_t new_pool_size = MAX(required_size,
         free_list_pool_size(free_list->pool));
-    FreeListMemoryPool* new_pool = free_list_pool_ctor(new_pool_size);
+    FreeListMemoryPool* new_pool = free_list_pool_ctor(new_pool_size, false);
     if (!new_pool)
     {
         return NULL;
@@ -200,18 +229,29 @@ void free_list_dump_dot(const FreeList* free_list, FILE* out)
     fprintf(out, "}\n");
 }
 
-static FreeListMemoryPool* free_list_pool_ctor(size_t size)
+static FreeListMemoryPool* free_list_pool_ctor(size_t size, bool first_pool)
 {
     ERROR_CHECKING();
 
     size = MAX(size, sizeof(FreeListFreeBlockHeader));
 
-    auto pool = (FreeListMemoryPool*)cmlib_details_malloc(
-        POOL_METADATA_SIZE + size);
+    size_t alloc_size = POOL_METADATA_SIZE + sizeof(FreeListOccupiedBlockHeader)
+        + size;
+    if (first_pool)
+    {
+        size += sizeof(FreeList);
+    }
+
+    auto pool = (FreeListMemoryPool*)cmlib_details_malloc(alloc_size);
 
     if (!pool)
     {
         return NULL;
+    }
+
+    if (first_pool)
+    {
+        pool = (FreeListMemoryPool*)((FreeList*)pool + 1);
     }
 
     FreeListFreeBlockHeader* block = (FreeListFreeBlockHeader*)(pool + 1);
@@ -232,7 +272,7 @@ static FreeListMemoryPool* free_list_pool_ctor(size_t size)
 
 static void free_list_pool_dtor(FreeListMemoryPool* pool)
 {
-    free(pool);
+    cmlib_details_free(pool);
 }
 
 static void*

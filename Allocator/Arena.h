@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 /**
+ * @class Arena
  * @brief Monotonic arena allocator state.
  */
 typedef struct Arena Arena;

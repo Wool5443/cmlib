@@ -52,8 +52,8 @@ typedef struct TestEntry
 
 static size_t find_max_int_count(size_t size)
 {
-    Result_FreeList free_list_res = free_list_ctor(size);
-    if (free_list_res.error_code)
+    FreeList* free_list = free_list_ctor(size);
+    if (!free_list)
     {
         return 0;
     }
@@ -64,12 +64,12 @@ static size_t find_max_int_count(size_t size)
 
     while (prev_allocations == standard_allocations_count)
     {
-        free_list_allocate(&free_list_res.value, sizeof(int), alignof(int));
+        free_list_allocate_type(free_list, int);
         max_ints++;
     }
     max_ints--;
 
-    free_list_dtor(&free_list_res.value);
+    free_list_dtor(free_list);
 
     return max_ints;
 }
@@ -127,27 +127,25 @@ static bool test_free_list(void)
 
     size_t prev_allocations = standard_allocations_count;
 
-    ASSERT_ERROR(free_list_ctor(0).error_code);
+    ASSERT_NULL(free_list_ctor(0));
 
-    Result_FreeList free_list_res = free_list_ctor(free_list_size);
+    FreeList* free_list = free_list_ctor(free_list_size);
 
-    ASSERT_NO_ERROR(free_list_res.error_code);
+    ASSERT_NOT_NULL(free_list);
     ASSERT_TRUE(standard_allocations_count - prev_allocations == 1);
 
-    FreeList free_list = free_list_res.value;
-
-    ASSERT_NULL(free_list_allocate(&free_list, UINT32_MAX, 8));
+    ASSERT_NULL(free_list_allocate(free_list, UINT32_MAX, 8));
 
     prev_allocations = standard_allocations_count;
-    int* p1 = free_list_allocate_type(&free_list, int);
-    int* p2 = free_list_allocate_type(&free_list, int);
+    int* p1 = free_list_allocate_type(free_list, int);
+    int* p2 = free_list_allocate_type(free_list, int);
 
     ASSERT_NOT_NULL(p1);
     ASSERT_NOT_NULL(p2);
     ASSERT_TRUE(prev_allocations == standard_allocations_count);
 
-    free_list_deallocate(&free_list, p1);
-    free_list_deallocate(&free_list, p2);
+    free_list_deallocate(free_list, p1);
+    free_list_deallocate(free_list, p2);
 
     size_t int_count = find_max_int_count(free_list_size);
 
@@ -156,7 +154,7 @@ static bool test_free_list(void)
     prev_allocations = standard_allocations_count;
     for (size_t i = 0; i < int_count; i++)
     {
-        ptrs[i] = free_list_allocate_type(&free_list, int);
+        ptrs[i] = free_list_allocate_type(free_list, int);
     }
 
     for (size_t i = 0; i < int_count / 7; i++)
@@ -164,7 +162,7 @@ static bool test_free_list(void)
         size_t random_index = rand() % int_count;
         for (size_t j = 0; j < 5; j++)
         {
-            free_list_deallocate(&free_list, ptrs[random_index + j]);
+            free_list_deallocate(free_list, ptrs[random_index + j]);
             ptrs[random_index + j] = NULL;
         }
     }
@@ -172,8 +170,8 @@ static bool test_free_list(void)
 
     free(ptrs);
 
-    void* aligned1 = free_list_allocate(&free_list, 1, 32);
-    void* aligned2 = free_list_allocate(&free_list, 1, 128);
+    void* aligned1 = free_list_allocate(free_list, 1, 32);
+    void* aligned2 = free_list_allocate(free_list, 1, 128);
 
     ASSERT_NOT_NULL(aligned1);
     ASSERT_NOT_NULL(aligned2);
@@ -185,15 +183,15 @@ static bool test_free_list(void)
     {
         if (rand() % 5 == 1)
         {
-            free_list_deallocate(&free_list, last_ptr);
+            free_list_deallocate(free_list, last_ptr);
             last_ptr = NULL;
         }
         last_ptr =
-            free_list_allocate(&free_list, sizeof(double), alignof(double));
+            free_list_allocate(free_list, sizeof(double), alignof(double));
         ASSERT_NOT_NULL(last_ptr);
     }
 
-    free_list_dtor(&free_list);
+    free_list_dtor(free_list);
 
     return result;
 }
@@ -202,44 +200,42 @@ static bool test_free_list_dump(void)
 {
     bool result = true;
 
-    Result_FreeList free_list_res = free_list_ctor(128);
-    ASSERT_NO_ERROR(free_list_res.error_code);
-
-    FreeList free_list = free_list_res.value;
+    FreeList* free_list = free_list_ctor(128);
+    ASSERT_NOT_NULL(free_list);
 
     int* ptrs[20] = {};
 
     for (size_t i = 0; i < ARRAY_SIZE(ptrs); i++)
     {
-        ptrs[i] = free_list_allocate_type(&free_list, int);
+        ptrs[i] = free_list_allocate_type(free_list, int);
         ASSERT_NOT_NULL(ptrs[i]);
     }
 
     FILE* dump = fopen("dump_before.dot", "w");
     ASSERT_NOT_NULL(dump);
-    free_list_dump_dot(&free_list, dump);
+    free_list_dump_dot(free_list, dump);
     if (dump)
     {
         fclose(dump);
     }
     dump = NULL;
 
-    free_list_deallocate(&free_list, ptrs[5]);
+    free_list_deallocate(free_list, ptrs[5]);
     ptrs[8] = NULL;
-    free_list_deallocate(&free_list, ptrs[10]);
+    free_list_deallocate(free_list, ptrs[10]);
     ptrs[17] = NULL;
-    free_list_deallocate(&free_list, ptrs[3]);
+    free_list_deallocate(free_list, ptrs[3]);
     ptrs[3] = NULL;
 
     dump = fopen("dump_after.dot", "w");
     ASSERT_NOT_NULL(dump);
-    free_list_dump_dot(&free_list, dump);
+    free_list_dump_dot(free_list, dump);
     if (dump)
     {
         fclose(dump);
     }
 
-    free_list_dtor(&free_list);
+    free_list_dtor(free_list);
 
     return result;
 }
@@ -309,12 +305,9 @@ static bool test_resource_conversions(void)
     }
     arena_resource_dtor(&arena_resource);
 
-    Result_FreeList free_list_res = free_list_ctor(128);
-    ASSERT_NO_ERROR(free_list_res.error_code);
-    FreeList free_list = free_list_res.value;
-    FreeListResource free_list_resource = free_list_to_resource(&free_list);
-
-    ASSERT_NULL(free_list.pool);
+    FreeList* free_list = free_list_ctor(128);
+    ASSERT_NOT_NULL(free_list);
+    FreeListResource free_list_resource = free_list_to_resource(free_list);
 
     int* free_list_value =
         free_list_resource.base.allocate(&free_list_resource.base,
@@ -329,7 +322,6 @@ static bool test_resource_conversions(void)
             free_list_value);
     }
     free_list_resource_dtor(&free_list_resource);
-    free_list_dtor(&free_list);
 
     return result;
 }

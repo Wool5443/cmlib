@@ -8,6 +8,7 @@
 
 #include "Allocator.h"
 #include "FreeList.h"
+#include "Result.h"
 
 /**
  * @brief Memory resource wrapper around a standalone `FreeList`.
@@ -15,7 +16,7 @@
 typedef struct FreeListResource
 {
     MemoryResource base; /**< @brief Embedded base resource. */
-    FreeList free_list;  /**< @brief Wrapped free-list allocator. */
+    FreeList* free_list; /**< @brief Wrapped free-list allocator. */
 } FreeListResource;
 
 DECLARE_RESULT_HEADER(FreeListResource);
