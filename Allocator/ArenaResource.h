@@ -8,6 +8,7 @@
 
 #include "Allocator.h"
 #include "Arena.h"
+#include "Result.h"
 
 /**
  * @brief Polymorphic memory resource backed by an `Arena`.
@@ -15,7 +16,7 @@
 typedef struct ArenaResource
 {
     MemoryResource base; /**< Embedded base resource. */
-    Arena arena;         /**< Backing arena allocator. */
+    Arena* arena;        /**< Backing arena allocator. */
 } ArenaResource;
 
 DECLARE_RESULT_HEADER(ArenaResource);

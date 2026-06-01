@@ -21,7 +21,7 @@ calloc_resource_allocate(void* resource, size_t size, size_t alignment)
 static void malloc_resource_deallocate(void* resource, void* ptr)
 {
     (void)resource;
-    free(ptr);
+    cmlib_details_free(ptr);
 }
 
 static MemoryResource malloc_resource = {

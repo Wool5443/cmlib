@@ -82,21 +82,19 @@ static bool test_arena(void)
 
     size_t prev_allocations = standard_allocations_count;
 
-    ASSERT_ERROR(arena_ctor(0).error_code);
+    ASSERT_NULL(arena_ctor(0));
 
-    Result_Arena arena_res = arena_ctor(int_count * sizeof(int));
+    Arena* arena = arena_ctor(int_count * sizeof(int));
 
-    ASSERT_NO_ERROR(arena_res.error_code);
+    ASSERT_NOT_NULL(arena);
     ASSERT_TRUE(standard_allocations_count - prev_allocations == 1);
     prev_allocations = standard_allocations_count;
 
-    Arena arena = arena_res.value;
+    ASSERT_NULL(arena_allocate(arena, 100, 0));
+    ASSERT_NULL(arena_allocate(arena, 0, 100));
 
-    ASSERT_NULL(arena_allocate(&arena, 100, 0));
-    ASSERT_NULL(arena_allocate(&arena, 0, 100));
-
-    int* p1 = arena_allocate_type(&arena, int);
-    int* p2 = arena_allocate_type(&arena, int);
+    int* p1 = arena_allocate_type(arena, int);
+    int* p2 = arena_allocate_type(arena, int);
     ASSERT_NOT_NULL(p1);
     ASSERT_NOT_NULL(p2);
 
@@ -104,19 +102,19 @@ static bool test_arena(void)
 
     for (size_t i = 0; i < int_count - 2; i++)
     {
-        ASSERT_NOT_NULL(arena_allocate_type(&arena, int));
+        ASSERT_NOT_NULL(arena_allocate_type(arena, int));
     }
 
-    ASSERT_TRUE(arena_allocate(&arena, 1, 1) == NULL);
+    ASSERT_TRUE(arena_allocate(arena, 1, 1) == NULL);
     ASSERT_TRUE(prev_allocations == standard_allocations_count);
 
-    arena_flush(&arena);
+    arena_flush(arena);
     for (size_t i = 0; i < int_count; i++)
     {
-        ASSERT_NOT_NULL(arena_allocate_type(&arena, int));
+        ASSERT_NOT_NULL(arena_allocate_type(arena, int));
     }
 
-    arena_dtor(&arena);
+    arena_dtor(arena);
 
     return result;
 }
@@ -282,8 +280,7 @@ static bool test_list(void)
     LIST_ITER(list, node)
     {
         ASSERT_TRUE(i < ARRAY_SIZE(expected_after_erase));
-        ASSERT_TRUE(
-            *list_node_get_value(node, int) == expected_after_erase[i]);
+        ASSERT_TRUE(*list_node_get_value(node, int) == expected_after_erase[i]);
         i++;
     }
     ASSERT_TRUE(i == ARRAY_SIZE(expected_after_erase));
@@ -297,17 +294,13 @@ static bool test_resource_conversions(void)
 {
     bool result = true;
 
-    Result_Arena arena_res = arena_ctor(128);
-    ASSERT_NO_ERROR(arena_res.error_code);
-    Arena arena = arena_res.value;
-    ArenaResource arena_resource = arena_to_resource(&arena);
+    Arena* arena = arena_ctor(128);
+    ASSERT_NOT_NULL(arena);
+    ArenaResource arena_resource = arena_to_resource(arena);
 
-    ASSERT_NULL(arena.buffer);
-    ASSERT_NULL(arena.current);
-    ASSERT_NULL(arena.end);
-
-    int* arena_value =
-        arena_resource.base.allocate(&arena_resource.base, sizeof(int), alignof(int));
+    int* arena_value = arena_resource.base.allocate(&arena_resource.base,
+        sizeof(int),
+        alignof(int));
     ASSERT_NOT_NULL(arena_value);
     if (arena_value)
     {
@@ -315,7 +308,6 @@ static bool test_resource_conversions(void)
         ASSERT_TRUE(*arena_value == 42);
     }
     arena_resource_dtor(&arena_resource);
-    arena_dtor(&arena);
 
     Result_FreeList free_list_res = free_list_ctor(128);
     ASSERT_NO_ERROR(free_list_res.error_code);
@@ -324,17 +316,16 @@ static bool test_resource_conversions(void)
 
     ASSERT_NULL(free_list.pool);
 
-    int* free_list_value = free_list_resource.base.allocate(
-        &free_list_resource.base,
-        sizeof(int),
-        alignof(int));
+    int* free_list_value =
+        free_list_resource.base.allocate(&free_list_resource.base,
+            sizeof(int),
+            alignof(int));
     ASSERT_NOT_NULL(free_list_value);
     if (free_list_value)
     {
         *free_list_value = 24;
         ASSERT_TRUE(*free_list_value == 24);
-        free_list_resource.base.deallocate(
-            &free_list_resource.base,
+        free_list_resource.base.deallocate(&free_list_resource.base,
             free_list_value);
     }
     free_list_resource_dtor(&free_list_resource);

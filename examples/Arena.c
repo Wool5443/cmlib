@@ -1,36 +1,35 @@
+#include "Arena.h"
+
 #include <stdio.h>
 
-#include "Arena.h"
 #include "ArenaResource.h"
 #include "Vector.h"
 
 int main(void)
 {
-    Result_Arena arena_res = arena_ctor(128);
-    if (arena_res.error_code)
+    Arena* arena = arena_ctor(128);
+    if (!arena)
     {
         return 1;
     }
 
-    Arena arena = arena_res.value;
-    int* direct = arena_allocate_type(&arena, int);
+    int* direct = arena_allocate_type(arena, int);
     if (!direct)
     {
-        arena_dtor(&arena);
+        arena_dtor(arena);
         return 1;
     }
     *direct = 42;
     printf("arena int: %d\n", *direct);
-    arena_dtor(&arena);
+    arena_dtor(arena);
 
-    Result_Arena vector_arena_res = arena_ctor(10000);
-    if (vector_arena_res.error_code)
+    Arena* vector_arena = arena_ctor(10000);
+    if (!vector_arena)
     {
         return 1;
     }
 
-    Arena vector_arena = vector_arena_res.value;
-    ArenaResource res = arena_to_resource(&vector_arena);
+    ArenaResource res = arena_to_resource(vector_arena);
 
     int* vec = vec_ctor(&res, int);
 

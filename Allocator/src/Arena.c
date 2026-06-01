@@ -3,35 +3,42 @@
 #include "Allocator.h"
 #include "details/CountingMalloc.h"
 
-DECLARE_RESULT_SOURCE(Arena);
+struct Arena
+{
+    char* buffer;  /**< Start of owned storage. */
+    char* current; /**< Next available byte. */
+    char* end;     /**< One-past-end pointer. */
+};
 
-Result_Arena arena_ctor(size_t);
+Arena* arena_ctor(size_t);
 void* arena_allocate(Arena*, size_t, size_t);
 void arena_deallocate(Arena*, void*);
 void arena_flush(Arena*);
 void arena_dtor(Arena*);
 
-Result_Arena arena_ctor(size_t capacity)
+Arena* arena_ctor(size_t capacity)
 {
     if (capacity == 0)
     {
-        return Result_Arena_ctor((Arena) {}, ERROR_BAD_VALUE);
+        return NULL;
     }
 
-    char* buf = (char*)cmlib_details_malloc(capacity);
+    Arena* arena = (Arena*)cmlib_details_malloc(sizeof(Arena) + capacity);
 
-    if (!buf)
+    if (!arena)
     {
-        return Result_Arena_ctor((Arena) {}, ERROR_NO_MEMORY);
+        return NULL;
     }
 
-    return Result_Arena_ctor(
-        (Arena) {
-            buf,
-            buf,
-            buf + capacity,
-        },
-        EVERYTHING_FINE);
+    char* buf = (char*)(arena + 1);
+
+    *arena = (Arena) {
+        .buffer = buf,
+        .current = buf,
+        .end = buf + capacity,
+    };
+
+    return arena;
 }
 
 void* arena_allocate(Arena* arena, size_t size, size_t alignment)
@@ -53,11 +60,7 @@ void* arena_allocate(Arena* arena, size_t size, size_t alignment)
     return (void*)allocated_ptr;
 }
 
-void arena_deallocate(Arena* arena, void* ptr)
-{
-    (void)arena;
-    (void)ptr;
-}
+void arena_deallocate(Arena*, void*) {}
 
 void arena_flush(Arena* arena)
 {
@@ -76,6 +79,5 @@ void arena_dtor(Arena* arena)
         return;
     }
 
-    free(arena->buffer);
-    *arena = (Arena) {};
+    cmlib_details_free(arena);
 }

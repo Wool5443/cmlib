@@ -12,26 +12,17 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "Result.h"
-
 /**
  * @brief Monotonic arena allocator state.
  */
-typedef struct Arena
-{
-    char* buffer;  /**< Start of owned storage. */
-    char* current; /**< Next available byte. */
-    char* end;     /**< One-past-end pointer. */
-} Arena;
-
-DECLARE_RESULT_HEADER(Arena);
+typedef struct Arena Arena;
 
 /**
  * @brief Creates an arena with the requested capacity.
  * @param capacity Storage capacity in bytes.
  * @return Initialized arena, or `ERROR_NO_MEMORY`.
  */
-Result_Arena arena_ctor(size_t capacity);
+Arena* arena_ctor(size_t capacity);
 
 /**
  * @brief Allocates bytes from an arena.
