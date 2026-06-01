@@ -22,7 +22,7 @@ typedef struct MemoryResource MemoryResource;
  * @param alignment Required pointer alignment.
  * @return Allocated pointer, or NULL on failure.
  */
-typedef void* (*memory_resource_allocate_func)(MemoryResource* mem_resource,
+typedef void* (*memory_resource_allocate_func)(void* mem_resource,
     size_t size,
     size_t alignment);
 
@@ -32,7 +32,7 @@ typedef void* (*memory_resource_allocate_func)(MemoryResource* mem_resource,
  * @param ptr Pointer previously returned by the resource, or NULL.
  */
 typedef void (
-    *memory_resource_deallocate_func)(MemoryResource* mem_resource, void* ptr);
+    *memory_resource_deallocate_func)(void* mem_resource, void* ptr);
 
 /**
  * @brief Base object embedded as the first field in every concrete resource.

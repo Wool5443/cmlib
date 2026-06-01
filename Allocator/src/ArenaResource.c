@@ -6,7 +6,7 @@ Result_ArenaResource arena_resource_ctor(size_t);
 ArenaResource arena_to_resource(Arena*);
 void arena_resource_dtor(ArenaResource*);
 
-static void* arena_resource_allocate(MemoryResource* arena_resource,
+static void* arena_resource_allocate(void* arena_resource,
     size_t size,
     size_t alignment)
 {
@@ -15,7 +15,7 @@ static void* arena_resource_allocate(MemoryResource* arena_resource,
     return arena_allocate(&resource->arena, size, alignment);
 }
 
-static void arena_resource_deallocate(MemoryResource* resource, void* ptr)
+static void arena_resource_deallocate(void* resource, void* ptr)
 {
     ArenaResource* arena_resource = (ArenaResource*)resource;
 

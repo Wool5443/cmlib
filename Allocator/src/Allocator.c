@@ -2,25 +2,23 @@
 
 #include "details/CountingMalloc.h"
 
-static void* malloc_resource_allocate(MemoryResource* resource,
-    size_t size,
-    size_t alignment)
+static void*
+malloc_resource_allocate(void* resource, size_t size, size_t alignment)
 {
     (void)resource;
     (void)alignment;
     return cmlib_details_malloc(size);
 }
 
-static void* calloc_resource_allocate(MemoryResource* resource,
-    size_t size,
-    size_t alignment)
+static void*
+calloc_resource_allocate(void* resource, size_t size, size_t alignment)
 {
     (void)resource;
     (void)alignment;
     return cmlib_details_calloc(1, size);
 }
 
-static void malloc_resource_deallocate(MemoryResource* resource, void* ptr)
+static void malloc_resource_deallocate(void* resource, void* ptr)
 {
     (void)resource;
     free(ptr);
