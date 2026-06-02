@@ -2,32 +2,9 @@
 
 DECLARE_RESULT_SOURCE(FreeListResource);
 
-Result_FreeListResource free_list_resource_ctor(size_t);
-FreeListResource free_list_to_resource(FreeList*);
-void free_list_resource_dtor(FreeListResource*);
-
 static void*
-free_list_resource_allocate(void* resource, size_t size, size_t alignment)
-{
-    if (!resource)
-    {
-        return NULL;
-    }
-
-    FreeListResource* free_list_resource = (FreeListResource*)resource;
-    return free_list_allocate(free_list_resource->free_list, size, alignment);
-}
-
-static void free_list_resource_deallocate(void* resource, void* ptr)
-{
-    if (!resource)
-    {
-        return;
-    }
-
-    FreeListResource* free_list_resource = (FreeListResource*)resource;
-    free_list_deallocate(free_list_resource->free_list, ptr);
-}
+free_list_resource_allocate(void* resource, size_t size, size_t alignment);
+static void free_list_resource_deallocate(void* resource, void* ptr);
 
 Result_FreeListResource free_list_resource_ctor(size_t pool_size)
 {
@@ -49,16 +26,14 @@ FreeListResource free_list_to_resource(FreeList* free_list)
         return (FreeListResource) {};
     }
 
-    FreeListResource resource = {
-        .base = (MemoryResource) {
-            .allocate = free_list_resource_allocate,
-            .deallocate = free_list_resource_deallocate,
-        },
+    return (FreeListResource) {
+        .base =
+            (MemoryResource) {
+                .allocate = free_list_resource_allocate,
+                .deallocate = free_list_resource_deallocate,
+            },
+        .free_list = free_list,
     };
-
-    resource.free_list = free_list;
-
-    return resource;
 }
 
 void free_list_resource_dtor(FreeListResource* resource)
@@ -69,4 +44,19 @@ void free_list_resource_dtor(FreeListResource* resource)
     }
 
     free_list_dtor(resource->free_list);
+}
+
+static void*
+free_list_resource_allocate(void* resource, size_t size, size_t alignment)
+{
+    assert(resource);
+    FreeListResource* free_list_resource = (FreeListResource*)resource;
+    return free_list_allocate(free_list_resource->free_list, size, alignment);
+}
+
+static void free_list_resource_deallocate(void* resource, void* ptr)
+{
+    assert(resource);
+    FreeListResource* free_list_resource = (FreeListResource*)resource;
+    free_list_deallocate(free_list_resource->free_list, ptr);
 }

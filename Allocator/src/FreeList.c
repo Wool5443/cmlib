@@ -1,7 +1,10 @@
 #include "FreeList.h"
 
+#include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
 
+#include "../../common.h"
 #include "Allocator.h"
 #include "Error.h"
 #include "details/CountingMalloc.h"
@@ -23,7 +26,7 @@ typedef struct FreeListMemoryPool FreeListMemoryPool;
 struct FreeListMemoryPool
 {
     FreeListMemoryPool* next_pool;
-    FreeListFreeBlockHeader* next_block;
+    FreeListFreeBlockHeader* free_block;
     void* pool_end;
 };
 
@@ -191,7 +194,7 @@ void free_list_dump_dot(const FreeList* free_list, FILE* out)
         }
 
         size_t block_index = 0;
-        for (const FreeListFreeBlockHeader* block = pool->next_block; block;
+        for (const FreeListFreeBlockHeader* block = pool->free_block; block;
             block = block->next, block_index++)
         {
             fprintf(out,
@@ -263,7 +266,7 @@ static FreeListMemoryPool* free_list_pool_ctor(size_t size, bool first_pool)
 
     *pool = (FreeListMemoryPool) {
         .next_pool = NULL,
-        .next_block = block,
+        .free_block = block,
         .pool_end = (char*)block + size,
     };
 
@@ -291,7 +294,7 @@ free_list_pool_allocate(FreeListMemoryPool* pool, size_t size, size_t alignment)
     alignment = MAX(alignment, alignof(FreeListOccupiedBlockHeader));
 
     FreeListFreeBlockHeader* prev_block = NULL;
-    FreeListFreeBlockHeader* cur_block = pool->next_block;
+    FreeListFreeBlockHeader* cur_block = pool->free_block;
 
     FreeListOccupiedBlockHeader* occupied_block = NULL;
     size_t occupied_size = 0;
@@ -345,7 +348,7 @@ free_list_pool_allocate(FreeListMemoryPool* pool, size_t size, size_t alignment)
     }
     else
     {
-        prev_block_next = &pool->next_block;
+        prev_block_next = &pool->free_block;
     }
 
     if (split_block)
@@ -404,9 +407,9 @@ static bool free_list_pool_deallocate(FreeListMemoryPool* pool, void* ptr)
     FreeListFreeBlockHeader* block =
         (FreeListFreeBlockHeader*)((char*)header - header->padding);
     block->size = header->size;
-    block->next = pool->next_block;
+    block->next = pool->free_block;
 
-    pool->next_block = block;
+    pool->free_block = block;
 
     return true;
 }

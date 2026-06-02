@@ -1,4 +1,6 @@
-#include "../List.h"
+#include "List.h"
+
+#include "../../common.h"
 
 List* list_ctor(void* memory_resource)
 {

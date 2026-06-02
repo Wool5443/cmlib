@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "Allocator.h"
+#include "Error.h"
 #include "Vector.h"
 
 int main(void)

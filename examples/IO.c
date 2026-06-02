@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "Allocator.h"
+
 int main(void)
 {
     ERROR_CHECKING();

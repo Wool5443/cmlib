@@ -8,6 +8,11 @@ target_link_libraries(
     freelist
     PRIVATE cmlib_allocator
 )
+add_executable(pool Pool.c)
+target_link_libraries(
+    pool
+    PRIVATE cmlib_allocator cmlib_list
+)
 add_executable(io IO.c)
 target_link_libraries(
     io

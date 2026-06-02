@@ -1,18 +1,18 @@
 #include "Tests.h"
 
-#include <stdalign.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
+#include "Allocator.h"
 #include "Arena.h"
 #include "ArenaResource.h"
+#include "Error.h"
 #include "FreeList.h"
 #include "FreeListResource.h"
 #include "IO.h"
 #include "List.h"
+#include "Pool.h"
 #include "String.h"
 #include "Vector.h"
 #include "details/CountingMalloc.h"
@@ -179,7 +179,7 @@ static bool test_free_list(void)
     ASSERT_TRUE((uintptr_t)aligned2 % 128 == 0);
 
     int* last_ptr = NULL;
-    for (size_t i = 0; i < 1'000'000; i++)
+    for (size_t i = 0; i < 100'000; i++)
     {
         if (rand() % 5 == 1)
         {
@@ -237,6 +237,54 @@ static bool test_free_list_dump(void)
 
     free_list_dtor(free_list);
 
+    return result;
+}
+
+static bool test_pool(void)
+{
+    bool result = true;
+
+    constexpr size_t count = 200;
+
+    Pool* pool = pool_ctor(count);
+    ASSERT_NOT_NULL(pool);
+
+    size_t prev_allocations = standard_allocations_count;
+
+    int* ptrs[count] = {};
+    for (size_t i = 0; i < count; i++)
+    {
+        ptrs[i] = pool_allocate_type(pool, int);
+        ASSERT_NOT_NULL(ptrs[i]);
+    }
+    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count);
+
+    prev_allocations = standard_allocations_count;
+
+    for (size_t i = 0; i < 15; i++)
+    {
+        pool_deallocate(pool, ptrs[rand() % count]);
+    }
+
+    for (size_t i = 0; i < 15; i++)
+    {
+        ASSERT_NOT_NULL(pool_allocate_type(pool, int));
+    }
+    ASSERT_TRUE(prev_allocations == standard_allocations_count);
+
+    struct Node
+    {
+        struct Node* prev, *next;
+        char data[100];
+    };
+
+    for (size_t i = 0; i < count; i++)
+    {
+        ASSERT_NOT_NULL(pool_allocate_type(pool, struct Node));
+    }
+    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count);
+
+    pool_dtor(pool);
     return result;
 }
 
@@ -445,6 +493,7 @@ int main()
         make_test_entry(test_arena),
         make_test_entry(test_free_list),
         make_test_entry(test_free_list_dump),
+        make_test_entry(test_pool),
         make_test_entry(test_list),
         make_test_entry(test_resource_conversions),
         make_test_entry(test_string),

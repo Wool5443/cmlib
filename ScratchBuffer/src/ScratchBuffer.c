@@ -1,5 +1,8 @@
 #include "ScratchBuffer.h"
 
+#include <stdarg.h>
+#include <string.h>
+
 static String scratch_string = {};
 
 String* get_scratch_buffer_unsafe_()

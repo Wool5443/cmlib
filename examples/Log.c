@@ -1,5 +1,9 @@
 #include "Logger.h"
 
+#include <stdio.h>
+
+#include "Error.h"
+
 int main(void)
 {
     ERROR_CHECKING();

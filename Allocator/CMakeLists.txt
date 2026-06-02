@@ -7,6 +7,8 @@ set(SOURCES
     src/FreeList.c
     src/FreeListResource.c
     src/CountingMalloc.c
+    src/Pool.c
+    src/PoolResource.c
 )
 
 add_library(${LIB_NAME} STATIC ${SOURCES})

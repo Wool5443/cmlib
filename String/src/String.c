@@ -1,5 +1,10 @@
 #include "String.h"
 
+#include <stdarg.h>
+#include <string.h>
+
+#include "../../common.h"
+
 DECLARE_RESULT_SOURCE(String);
 DECLARE_RESULT_SOURCE(Str);
 

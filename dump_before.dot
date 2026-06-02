@@ -1,0 +1,13 @@
+digraph FreeList {
+    rankdir=LR;
+    node [shape=record];
+    free_list [label="FreeList|pool=0x25a32428"];
+    pool_0 [label="pool 0|addr=0x25a32428|size=136|end=0x25a324c8"];
+    free_list -> pool_0 [label="pool"];
+    pool_0 -> pool_1 [label="next_pool"];
+    pool_1 [label="pool 1|addr=0x25a324d0|size=136|end=0x25a32570"];
+    pool_1 -> pool_2 [label="next_pool"];
+    pool_2 [label="pool 2|addr=0x25a32580|size=136|end=0x25a32620"];
+    pool_2_free_block_0 [label="free_block 0|addr=0x25a325d8|size=72"];
+    pool_2 -> pool_2_free_block_0 [label="next_block"];
+}

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "Allocator.h"
 #include "FreeListResource.h"
 
 int main(void)

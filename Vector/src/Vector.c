@@ -1,5 +1,4 @@
 #include "../Vector.h"
-#undef vec_ctor
 
 cmlib_details_VHeader_* cmlib_details_get_vec_header(void*);
 void vec_dtor(void*);
@@ -7,7 +6,9 @@ size_t vec_size(void*);
 size_t vec_capacity(void*);
 void vec_clear(void*);
 
-void* cmlib_details_vec_ctor(void* memory_resource, size_t elem_size, size_t capacity)
+void* cmlib_details_vec_ctor(void* memory_resource,
+    size_t elem_size,
+    size_t capacity)
 {
     if (elem_size == 0 || capacity == 0)
     {
@@ -50,7 +51,9 @@ void* cmlib_details_vec_realloc(void* vec, size_t elem_size)
 
     size_t new_capacity = header->capacity * 2;
 
-    void* new_vec = cmlib_details_vec_ctor(header->memory_resource, elem_size, new_capacity);
+    void* new_vec = cmlib_details_vec_ctor(header->memory_resource,
+        elem_size,
+        new_capacity);
     if (!new_vec)
     {
         return NULL;
@@ -58,10 +61,11 @@ void* cmlib_details_vec_realloc(void* vec, size_t elem_size)
 
     memcpy(new_vec, vec, elem_size * header->size);
 
-    *cmlib_details_get_vec_header(
-        new_vec) = (cmlib_details_VHeader_) {header->memory_resource,
+    *cmlib_details_get_vec_header(new_vec) = (cmlib_details_VHeader_) {
+        header->memory_resource,
         header->size,
-        new_capacity};
+        new_capacity
+    };
 
     header->memory_resource->deallocate(header->memory_resource, header);
 

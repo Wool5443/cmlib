@@ -1,41 +1,25 @@
-/**
- * @file Vector.h
- * @brief Type-generic dynamic array macros.
- *
- * Vectors are represented by element pointers; metadata lives in a hidden
- * header directly before element storage.
- */
-
 #ifndef CMLIB_VECTOR_H_
 #define CMLIB_VECTOR_H_
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "../common.h"
 #include "Allocator.h"
 #include "Error.h" // IWYU pragma: keep
 
 static constexpr size_t CMLIB_VEC_DEFAULT_CAPACITY = 8;
 
-/**
- * @brief Internal vector metadata stored before element array.
- */
 typedef struct VHeader_
 {
-    MemoryResource* memory_resource; /**< Resource used for vector storage. */
-    size_t size;                     /**< Current element count. */
-    size_t capacity;                 /**< Allocated element capacity. */
+    MemoryResource* memory_resource;
+    size_t size;
+    size_t capacity;
 } cmlib_details_VHeader_;
 
 INLINE cmlib_details_VHeader_* cmlib_details_get_vec_header(void* vec);
 void* cmlib_details_vec_realloc(void* vec, size_t elem_size);
 
-/**
- * @brief Creates a vector using a memory resource.
- * @param memory_resource Pointer to memory resource.
- * @param capacity Initial capacity.
- * @return Element storage pointer, or NULL on failure.
- */
 void* cmlib_details_vec_ctor(void* memory_resource,
     size_t elem_size,
     size_t capacity);
@@ -44,39 +28,14 @@ void* cmlib_details_vec_ctor(void* memory_resource,
         sizeof(type),                                                          \
         CMLIB_VEC_DEFAULT_CAPACITY))
 
-/**
- * @brief Destroys vector. Safe to call on NULL.
- * @param vec Vector to destroy
- */
 INLINE void vec_dtor(void* vec);
 
-/**
- * @brief Returns vector size.
- * @param vec Vector pointer, or NULL.
- * @return Element count.
- */
 INLINE size_t vec_size(void* vec);
 
-/**
- * @brief Returns vector capacity.
- * @param vec Vector pointer, or NULL.
- * @return Element capacity.
- */
 INLINE size_t vec_capacity(void* vec);
 
-/**
- * @brief Deletes all elements in vector without freeing capacity.
- * @param vec Vector pointer, or NULL.
- */
 INLINE void vec_clear(void* vec);
 
-/**
- * @brief Appends value to vector, growing if needed.
- * @param vec
- * @param value
- * @return `EVERYTHING_FINE` on success, `ERROR_NO_MEMORY` on allocation
- * failure.
- */
 #define vec_add(vec, value)                                                    \
     ({                                                                         \
         Error_code vec_add_error = ERROR_NO_MEMORY;                            \
@@ -91,11 +50,6 @@ INLINE void vec_clear(void* vec);
         vec_add_error;                                                         \
     })
 
-/**
- * @brief Removes and returns last element.
- * @pre vector not empty.
- * @return Zero-initialized value when `cmlib_vec == NULL`.
- */
 #define vec_pop(vec)                                                           \
     ({                                                                         \
         typeof(*vec) ret = {};                                                 \
@@ -107,15 +61,6 @@ INLINE void vec_clear(void* vec);
         ret;                                                                   \
     })
 
-/**
- * @brief Rebuilds vector with exact capacity.
- * @param vec Lvalue pointer variable to vector.
- * @param new_capacity Target capacity.
- * @return `EVERYTHING_FINE` on success, `ERROR_NO_MEMORY` on allocation
- * failure.
- * Preserves up to `min(old_size, new_capacity)` elements and truncates size on
- * shrink.
- */
 #define vec_reserve(vec, new_capacity)                                         \
     ({                                                                         \
         size_t vec_reserve_new_capacity = (new_capacity);                      \
@@ -140,14 +85,8 @@ INLINE void vec_clear(void* vec);
         vec_reserve_error;                                                     \
     })
 
-/**
- * @brief Iterates index variable over vector range.
- *
- * Forms:
- * - `VEC_ITER(vec, i)` iterates `[0, vec_size(vec))`
- * - `VEC_ITER(vec, i, begin, end)` iterates `[begin, min(end, vec_size(vec)))`
- */
 #define VEC_ITER(vec, iter_name, ...)                                          \
+    assert(vec);                                                               \
     SWITCH_EMPTY(for (size_t iter_name = 0, iter_name##_end = vec_size(vec);   \
                      iter_name < iter_name##_end;                              \
                      iter_name++),                                             \
