@@ -38,62 +38,69 @@ INLINE void vec_clear(void* vec);
 
 #define vec_add(vec, value)                                                    \
     ({                                                                         \
-        Error_code vec_add_error = ERROR_NO_MEMORY;                            \
-        void* temp = cmlib_details_vec_realloc((vec), sizeof(*vec));           \
-        if (temp)                                                              \
+        Error_code cmlib_vec_add_error__ = ERROR_NO_MEMORY;                    \
+        void* cmlib_vec_add_temp__ =                                           \
+            cmlib_details_vec_realloc((vec), sizeof(*vec));                    \
+        if (cmlib_vec_add_temp__)                                              \
         {                                                                      \
-            vec_add_error = EVERYTHING_FINE;                                   \
-            (vec) = temp;                                                      \
-            auto header = cmlib_details_get_vec_header(vec);                   \
-            (vec)[header->size++] = (value);                                   \
+            cmlib_vec_add_error__ = EVERYTHING_FINE;                           \
+            (vec) = cmlib_vec_add_temp__;                                      \
+            auto cmlib_vec_add_header__ = cmlib_details_get_vec_header(vec);   \
+            (vec)[cmlib_vec_add_header__->size++] = (value);                   \
         }                                                                      \
-        vec_add_error;                                                         \
+        cmlib_vec_add_error__;                                                 \
     })
 
 #define vec_pop(vec)                                                           \
     ({                                                                         \
-        typeof(*vec) ret = {};                                                 \
+        typeof(*vec) cmlib_vec_pop_ret__ = {};                                 \
         if (vec)                                                               \
         {                                                                      \
-            auto header = cmlib_details_get_vec_header(vec);                   \
-            ret = (vec)[--header->size];                                       \
+            auto cmlib_vec_pop_header__ = cmlib_details_get_vec_header(vec);   \
+            cmlib_vec_pop_ret__ = (vec)[--cmlib_vec_pop_header__->size];       \
         }                                                                      \
-        ret;                                                                   \
+        cmlib_vec_pop_ret__;                                                   \
     })
 
 #define vec_reserve(vec, new_capacity)                                         \
     ({                                                                         \
-        size_t vec_reserve_new_capacity = (new_capacity);                      \
-        Error_code vec_reserve_error = ERROR_NO_MEMORY;                        \
-        MemoryResource* vec_reserve_resource =                                 \
+        size_t cmlib_vec_reserve_new_capacity__ = (new_capacity);              \
+        Error_code cmlib_vec_reserve_error__ = ERROR_NO_MEMORY;                \
+        MemoryResource* cmlib_vec_reserve_resource__ =                         \
             cmlib_details_get_vec_header(vec)->memory_resource;                \
-        void* temp = cmlib_details_vec_ctor(vec_reserve_resource,              \
+        void* cmlib_vec_reserve_temp__ = cmlib_details_vec_ctor(               \
+            cmlib_vec_reserve_resource__,                                      \
             sizeof(*vec),                                                      \
-            vec_reserve_new_capacity);                                         \
-        if (temp)                                                              \
+            cmlib_vec_reserve_new_capacity__);                                 \
+        if (cmlib_vec_reserve_temp__)                                          \
         {                                                                      \
-            vec_reserve_error = EVERYTHING_FINE;                               \
-            size_t size = MIN(vec_size(vec), vec_reserve_new_capacity);        \
-            if ((vec) && size)                                                 \
+            cmlib_vec_reserve_error__ = EVERYTHING_FINE;                       \
+            size_t cmlib_vec_reserve_size__ =                                  \
+                MIN(vec_size(vec), cmlib_vec_reserve_new_capacity__);          \
+            if ((vec) && cmlib_vec_reserve_size__)                             \
             {                                                                  \
-                memcpy(temp, vec, sizeof(*(vec)) * size);                      \
+                memcpy(cmlib_vec_reserve_temp__,                               \
+                    vec,                                                       \
+                    sizeof(*(vec)) * cmlib_vec_reserve_size__);                \
             }                                                                  \
             vec_dtor(vec);                                                     \
-            (vec) = temp;                                                      \
-            cmlib_details_get_vec_header(vec)->size = size;                    \
+            (vec) = cmlib_vec_reserve_temp__;                                  \
+            cmlib_details_get_vec_header(vec)->size =                          \
+                cmlib_vec_reserve_size__;                                      \
         }                                                                      \
-        vec_reserve_error;                                                     \
+        cmlib_vec_reserve_error__;                                             \
     })
 
 #define VEC_ITER(vec, iter_name, ...)                                          \
     assert(vec);                                                               \
-    SWITCH_EMPTY(for (size_t iter_name = 0, iter_name##_end = vec_size(vec);   \
-                     iter_name < iter_name##_end;                              \
+    SWITCH_EMPTY(for (size_t iter_name = 0,                                    \
+                         cmlib_vec_iter_##iter_name##_end__ = vec_size(vec);   \
+                     iter_name < cmlib_vec_iter_##iter_name##_end__;           \
                      iter_name++),                                             \
         for (size_t iter_name = FIRST(__VA_ARGS__),                            \
-            iter_name##_end = MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__),       \
-                vec_size(vec));                                                \
-            iter_name < iter_name##_end;                                       \
+            cmlib_vec_iter_##iter_name##_end__ =                               \
+                MIN((size_t)EXPAND_BUT_FIRST(__VA_ARGS__), vec_size(vec));     \
+            iter_name < cmlib_vec_iter_##iter_name##_end__;                    \
             iter_name++),                                                      \
         __VA_ARGS__)
 

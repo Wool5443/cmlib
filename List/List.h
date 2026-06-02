@@ -24,18 +24,18 @@ typedef struct List
  * @return creates a List* with specified name which is a valid list.
  */
 #define list_ctor(name, memory_resource__)                                     \
-    List cmlib_details_list__##name =                                          \
+    List cmlib_list_ctor_##name##__ =                                          \
         (List) {                                                               \
             .base =                                                            \
                 (ListNode) {                                                   \
-                    &cmlib_details_list__##name.base,                          \
-                    &cmlib_details_list__##name.base                           \
+                    &cmlib_list_ctor_##name##__.base,                          \
+                    &cmlib_list_ctor_##name##__.base                           \
                 },                                                             \
             .memory_resource = (MemoryResource*)memory_resource__              \
         }                                                                      \
                                                                                \
     ;                                                                          \
-    List* name = &cmlib_details_list__##name;
+    List* name = &cmlib_list_ctor_##name##__;
 
 // List* list_ctor(void* memory_resource);
 
@@ -62,15 +62,16 @@ ListNode* cmlib_details_list_node_ctor(List* list,
 #define LIST_ITER(list, iter_name, ...)                                        \
     assert(list && "Iterating over NULL list");                                \
     for (ListNode* iter_name = list_begin(list),                               \
-                   *iter_name##_end = list_end(list);                          \
-        iter_name != iter_name##_end;                                          \
+                   *cmlib_list_iter_##iter_name##_end__ = list_end(list);      \
+        iter_name != cmlib_list_iter_##iter_name##_end__;                      \
         iter_name = iter_name->next)
 
 #define LIST_REVERSE_ITER(list, iter_name, ...)                                \
     assert(list && "Iterating over NULL list");                                \
     for (ListNode* iter_name = list_end(list)->prev,                           \
-                   *iter_name##_end = list_end(list);                          \
-        iter_name != iter_name##_end;                                          \
+                   *cmlib_list_reverse_iter_##iter_name##_end__ =              \
+                       list_end(list);                                         \
+        iter_name != cmlib_list_reverse_iter_##iter_name##_end__;              \
         iter_name = iter_name->prev)
 
 #define list_node_get_value(node, type)                                        \
@@ -79,40 +80,42 @@ ListNode* cmlib_details_list_node_ctor(List* list,
 // NOLINTBEGIN(bugprone-sizeof-expression)
 #define list_node_ctor_(list, value)                                           \
     ({                                                                         \
-        ListNode* list_node_ = cmlib_details_list_node_ctor(list,              \
+        ListNode* cmlib_list_node_ctor_list_node__ =                           \
+            cmlib_details_list_node_ctor(list,                                 \
             sizeof(value),                                                     \
             alignof(typeof(value)));                                           \
-        if (list_node_)                                                        \
+        if (cmlib_list_node_ctor_list_node__)                                  \
         {                                                                      \
-            *(typeof(value)*)(list_node_ + 1) = value;                         \
+            *(typeof(value)*)(cmlib_list_node_ctor_list_node__ + 1) = value;    \
         }                                                                      \
-        list_node_;                                                            \
+        cmlib_list_node_ctor_list_node__;                                      \
     })
 // NOLINTEND(bugprone-sizeof-expression)
 
 #define list_insert_after(list, node, value)                                   \
     ({                                                                         \
-        List* list_insert_list_ = (list);                                      \
-        ListNode* list_insert_node_ = (node);                                  \
-        ListNode* list_new_node_ = list_insert_list_ && list_insert_node_      \
-            ? list_node_ctor_(list_insert_list_, value)                        \
+        List* cmlib_list_insert_after_list__ = (list);                         \
+        ListNode* cmlib_list_insert_after_node__ = (node);                     \
+        ListNode* cmlib_list_insert_after_new_node__ =                         \
+            cmlib_list_insert_after_list__ && cmlib_list_insert_after_node__   \
+            ? list_node_ctor_(cmlib_list_insert_after_list__, value)           \
             : NULL;                                                            \
-        list_insert_node_after(list_insert_list_,                              \
-            list_insert_node_,                                                 \
-            list_new_node_);                                                   \
+        list_insert_node_after(cmlib_list_insert_after_list__,                 \
+            cmlib_list_insert_after_node__,                                    \
+            cmlib_list_insert_after_new_node__);                               \
     })
 
 #define list_insert_before(list, node, value)                                  \
     ({                                                                         \
-        List* list_before_list_ = (list);                                      \
-        ListNode* list_before_node_ = (node);                                  \
-        ListNode* list_new_before_node_ = list_before_list_                    \
-                && list_before_node_                                           \
-            ? list_node_ctor_(list_before_list_, value)                        \
+        List* cmlib_list_insert_before_list__ = (list);                        \
+        ListNode* cmlib_list_insert_before_node__ = (node);                    \
+        ListNode* cmlib_list_insert_before_new_node__ =                        \
+            cmlib_list_insert_before_list__ && cmlib_list_insert_before_node__ \
+            ? list_node_ctor_(cmlib_list_insert_before_list__, value)          \
             : NULL;                                                            \
-        list_insert_node_before(list_before_list_,                             \
-            list_before_node_,                                                 \
-            list_new_before_node_);                                            \
+        list_insert_node_before(cmlib_list_insert_before_list__,               \
+            cmlib_list_insert_before_node__,                                   \
+            cmlib_list_insert_before_new_node__);                              \
     })
 
 #endif // CMLIB_LIST_H_

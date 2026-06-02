@@ -14,7 +14,7 @@ typedef enum
     LOG_TYPE_INFO,
     LOG_TYPE_DEBUG,
     LOG_TYPE_ERROR,
-} Log_type;
+} LogType;
 
 typedef struct
 {
@@ -33,16 +33,16 @@ void logger_init_console();
 
 INLINE Logger* get_logger();
 
-INLINE const char* get_log_type_string_(Log_type type);
+INLINE const char* get_log_type_string_(LogType type);
 
-INLINE Console_color get_log_type_color_(Log_type type);
+INLINE Console_color get_log_type_color_(LogType type);
 
 INLINE Logger* get_logger()
 {
     return &cmlib_logger_;
 }
 
-INLINE const char* get_log_type_string_(Log_type type)
+INLINE const char* get_log_type_string_(LogType type)
 {
     switch (type)
     {
@@ -57,7 +57,7 @@ INLINE const char* get_log_type_string_(Log_type type)
     }
 }
 
-INLINE Console_color get_log_type_color_(Log_type type)
+INLINE Console_color get_log_type_color_(LogType type)
 {
     switch (type)
     {
@@ -72,31 +72,30 @@ INLINE Console_color get_log_type_color_(Log_type type)
     }
 }
 
-#define LOG_(cmlib_macroarg_type, cmlib_macroarg_error, ...)                   \
+#define LOG_(type, error, ...)                                                 \
     do                                                                         \
     {                                                                          \
-        Log_type type = (cmlib_macroarg_type);                                 \
-        Error error = (cmlib_macroarg_error);                                  \
-        FILE* log_file = get_logger()->file;                                   \
-        if (!log_file)                                                         \
+        LogType cmlib_log_type__ = (type);                                     \
+        Error cmlib_log_error__ = (error);                                     \
+        FILE* cmlib_log_log_file__ = get_logger()->file;                       \
+        if (!cmlib_log_log_file__)                                             \
         {                                                                      \
             break;                                                             \
         }                                                                      \
-        set_console_color(log_file, get_log_type_color_(type));                \
-                                                                               \
-        fprintf(log_file, "[%s] ", get_log_type_string_(type));                \
-                                                                               \
-        error_print(error, log_file);                                          \
-                                                                               \
+        set_console_color(cmlib_log_log_file__,                                \
+            get_log_type_color_(cmlib_log_type__));                            \
+        fprintf(cmlib_log_log_file__,                                          \
+            "[%s] ",                                                           \
+            get_log_type_string_(cmlib_log_type__));                           \
+        error_print(cmlib_log_error__, cmlib_log_log_file__);                  \
         SWITCH_EMPTY(,                                                         \
-            (fprintf(log_file, "\n"),                                          \
-                fprintf(log_file,                                              \
+            (fprintf(cmlib_log_log_file__, "\n"),                              \
+                fprintf(cmlib_log_log_file__,                                  \
                     "" FIRST(__VA_ARGS__) "" VA_OPT_BUT_FIRST(__VA_ARGS__)     \
                         EXPAND_BUT_FIRST(__VA_ARGS__))),                       \
             __VA_ARGS__);                                                      \
-                                                                               \
-        fprintf(log_file, "\n\n");                                             \
-        set_console_color(log_file, CONSOLE_COLOR_WHITE);                      \
+        fprintf(cmlib_log_log_file__, "\n\n");                                 \
+        set_console_color(cmlib_log_log_file__, CONSOLE_COLOR_WHITE);          \
     } while (0)
 
 #define log_info(...)                                                          \
@@ -124,22 +123,22 @@ INLINE Console_color get_log_type_color_(Log_type type)
 
 #endif // #ifndef DISABLE_LOGGING
 
-#define CHECK_ERROR_LOG(cmlib_macroarg_expr, ...)                              \
+#define CHECK_ERROR_LOG(expression, ...)                                       \
     do                                                                         \
     {                                                                          \
-        if ((err = (cmlib_macroarg_expr)))                                     \
+        if ((err = (expression)))                                              \
         {                                                                      \
             log_error(__VA_ARGS__);                                            \
             ERROR_LEAVE();                                                     \
         }                                                                      \
     } while (0)
 
-#define HANDLE_ERRNO_ERROR(cmlib_macroarg_error, ...)                          \
+#define HANDLE_ERRNO_ERROR(error, ...)                                         \
     do                                                                         \
     {                                                                          \
-        UNUSED int ern = errno;                                                \
-        err = cmlib_macroarg_error;                                            \
-        log_error(__VA_ARGS__, strerror(ern));                                 \
+        int cmlib_handle_errno_error_ern__ = errno;                            \
+        err = error;                                                           \
+        log_error(__VA_ARGS__, strerror(cmlib_handle_errno_error_ern__));      \
         ERROR_LEAVE();                                                         \
     } while (0)
 

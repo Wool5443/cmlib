@@ -57,5 +57,5 @@ static void logger_finish_()
 }
 
 Logger* get_logger();
-const char* get_log_type_string_(Log_type type);
-Console_color get_log_type_color_(Log_type type);
+const char* get_log_type_string_(LogType type);
+Console_color get_log_type_color_(LogType type);

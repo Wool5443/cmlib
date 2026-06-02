@@ -23,11 +23,7 @@ typedef struct Str
 DECLARE_RESULT_HEADER(String);
 DECLARE_RESULT_HEADER(Str);
 
-#define STR_LITERAL(cmlib_macroarg_string)                                     \
-    ((Str) {                                                                   \
-        .data = cmlib_macroarg_string,                                         \
-        .size = sizeof(cmlib_macroarg_string) - 1                              \
-    })
+#define STR_LITERAL(string) ((Str) {.data = string, .size = sizeof(string) - 1})
 
 Str str_ctor(const char* string);
 

@@ -30,14 +30,14 @@ typedef struct TestEntry
 #define ASSERT_TRUE(expr)                                                      \
     do                                                                         \
     {                                                                          \
-        bool val = expr;                                                       \
-        result &= val;                                                         \
-        if (!val)                                                              \
+        bool cmlib_assert_true_val__ = expr;                                   \
+        result &= cmlib_assert_true_val__;                                     \
+        if (!cmlib_assert_true_val__)                                          \
         {                                                                      \
             printf("Assertion %s on line %d failed: %d\n",                     \
                 #expr,                                                         \
                 __LINE__,                                                      \
-                val);                                                          \
+                cmlib_assert_true_val__);                                      \
         }                                                                      \
     } while (0)
 

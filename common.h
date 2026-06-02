@@ -38,16 +38,16 @@
 
 #define MIN(x, y)                                                              \
     ({                                                                         \
-        auto x_temp = (x);                                                     \
-        auto y_temp = (y);                                                     \
-        x_temp < y_temp ? x_temp : y_temp;                                     \
+        auto cmlib_min_x__ = (x);                                              \
+        auto cmlib_min_y__ = (y);                                              \
+        cmlib_min_x__ < cmlib_min_y__ ? cmlib_min_x__ : cmlib_min_y__;         \
     })
 
 #define MAX(x, y)                                                              \
     ({                                                                         \
-        auto x_temp = (x);                                                     \
-        auto y_temp = (y);                                                     \
-        x_temp > y_temp ? x_temp : y_temp;                                     \
+        auto cmlib_max_x__ = (x);                                              \
+        auto cmlib_max_y__ = (y);                                              \
+        cmlib_max_x__ > cmlib_max_y__ ? cmlib_max_x__ : cmlib_max_y__;         \
     })
 
 #endif // CMLIB_COMMON_H
