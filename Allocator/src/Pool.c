@@ -60,8 +60,6 @@ static SubPool* find_sub_pool_containing_ptr(Pool* pool, void* ptr);
 static FindResult find_first_level_by_size(FirstLevelPool* pool,
     size_t elem_size);
 
-// static void subpool_deallocate()
-
 Pool* pool_ctor(size_t count)
 {
     Pool* pool = cmlib_details_malloc(sizeof(Pool));
@@ -80,6 +78,27 @@ Pool* pool_ctor(size_t count)
 
 void pool_dtor(Pool* pool)
 {
+    if (!pool)
+    {
+        return;
+    }
+
+    FirstLevelPool* cur_f = pool->pool;
+
+    while (cur_f)
+    {
+        SecondLevelPool* cur_s = cur_f->base.next_pool_same_size;
+        while (cur_s)
+        {
+            SecondLevelPool* next = cur_s->next_pool_same_size;
+            cmlib_details_free(cur_s);
+            cur_s = next;
+        }
+        FirstLevelPool* next = cur_f->next_pool_dif_size;
+        cmlib_details_free(cur_f);
+        cur_f = next;
+    }
+
     cmlib_details_free(pool);
 }
 
@@ -281,8 +300,8 @@ static SubPool* find_sub_pool_containing_ptr(Pool* pool, void* ptr)
 
         while (cur_s)
         {
-            char* start = (char*)(cur_s + 1);
-            char* end = start + pool->count * cur_f->elem_size;
+            start = (char*)(cur_s + 1);
+            end = start + pool->count * cur_f->elem_size;
 
             if (start <= p && p < end)
             {
