@@ -8,7 +8,7 @@ int main(void)
 {
     ERROR_CHECKING();
 
-    List* list = list_ctor(get_malloc_resource());
+    list_ctor(list, get_malloc_resource());
     if (!list)
     {
         err = ERROR_NO_MEMORY;

@@ -1,27 +1,29 @@
 #include "List.h"
 
 #include "../../common.h"
+#include "List.h"
 
-List* list_ctor(void* memory_resource)
-{
-    MemoryResource* resource = (MemoryResource*)memory_resource;
-    if (!resource)
-    {
-        return NULL;
-    }
-
-    List* list = resource->allocate(resource, sizeof(List), alignof(List));
-    if (!list)
-    {
-        return NULL;
-    }
-
-    *list = (List) {
-        .base = {.next = &list->base, .prev = &list->base},
-        .memory_resource = resource,
-    };
-    return list;
-}
+// List* list_ctor(void* memory_resource)
+// {
+//     List* ptr = NULL;
+//     MemoryResource* resource = (MemoryResource*)memory_resource;
+//
+//     List cmlib_details_list = {
+//         .base =
+//             (ListNode) {
+//                 .prev = &cmlib_details_list.base,
+//                 .next = &cmlib_details_list.base
+//             },
+//         .memory_resource = resource,
+//     };
+//
+//     if (resource)
+//     {
+//         ptr = &cmlib_details_list;
+//     }
+//
+//     ptr;
+// }
 
 void list_dtor(List* list)
 {
@@ -38,8 +40,6 @@ void list_dtor(List* list)
         resource->deallocate(resource, current);
         current = next;
     }
-
-    resource->deallocate(resource, list);
 }
 
 ListNode* list_begin(List* list)
@@ -76,7 +76,8 @@ ListNode* list_extract(List* list, ListNode* node)
     return node;
 }
 
-ListNode* list_insert_node_after(List* list, ListNode* node, ListNode* insert_node)
+ListNode*
+list_insert_node_after(List* list, ListNode* node, ListNode* insert_node)
 {
     if (!list || !node || !insert_node)
     {

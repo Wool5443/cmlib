@@ -16,7 +16,28 @@ typedef struct List
     MemoryResource* memory_resource;
 } List;
 
-List* list_ctor(void* memory_resource);
+/**
+ * @brief Constructs a List with specified memory resource
+ *
+ * @param list
+ *
+ * @return creates a List* with specified name which is a valid list.
+ */
+#define list_ctor(name, memory_resource__)                                     \
+    List cmlib_details_list__##name =                                          \
+        (List) {                                                               \
+            .base =                                                            \
+                (ListNode) {                                                   \
+                    &cmlib_details_list__##name.base,                          \
+                    &cmlib_details_list__##name.base                           \
+                },                                                             \
+            .memory_resource = (MemoryResource*)memory_resource__              \
+        }                                                                      \
+                                                                               \
+    ;                                                                          \
+    List* name = &cmlib_details_list__##name;
+
+// List* list_ctor(void* memory_resource);
 
 void list_dtor(List* list);
 

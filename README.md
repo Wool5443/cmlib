@@ -122,10 +122,7 @@ int main(void) {
 #include "List.h"
 
 int main(void) {
-    List* list = list_ctor(get_malloc_resource());
-    if (!list) {
-        return 1;
-    }
+    list_ctor(list, get_malloc_resource());
 
     list_insert_after(list, list_end(list), 10);
     list_insert_before(list, list_end(list), 20);

@@ -87,7 +87,7 @@ static bool test_arena(void)
     Arena* arena = arena_ctor(int_count * sizeof(int));
 
     ASSERT_NOT_NULL(arena);
-    ASSERT_TRUE(standard_allocations_count - prev_allocations == 1);
+    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count );
     prev_allocations = standard_allocations_count;
 
     ASSERT_NULL(arena_allocate(arena, 100, 0));
@@ -132,7 +132,7 @@ static bool test_free_list(void)
     FreeList* free_list = free_list_ctor(free_list_size);
 
     ASSERT_NOT_NULL(free_list);
-    ASSERT_TRUE(standard_allocations_count - prev_allocations == 1);
+    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count);
 
     ASSERT_NULL(free_list_allocate(free_list, UINT32_MAX, 8));
 
@@ -274,7 +274,7 @@ static bool test_pool(void)
 
     struct Node
     {
-        struct Node* prev, *next;
+        struct Node *prev, *next;
         char data[100];
     };
 
@@ -293,9 +293,8 @@ static bool test_list(void)
     bool result = true;
 
     size_t prev_allocations = standard_allocations_count;
-    List* list = list_ctor(get_malloc_resource());
-    ASSERT_NOT_NULL(list);
-    ASSERT_TRUE(standard_allocations_count - prev_allocations == 1);
+    list_ctor(list, get_malloc_resource());
+    ASSERT_TRUE(prev_allocations == standard_allocations_count);
 
     ASSERT_TRUE(list_begin(list) == list_end(list));
 

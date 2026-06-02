@@ -74,7 +74,7 @@ int main()
     print_tree(root);
 
     PoolResource res = pool_to_resource(pool);
-    List* list = list_ctor(&res);
+    list_ctor(list, &res);
 
     for (size_t i = 0; i < size; i++)
     {
