@@ -23,6 +23,11 @@ target_link_libraries(
     list
     PRIVATE cmlib_list
 )
+add_executable(list_benchmark ListBenchmark.c)
+target_link_libraries(
+    list_benchmark
+    PRIVATE cmlib_allocator cmlib_list
+)
 add_executable(log Log.c)
 target_link_libraries(
     log

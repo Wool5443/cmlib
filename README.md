@@ -35,6 +35,31 @@ This produces static libraries under `build/<module>/` and test binaries under `
 ctest --test-dir build --output-on-failure
 ```
 
+## Benchmarks
+
+The `list_benchmark` example compares `get_malloc_resource()` with
+`PoolResource` for a `List<int>` workload. It preloads 1,000,000 list nodes,
+then runs 4,000,000 deterministic random reads, writes, insertions, and erases.
+Timing uses serialized `rdtsc`; TSC frequency is calibrated with one large
+`nop` loop and `clock_gettime(CLOCK_MONOTONIC_RAW)`.
+
+```bash
+./build/examples/list_benchmark
+```
+
+On the current machine, with 10 measured repeats and 2 warmups, the pool
+resource averaged about 36% faster than malloc resource for this workload:
+
+```text
+malloc avg: 683249649 cycles
+pool   avg:  438200423 cycles
+pool/malloc avg ratio: 0.641
+```
+
+This result depends on the benchmark shape. The pool run skips per-node
+`list_dtor` cleanup and releases all remaining nodes through
+`pool_resource_dtor` after each sample.
+
 ## Using cmlib from CMake
 
 `cmlib` is intended to be consumed with `add_subdirectory(...)` and linked by target.
@@ -170,7 +195,7 @@ int main(void) {
     free_list_deallocate(&free_list, block);
 
     FreeListResource free_list_resource = free_list_to_resource(&free_list);
-    List* list = list_ctor(&free_list_resource);
+    list_ctor(list, &free_list_resource);
     // use list
 
     free_list_resource_dtor(&free_list_resource);
