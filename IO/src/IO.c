@@ -8,7 +8,7 @@
 
 #include "details/CountingMalloc.h"
 
-Error_code real_path(String* out, const char* path)
+ErrorCode real_path(String* out, const char* path)
 {
     ERROR_CHECKING();
 
@@ -48,7 +48,7 @@ Error_code real_path(String* out, const char* path)
     return err;
 }
 
-Error_code read_file(String* out, const char* path)
+ErrorCode read_file(String* out, const char* path)
 {
     ERROR_CHECKING();
 

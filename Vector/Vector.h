@@ -38,9 +38,9 @@ INLINE void vec_clear(void* vec);
 
 #define vec_add(vec, value)                                                    \
     ({                                                                         \
-        Error_code cmlib_vec_add_error__ = ERROR_NO_MEMORY;                    \
-        void* cmlib_vec_add_temp__ =                                           \
-            cmlib_details_vec_realloc((vec), sizeof(*vec));                    \
+        ErrorCode cmlib_vec_add_error__ = ERROR_NO_MEMORY;                     \
+        void* cmlib_vec_add_temp__ = cmlib_details_vec_realloc((vec),          \
+            sizeof(*vec));                                                     \
         if (cmlib_vec_add_temp__)                                              \
         {                                                                      \
             cmlib_vec_add_error__ = EVERYTHING_FINE;                           \
@@ -65,18 +65,18 @@ INLINE void vec_clear(void* vec);
 #define vec_reserve(vec, new_capacity)                                         \
     ({                                                                         \
         size_t cmlib_vec_reserve_new_capacity__ = (new_capacity);              \
-        Error_code cmlib_vec_reserve_error__ = ERROR_NO_MEMORY;                \
+        ErrorCode cmlib_vec_reserve_error__ = ERROR_NO_MEMORY;                 \
         MemoryResource* cmlib_vec_reserve_resource__ =                         \
             cmlib_details_get_vec_header(vec)->memory_resource;                \
-        void* cmlib_vec_reserve_temp__ = cmlib_details_vec_ctor(               \
-            cmlib_vec_reserve_resource__,                                      \
-            sizeof(*vec),                                                      \
-            cmlib_vec_reserve_new_capacity__);                                 \
+        void* cmlib_vec_reserve_temp__ =                                       \
+            cmlib_details_vec_ctor(cmlib_vec_reserve_resource__,               \
+                sizeof(*vec),                                                  \
+                cmlib_vec_reserve_new_capacity__);                             \
         if (cmlib_vec_reserve_temp__)                                          \
         {                                                                      \
             cmlib_vec_reserve_error__ = EVERYTHING_FINE;                       \
-            size_t cmlib_vec_reserve_size__ =                                  \
-                MIN(vec_size(vec), cmlib_vec_reserve_new_capacity__);          \
+            size_t cmlib_vec_reserve_size__ = MIN(vec_size(vec),               \
+                cmlib_vec_reserve_new_capacity__);                             \
             if ((vec) && cmlib_vec_reserve_size__)                             \
             {                                                                  \
                 memcpy(cmlib_vec_reserve_temp__,                               \
@@ -94,7 +94,7 @@ INLINE void vec_clear(void* vec);
 #define VEC_ITER(vec, iter_name, ...)                                          \
     assert(vec);                                                               \
     SWITCH_EMPTY(for (size_t iter_name = 0,                                    \
-                         cmlib_vec_iter_##iter_name##_end__ = vec_size(vec);   \
+                     cmlib_vec_iter_##iter_name##_end__ = vec_size(vec);       \
                      iter_name < cmlib_vec_iter_##iter_name##_end__;           \
                      iter_name++),                                             \
         for (size_t iter_name = FIRST(__VA_ARGS__),                            \

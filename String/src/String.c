@@ -20,11 +20,11 @@ void string_dtor(String* this);
 Result_String string_copy(void* memory_resource, const String string);
 void string_clear(String* this);
 int string_compare(const String lhs, const String rhs);
-Error_code string_append(String* this, const char* string);
-Error_code string_append_string(String* this, const String string);
-Error_code string_append_char(String* this, char ch);
+ErrorCode string_append(String* this, const char* string);
+ErrorCode string_append_string(String* this, const String string);
+ErrorCode string_append_char(String* this, char ch);
 Result_Str string_slice(const String this, size_t start_idx, size_t end_idx);
-Error_code string_printf(String* this, const char* format, ...);
+ErrorCode string_printf(String* this, const char* format, ...);
 Result_String
 string_ctor_printf(void* memory_resource, const char* format, ...);
 Result_String
@@ -148,7 +148,7 @@ void string_clear(String* this)
     this->size = 0;
 }
 
-Error_code string_append(String* this, const char* string)
+ErrorCode string_append(String* this, const char* string)
 {
     if (!string)
     {
@@ -157,12 +157,12 @@ Error_code string_append(String* this, const char* string)
     return string_append_str(this, str_ctor(string));
 }
 
-Error_code string_append_string(String* this, String string)
+ErrorCode string_append_string(String* this, String string)
 {
     return string_append_str(this, str_ctor_string(string));
 }
 
-Error_code string_append_char(String* this, char ch)
+ErrorCode string_append_char(String* this, char ch)
 {
     if (!this)
     {
@@ -170,7 +170,7 @@ Error_code string_append_char(String* this, char ch)
     }
     if (this->size == this->capacity)
     {
-        Error_code err = string_realloc(this, this->capacity * 2);
+        ErrorCode err = string_realloc(this, this->capacity * 2);
         if (err)
         {
             return err;
@@ -187,12 +187,12 @@ Result_Str string_slice(String this, size_t start, size_t end)
     return str_slice(str_ctor_string(this), start, end);
 }
 
-Error_code string_printf(String* this, const char* format, ...)
+ErrorCode string_printf(String* this, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
 
-    Error_code res = string_vprintf(this, format, args);
+    ErrorCode res = string_vprintf(this, format, args);
     va_end(args);
 
     return res;
@@ -256,7 +256,7 @@ Result_String string_ctor_capacity(void* memory_resource, size_t capacity)
         EVERYTHING_FINE);
 }
 
-Error_code string_realloc(String* this, size_t new_capacity)
+ErrorCode string_realloc(String* this, size_t new_capacity)
 {
     if (!this || !this->memory_resource)
     {
@@ -292,7 +292,7 @@ Error_code string_realloc(String* this, size_t new_capacity)
     return EVERYTHING_FINE;
 }
 
-Error_code string_append_str(String* this, Str string)
+ErrorCode string_append_str(String* this, Str string)
 {
     if (!this || !this->memory_resource)
     {
@@ -306,7 +306,7 @@ Error_code string_append_str(String* this, Str string)
     size_t new_size = this->size + string.size;
     if (new_size > this->capacity)
     {
-        Error_code err = string_realloc(this, new_size);
+        ErrorCode err = string_realloc(this, new_size);
         if (err)
         {
             return err;
@@ -320,7 +320,7 @@ Error_code string_append_str(String* this, Str string)
     return EVERYTHING_FINE;
 }
 
-Error_code string_vprintf(String* this, const char* format, va_list args)
+ErrorCode string_vprintf(String* this, const char* format, va_list args)
 {
     if (!this || !this->memory_resource || !format)
     {
@@ -343,7 +343,7 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
         return ERROR_STD;
     }
 
-    Error_code err = string_realloc(this, this->size + (size_t)print_size);
+    ErrorCode err = string_realloc(this, this->size + (size_t)print_size);
     if (err)
     {
         return err;
@@ -365,7 +365,7 @@ Error_code string_vprintf(String* this, const char* format, va_list args)
     return EVERYTHING_FINE;
 }
 
-Error_code string_replace_all(String* this, Str from, Str to)
+ErrorCode string_replace_all(String* this, Str from, Str to)
 {
     if (!this || !this->memory_resource)
     {

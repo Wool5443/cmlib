@@ -10,7 +10,7 @@ String* get_scratch_buffer_unsafe_()
     return &scratch_string;
 }
 
-Error_code scratch_ctor(void* memory_resource, size_t capacity)
+ErrorCode scratch_ctor(void* memory_resource, size_t capacity)
 {
     string_dtor(&scratch_string);
     Result_String res = string_ctor_capacity(memory_resource, capacity);
@@ -59,39 +59,39 @@ void scratch_clear()
     string_clear(&scratch_string);
 }
 
-Error_code scratch_vprintf(const char* format, va_list args)
+ErrorCode scratch_vprintf(const char* format, va_list args)
 {
     return string_vprintf(&scratch_string, format, args);
 }
 
-Error_code scratch_printf(const char* format, ...)
+ErrorCode scratch_printf(const char* format, ...)
 {
     va_list args = {};
     va_start(args, format);
 
-    Error_code res = scratch_vprintf(format, args);
+    ErrorCode res = scratch_vprintf(format, args);
 
     va_end(args);
 
     return res;
 }
 
-Error_code scratch_append(const char* string)
+ErrorCode scratch_append(const char* string)
 {
     return string_append(&scratch_string, string);
 }
 
-Error_code scratch_append_str(Str string)
+ErrorCode scratch_append_str(Str string)
 {
     return string_append_str(&scratch_string, string);
 }
 
-Error_code scratch_append_string(const String string)
+ErrorCode scratch_append_string(const String string)
 {
     return string_append_string(&scratch_string, string);
 }
 
-Error_code scratch_append_char(char c)
+ErrorCode scratch_append_char(char c)
 {
     return string_append_char(&scratch_string, c);
 }

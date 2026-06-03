@@ -3,9 +3,9 @@
 
 #include "String.h"
 
-Error_code real_path(String* out, const char* path);
+ErrorCode real_path(String* out, const char* path);
 
-Error_code read_file(String* out, const char* path);
+ErrorCode read_file(String* out, const char* path);
 
 Result_Str get_filename_str(const Str path);
 

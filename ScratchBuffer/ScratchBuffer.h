@@ -3,7 +3,7 @@
 
 #include "String.h"
 
-Error_code scratch_ctor(void* memory_resource, size_t capacity);
+ErrorCode scratch_ctor(void* memory_resource, size_t capacity);
 
 void scratch_dtor();
 
@@ -19,16 +19,16 @@ void scratch_pop(size_t count);
 
 void scratch_clear();
 
-Error_code scratch_printf(const char* format, ...);
+ErrorCode scratch_printf(const char* format, ...);
 
-Error_code scratch_vprintf(const char* format, va_list args);
+ErrorCode scratch_vprintf(const char* format, va_list args);
 
-Error_code scratch_append(const char* string);
+ErrorCode scratch_append(const char* string);
 
-Error_code scratch_append_str(Str slice);
+ErrorCode scratch_append_str(Str slice);
 
-Error_code scratch_append_string(const String string);
+ErrorCode scratch_append_string(const String string);
 
-Error_code scratch_append_char(char c);
+ErrorCode scratch_append_char(char c);
 
 #endif // CMLIB_SCRATCH_BUF_H_

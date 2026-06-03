@@ -14,27 +14,27 @@ typedef enum
 #include "include/Error_gen.h"
 
 #undef DEF_ERROR
-} Error_code;
+} ErrorCode;
 
 typedef struct
 {
-    Error_code code;
+    ErrorCode code;
     const char* file;
     const char* line;
     const char* function;
     time_t time;
 } Error;
 
-INLINE Error error_ctor(Error_code error_code,
+INLINE Error error_ctor(ErrorCode error_code,
     const char* file_name,
     const char* line_number,
     const char* function_name);
 
-INLINE const char* get_error_name(Error_code error_code);
+INLINE const char* get_error_name(ErrorCode error_code);
 
 INLINE void error_print(Error error, FILE* file);
 
-INLINE Error error_ctor(Error_code error_code,
+INLINE Error error_ctor(ErrorCode error_code,
     const char* file_name,
     const char* line_number,
     const char* function_name)
@@ -48,7 +48,7 @@ INLINE Error error_ctor(Error_code error_code,
     };
 }
 
-INLINE const char* get_error_name(Error_code error_code)
+INLINE const char* get_error_name(ErrorCode error_code)
 {
     switch (error_code)
     {
@@ -85,7 +85,7 @@ INLINE void error_print(Error error, FILE* file)
     fprintf(file, "in %s:%s in %s", error.file, error.line, error.function);
 }
 
-#define ERROR_CHECKING() UNUSED Error_code err = EVERYTHING_FINE
+#define ERROR_CHECKING() UNUSED ErrorCode err = EVERYTHING_FINE
 
 #define ERROR_CASE                                                             \
     ERROR_CASE_:;

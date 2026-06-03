@@ -47,10 +47,10 @@ void string_dtor(String* this);
 
 Result_String string_copy(void* memory_resource, String string);
 
-Error_code string_printf(String* this, const char* format, ...)
+ErrorCode string_printf(String* this, const char* format, ...)
     __attribute__((format(__printf__, 2, 3)));
 
-Error_code string_vprintf(String* this, const char* format, va_list args)
+ErrorCode string_vprintf(String* this, const char* format, va_list args)
     __attribute__((format(__printf__, 2, 0)));
 
 Result_String string_ctor_printf(void* memory_resource, const char* format, ...)
@@ -60,15 +60,15 @@ Result_String string_ctor_vprintf(void* memory_resource,
     const char* format,
     va_list args) __attribute__((format(__printf__, 2, 0)));
 
-Error_code string_append_char(String* this, char ch);
+ErrorCode string_append_char(String* this, char ch);
 
-Error_code string_append_string(String* this, String string);
+ErrorCode string_append_string(String* this, String string);
 
-Error_code string_append(String* this, const char* string);
+ErrorCode string_append(String* this, const char* string);
 
-Error_code string_append_str(String* this, Str string);
+ErrorCode string_append_str(String* this, Str string);
 
-Error_code string_replace_all(String* this, Str from, Str to);
+ErrorCode string_replace_all(String* this, Str from, Str to);
 
 Result_Str string_slice(String this, size_t start, size_t end);
 
@@ -76,6 +76,6 @@ void string_clear(String* this);
 
 int string_compare(String lhs, String rhs);
 
-Error_code string_realloc(String* this, size_t new_capacity);
+ErrorCode string_realloc(String* this, size_t new_capacity);
 
 #endif // CMLIB_STRING_H_
