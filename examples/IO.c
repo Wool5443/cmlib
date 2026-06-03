@@ -10,7 +10,7 @@ int main(void)
 
     String *path = {}, *contents = {};
 
-    Result_String path_res = string_ctor_capacity(get_malloc_resource(), 1);
+    Result_String path_res = string_ctor_capacity(get_malloc_resource(), 0);
     path = &path_res.value;
 
     CHECK_ERROR(path_res.error_code);
@@ -35,7 +35,7 @@ int main(void)
     str_print(folder_res.value, stdout);
     printf("\n");
 
-    Result_String contents_res = string_ctor_capacity(get_malloc_resource(), 1);
+    Result_String contents_res = string_ctor_capacity(get_malloc_resource(), 0);
     CHECK_ERROR(contents_res.error_code);
     contents = &contents_res.value;
     CHECK_ERROR(read_file(&contents_res.value, "README.md"));

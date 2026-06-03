@@ -87,7 +87,7 @@ static bool test_arena(void)
     Arena* arena = arena_ctor(int_count * sizeof(int));
 
     ASSERT_NOT_NULL(arena);
-    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count );
+    ASSERT_TRUE(prev_allocations + 1 == standard_allocations_count);
     prev_allocations = standard_allocations_count;
 
     ASSERT_NULL(arena_allocate(arena, 100, 0));
@@ -386,14 +386,48 @@ static bool test_string(void)
 
     ASSERT_STRING_EQUAL(s->data, test_string);
 
-    string_dtor(&string_res.value);
+    string_dtor(s);
 
     string_res = string_ctor_str(get_malloc_resource(), test_str);
     ASSERT_NO_ERROR(string_res.error_code);
     ASSERT_STR_EQUAL(str_ctor_string(*s), test_str);
-    string_dtor(&string_res.value);
+    string_dtor(s);
 
-    string_res = string_ctor_capacity(get_malloc_resource(), 1);
+    string_res = string_ctor_capacity(get_malloc_resource(), 0);
+    ASSERT_NO_ERROR(string_res.error_code);
+    ASSERT_NULL(s->data);
+    ASSERT_TRUE(s->size == 0);
+    ASSERT_TRUE(s->capacity == 0);
+    string_clear(s);
+    ASSERT_NULL(s->data);
+    ASSERT_TRUE(s->size == 0);
+    ASSERT_NO_ERROR(string_replace_all(s, str_ctor("empty"), str_ctor("full")));
+    ASSERT_TRUE(string_compare(*s, CMLIB_EMPTY_STRING) == 0);
+    ASSERT_TRUE(str_compare(str_ctor(""), str_ctor("a")) < 0);
+    ASSERT_TRUE(str_compare(str_ctor("a"), str_ctor("")) > 0);
+    ASSERT_TRUE(str_compare(str_ctor("abc"), str_ctor("abcd")) < 0);
+    ASSERT_TRUE(str_compare(str_ctor("abcd"), str_ctor("abc")) > 0);
+    Result_Str empty_slice_res = string_slice(*s, 0, 0);
+    ASSERT_NO_ERROR(empty_slice_res.error_code);
+    ASSERT_NULL(empty_slice_res.value.data);
+    ASSERT_TRUE(empty_slice_res.value.size == 0);
+    ASSERT_NO_ERROR(string_append_char(s, 'z'));
+    ASSERT_STRING_EQUAL(s->data, "z");
+    string_dtor(s);
+
+    string_res = string_ctor_capacity(get_malloc_resource(), 0);
+    ASSERT_NO_ERROR(string_res.error_code);
+    ASSERT_NO_ERROR(string_append(s, "zero"));
+    ASSERT_STRING_EQUAL(s->data, "zero");
+    string_dtor(s);
+
+    string_res = string_ctor_capacity(get_malloc_resource(), 0);
+    ASSERT_NO_ERROR(string_res.error_code);
+    ASSERT_NO_ERROR(string_printf(s, "%s-%d", "cap", 0));
+    ASSERT_STRING_EQUAL(s->data, "cap-0");
+    string_dtor(s);
+
+    string_res = string_ctor_capacity(get_malloc_resource(), 0);
     const char* correct = "Did you know, that 25 * 31 = 775 = 307, and also "
                           "NOTHING, I LIED\n";
     ASSERT_NO_ERROR(string_printf(s,
@@ -404,9 +438,9 @@ static bool test_string(void)
         25 * 31,
         "NOTHING, I LIED"));
     ASSERT_STRING_EQUAL(s->data, correct);
-    string_dtor(&string_res.value);
+    string_dtor(s);
 
-    string_res = string_ctor_capacity(get_malloc_resource(), 1);
+    string_res = string_ctor_capacity(get_malloc_resource(), 0);
     ASSERT_NO_ERROR(string_append_char(s, 'a'));
     ASSERT_TRUE(s->data[0] == 'a');
     ASSERT_NO_ERROR(string_append(s, "const char*"));
@@ -425,7 +459,7 @@ static bool test_string(void)
 
     Result_Str slice_res = string_slice(*s, 7, 17);
     ASSERT_NO_ERROR(slice_res.error_code);
-    ASSERT_STRING_EQUAL(slice_res.value.data, "char*aABOB");
+    ASSERT_STR_EQUAL(slice_res.value, str_ctor("char*aABOB"));
 
     string_dtor(s);
 
@@ -471,7 +505,7 @@ static bool test_io(void)
 {
     bool result = true;
 
-    Result_String string_res = string_ctor_capacity(get_malloc_resource(), 16);
+    Result_String string_res = string_ctor_capacity(get_malloc_resource(), 0);
     ASSERT_NO_ERROR(string_res.error_code);
 
     String string = string_res.value;

@@ -8,28 +8,6 @@
 DECLARE_RESULT_SOURCE(String);
 DECLARE_RESULT_SOURCE(Str);
 
-Str str_ctor_size(const char* string, size_t size);
-Str str_ctor(const char* string);
-Str str_ctor_string(const String string);
-int str_compare(const Str lhs, const Str rhs);
-void str_print(const Str string, FILE* out);
-Result_Str str_slice(const Str string, size_t start_idx, size_t end_idx);
-Result_String string_ctor(void* memory_resource, const char* string);
-Result_String string_ctor_str(void* memory_resource, Str string);
-void string_dtor(String* this);
-Result_String string_copy(void* memory_resource, const String string);
-void string_clear(String* this);
-int string_compare(const String lhs, const String rhs);
-ErrorCode string_append(String* this, const char* string);
-ErrorCode string_append_string(String* this, const String string);
-ErrorCode string_append_char(String* this, char ch);
-Result_Str string_slice(const String this, size_t start_idx, size_t end_idx);
-ErrorCode string_printf(String* this, const char* format, ...);
-Result_String
-string_ctor_printf(void* memory_resource, const char* format, ...);
-Result_String
-string_ctor_vprintf(void* memory_resource, const char* format, va_list args);
-
 Str str_ctor(const char* string)
 {
     return string ? str_ctor_size(string, strlen(string)) : (Str) {};
@@ -58,7 +36,13 @@ Str str_ctor_string(String string)
 
 int str_compare(Str lhs, Str rhs)
 {
-    return memcmp(lhs.data, rhs.data, MIN(lhs.size, rhs.size));
+    size_t size = MIN(lhs.size, rhs.size);
+    int cmp = memcmp(lhs.data, rhs.data, size);
+    if (cmp == 0)
+    {
+        return lhs.size - rhs.size;
+    }
+    return cmp;
 }
 
 void str_print(Str string, FILE* out)
@@ -72,6 +56,11 @@ void str_print(Str string, FILE* out)
 
 Result_Str str_slice(Str string, size_t start, size_t end)
 {
+    if (start == 0 && end == 0)
+    {
+        return Result_Str_ctor((Str) {}, EVERYTHING_FINE);
+    }
+
     if (start >= string.size || end > string.size || end < start)
     {
         return Result_Str_ctor((Str) {}, ERROR_BAD_ARGS);
@@ -170,7 +159,8 @@ ErrorCode string_append_char(String* this, char ch)
     }
     if (this->size == this->capacity)
     {
-        ErrorCode err = string_realloc(this, this->capacity * 2);
+        size_t new_capacity = this->capacity ? this->capacity * 2 : 1;
+        ErrorCode err = string_realloc(this, new_capacity);
         if (err)
         {
             return err;
@@ -236,7 +226,11 @@ Result_String string_ctor_capacity(void* memory_resource, size_t capacity)
     }
     if (capacity == 0)
     {
-        return Result_String_ctor((String) {}, ERROR_BAD_VALUE);
+        return Result_String_ctor(
+            (String) {
+                .memory_resource = resource,
+            },
+            EVERYTHING_FINE);
     }
 
     char* data = resource->allocate(resource, capacity + 1, alignof(char));
@@ -343,6 +337,11 @@ ErrorCode string_vprintf(String* this, const char* format, va_list args)
         return ERROR_STD;
     }
 
+    if (print_size == 0)
+    {
+        return EVERYTHING_FINE;
+    }
+
     ErrorCode err = string_realloc(this, this->size + (size_t)print_size);
     if (err)
     {
@@ -372,6 +371,10 @@ ErrorCode string_replace_all(String* this, Str from, Str to)
         return ERROR_NULLPTR;
     }
     if (!from.data || from.size == 0)
+    {
+        return EVERYTHING_FINE;
+    }
+    if (!this->data || this->size == 0)
     {
         return EVERYTHING_FINE;
     }
